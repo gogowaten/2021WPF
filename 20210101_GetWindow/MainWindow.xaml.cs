@@ -68,6 +68,117 @@ namespace _20210101_GetWindow
             return hWnd;
         }
 
+        //最前面ウィンドウから親ウィンドウを辿って、すべてのウィンドウのRECTを返す
+        private List<API.RECT> GetWindowRects()
+        {
+            IntPtr hForeWnd = API.GetForegroundWindow();
+            var wndText = new StringBuilder(65535);
+            int count = 0;
+            IntPtr hWnd = hForeWnd;
+            List<API.RECT> reList = new();
+            API.GetWindowRect(hWnd, out API.RECT re);
+            reList.Add(re);
+
+            while (API.GetWindowText(hWnd, wndText, 65535) == 0)
+            {
+                hWnd = API.GetParent(hWnd);
+                API.GetWindowRect(hWnd, out re);
+                reList.Add(re);
+                count++;
+                if (count > 10)
+                {
+                    hWnd = hForeWnd;
+                    break;
+                }
+            }
+            return reList;
+        }
+
+        //対象ウィンドウのCmd全部のRECTを取得
+        private Dictionary<API.GETWINDOW_CMD, API.RECT> GetCMDRects(IntPtr hWnd)
+        {
+            Dictionary<API.GETWINDOW_CMD, API.RECT> result = new();
+            var cmd = Enum.GetValues(typeof(API.GETWINDOW_CMD)).Cast<API.GETWINDOW_CMD>();
+
+            foreach (var item in cmd)
+            {
+                _ = API.GetWindowRect(API.GetWindow(hWnd, item), out API.RECT re);
+                result.Add(item, re);
+            }
+
+            return result;
+        }
+        private IntPtr GetChildWindow(IntPtr hWnd)
+        {
+            return API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_CHILD);
+        }
+
+
+        //子ウィンドウすべてのRECTを返す
+        private List<API.RECT> GetChildWindowRect(IntPtr hWndParent)
+        {
+            List<API.RECT> reList = new();
+            var childe = API.GetWindow(hWndParent, API.GETWINDOW_CMD.GW_CHILD);
+            IntPtr temp = API.GetWindow(childe, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            while (temp != IntPtr.Zero || reList.Count < 20)
+            {
+                API.GetWindowRect(temp, out API.RECT re);
+                reList.Add(re);
+
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            }
+            return reList;
+        }
+        private List<API.RECT> GetWindowRects(IntPtr hWnd, API.GETWINDOW_CMD cmd)
+        {
+            List<API.RECT> reList = new();
+            IntPtr temp = API.GetWindow(hWnd, cmd);
+            while (temp != IntPtr.Zero || reList.Count < 20)
+            {
+                API.GetWindowRect(temp, out API.RECT re);
+                reList.Add(re);
+                temp = API.GetWindow(temp, cmd);
+            }
+            return reList;
+        }
+        private (List<string>, List<API.RECT>) GetNextWindowTextAndRects(IntPtr hWnd)
+        {
+            List<string> strList = new();
+            List<API.RECT> reList = new();
+
+            IntPtr temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            StringBuilder text = new StringBuilder(65535);
+
+            while (temp != IntPtr.Zero || strList.Count < 20)
+            {
+                API.GetWindowRect(temp, out API.RECT re);
+                API.GetWindowText(temp, text, 65535);
+                strList.Add(text.ToString());
+                reList.Add(re);
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            }
+            return (strList, reList);
+        }
+        private (List<string>, List<API.RECT>) GetPrevWindowTextAndRects(IntPtr hWnd)
+        {
+            List<string> strList = new();
+            List<API.RECT> reList = new();
+            API.GETWINDOW_CMD cmd = API.GETWINDOW_CMD.GW_HWNDPREV;
+
+            IntPtr temp = API.GetWindow(hWnd, cmd);
+            StringBuilder text = new StringBuilder(65535);
+
+            while (temp != IntPtr.Zero || strList.Count < 20)
+            {
+                API.GetWindowRect(temp, out API.RECT re);
+                API.GetWindowText(temp, text, 65535);
+                strList.Add(text.ToString());
+                reList.Add(re);
+                temp = API.GetWindow(temp, cmd);
+            }
+            return (strList, reList);
+        }
+
         //ホットキー動作
         private void ComponentDispatcher_ThreadPreprocessMessage(ref MSG msg, ref bool handled)
         {
@@ -75,6 +186,36 @@ namespace _20210101_GetWindow
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
                 //MessageBox.Show("ホットキーーーーーーーーーーーー");
+                IntPtr foreWnd = API.GetForegroundWindow();
+                var parentWnd = API.GetParent(foreWnd);
+
+                var foreRects = GetCMDRects(foreWnd);
+                var parentRects = GetCMDRects(parentWnd);
+
+                _ = API.GetWindowRect(foreWnd, out API.RECT fRe);
+                _ = API.GetWindowRect(parentWnd, out API.RECT pRe);
+
+                var childRects = GetChildWindowRect(foreWnd);
+                var ccree = GetNextWindowTextAndRects(GetChildWindow(foreWnd));
+                var childWnd = GetChildWindow(parentWnd);
+                var pc = GetNextWindowTextAndRects(childWnd);
+                var preRects = GetPrevWindowTextAndRects(parentWnd);
+                var owner = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
+
+                API.GetWindowRect(foreWnd, out API.RECT foreRect);
+                API.GetWindowRect(parentWnd, out API.RECT PareRect);
+                API.GetWindowRect(childWnd, out API.RECT ChildRect);
+                API.GetWindowRect(owner, out API.RECT OwnerRect);
+                API.GetWindowRect(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRect);
+                API.GetWindowRect(API.GetWindow(parentWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectParent);
+                API.GetWindowRect(API.GetWindow(childWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectChild);
+                API.GetWindowRect(API.GetWindow(owner, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectOwner);
+
+                //var textFore = new StringBuilder(65535);
+                //API.GetWindowText(foreWnd, textFore, 65535);
+
+                //var stb = new StringBuilder(65535);
+                //int wndText = API.GetWindowText(parentWnd, stb, 65535);
 
             }
         }
@@ -97,13 +238,13 @@ namespace _20210101_GetWindow
             if (API.RegisterHotKey(MyWindowHandle, hotkeyId, mod, vKey) == 0)
             {
                 MessageBox.Show("登録に失敗");
-                
+
                 //MyGroupBoxHotKey.Header = "無効なホットキー";
             }
             else
             {
                 //MessageBox.Show("登録完了");
-                
+
                 //MyGroupBoxHotKey.Header = "ホットキー";
             }
         }
@@ -157,6 +298,35 @@ namespace _20210101_GetWindow
         //パレントウィンドウ取得
         [DllImport("user32.dll")]
         internal static extern IntPtr GetParent(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetWindow(IntPtr hWnd, GETWINDOW_CMD uCmd);//本当のuCmdはuint型
+        public enum GETWINDOW_CMD
+        {
+            GW_CHILD = 5,
+            //指定されたウィンドウが親ウィンドウである場合、取得されたハンドルは、Zオーダーの最上位にある子ウィンドウを識別します。それ以外の場合、取得されたハンドルはNULLです。この関数は、指定されたウィンドウの子ウィンドウのみを調べます。子孫ウィンドウは調べません。
+            GW_ENABLEDPOPUP = 6,
+            //取得されたハンドルは、指定されたウィンドウが所有する有効なポップアップウィンドウを識別します（検索では、GW_HWNDNEXTを使用して最初に見つかったそのようなウィンドウが使用されます）。それ以外の場合、有効なポップアップウィンドウがない場合、取得されるハンドルは指定されたウィンドウのハンドルです。
+            GW_HWNDFIRST = 0,
+            //取得されたハンドルは、Zオーダーで最も高い同じタイプのウィンドウを識別します。
+            //指定されたウィンドウが最上位のウィンドウである場合、ハンドルは最上位のウィンドウを識別します。指定されたウィンドウがトップレベルウィンドウである場合、ハンドルはトップレベルウィンドウを識別します。指定されたウィンドウが子ウィンドウの場合、ハンドルは兄弟ウィンドウを識別します。
+
+            GW_HWNDLAST = 1,
+            //取得されたハンドルは、Zオーダーで最も低い同じタイプのウィンドウを識別します。
+            //指定されたウィンドウが最上位のウィンドウである場合、ハンドルは最上位のウィンドウを識別します。指定されたウィンドウがトップレベルウィンドウである場合、ハンドルはトップレベルウィンドウを識別します。指定されたウィンドウが子ウィンドウの場合、ハンドルは兄弟ウィンドウを識別します。
+
+            GW_HWNDNEXT = 2,
+            //取得されたハンドルは、指定されたウィンドウの下のウィンドウをZオーダーで識別します。
+            //指定されたウィンドウが最上位のウィンドウである場合、ハンドルは最上位のウィンドウを識別します。指定されたウィンドウがトップレベルウィンドウである場合、ハンドルはトップレベルウィンドウを識別します。指定されたウィンドウが子ウィンドウの場合、ハンドルは兄弟ウィンドウを識別します。
+
+            GW_HWNDPREV = 3,
+            //取得されたハンドルは、指定されたウィンドウの上のウィンドウをZオーダーで識別します。
+            //指定されたウィンドウが最上位のウィンドウである場合、ハンドルは最上位のウィンドウを識別します。指定されたウィンドウがトップレベルウィンドウである場合、ハンドルはトップレベルウィンドウを識別します。指定されたウィンドウが子ウィンドウの場合、ハンドルは兄弟ウィンドウを識別します。
+
+            GW_OWNER = 4,
+            //取得されたハンドルは、指定されたウィンドウの所有者ウィンドウを識別します（存在する場合）。詳細については、「所有するWindows」を参照してください。
+        }
+
 
 
         //グローバルホットキー登録用
