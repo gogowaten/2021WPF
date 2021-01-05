@@ -114,7 +114,7 @@ namespace _20210101_GetWindow
         }
 
 
-        //子ウィンドウすべてのRECTを返す
+        //
         private List<API.RECT> GetChildWindowRect(IntPtr hWndParent)
         {
             List<API.RECT> reList = new();
@@ -195,11 +195,13 @@ namespace _20210101_GetWindow
                 _ = API.GetWindowRect(foreWnd, out API.RECT fRe);
                 _ = API.GetWindowRect(parentWnd, out API.RECT pRe);
 
-                var childRects = GetChildWindowRect(foreWnd);
-                var ccree = GetNextWindowTextAndRects(GetChildWindow(foreWnd));
+                //var childRects = GetChildWindowRect(foreWnd);
+                var parentNextRects = GetNextWindowTextAndRects(GetChildWindow(parentWnd));
+                var foreNextRects = GetNextWindowTextAndRects(GetChildWindow(foreWnd));
                 var childWnd = GetChildWindow(parentWnd);
                 var pc = GetNextWindowTextAndRects(childWnd);
-                var preRects = GetPrevWindowTextAndRects(parentWnd);
+                var parentPreRects = GetPrevWindowTextAndRects(parentWnd);
+                var forePreRects = GetPrevWindowTextAndRects(foreWnd);
                 var owner = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
 
                 API.GetWindowRect(foreWnd, out API.RECT foreRect);
@@ -210,6 +212,7 @@ namespace _20210101_GetWindow
                 API.GetWindowRect(API.GetWindow(parentWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectParent);
                 API.GetWindowRect(API.GetWindow(childWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectChild);
                 API.GetWindowRect(API.GetWindow(owner, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectOwner);
+
 
                 //var textFore = new StringBuilder(65535);
                 //API.GetWindowText(foreWnd, textFore, 65535);
