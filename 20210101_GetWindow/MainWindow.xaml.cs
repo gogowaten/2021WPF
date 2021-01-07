@@ -206,6 +206,19 @@ namespace _20210101_GetWindow
                 var parentWnd = API.GetParent(foreWnd);
                 var owner = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
 
+                var tstr = GetOwnerWidndowWithText();
+                var tstr2 = GetOwnerWidndowWithText(foreWnd);
+                var foreのOwnerのChild = GetWindowEx(tstr2.Item1, API.GETWINDOW_CMD.GW_CHILD);
+                var ForeのOwnerのPopup = GetWindowEx(tstr2.Item1, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
+                var ForeのOwner = GetWindowEx(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
+                var ForeのOwnerのOwner = GetWindowEx(ForeのOwner.Item1, API.GETWINDOW_CMD.GW_OWNER);
+                var ForeのOwnerのPopupのOwner = GetWindowEx(ForeのOwnerのPopup.Item1, API.GETWINDOW_CMD.GW_OWNER);
+                var ForeのPopup = GetWindowEx(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
+
+                var activePop = API.GetLastActivePopup(foreWnd);//常にForegroundWindowになる
+                var foreInfo = GetWindowInfo(foreWnd);
+                var ispop = IsPopupWindow(foreWnd);
+
                 string title1 = GetWindowTitle(foreWnd);
                 var foreCMDRects = GetCMDRects(foreWnd);
                 var foreNextRects = GetNextWindowTextAndRects(foreWnd);
@@ -271,6 +284,69 @@ namespace _20210101_GetWindow
             }
         }
 
+
+        private bool IsPopupWindow(IntPtr hWnd)
+        {
+            API.WINDOWINFO wi = GetWindowInfo(hWnd);
+            uint pop = (uint)API.WINDOW_STYLE.WS_POPUP;
+            var style = wi.dwStyle & pop;
+            return style == pop;
+        }
+
+        private API.WINDOWINFO GetWindowInfo(IntPtr hWnd)
+        {
+            API.WINDOWINFO wi = new();
+            wi.cbSize = Marshal.SizeOf(wi);
+            API.GetWindowInfo(hWnd, ref wi);
+            return wi;
+        }
+
+
+        /// <summary>
+        /// WindowとCmdを渡して、Cmdに当てはまるWindowと、そのRECTとTextを返す
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="cmd">API.GETWINDOW_CMD</param>
+        /// <returns></returns>
+        private (IntPtr, API.RECT, string) GetWindowEx(IntPtr hWnd, API.GETWINDOW_CMD cmd)
+        {
+            var str = new StringBuilder(65535);
+            IntPtr hh = API.GetWindow(hWnd, cmd);
+            _ = API.GetWindowText(hh, str, 65535);
+            API.GetWindowRect(hh, out API.RECT re);
+            return (hh, re, str.ToString());
+        }
+
+
+
+        /// <summary>
+        /// ForegroundWindowからWindowTextがあるOwnerWindowを辿って返す
+        /// </summary>
+        /// <returns></returns>
+        private (IntPtr, string) GetOwnerWidndowWithText()
+        {
+            return GetOwnerWidndowWithText(API.GetForegroundWindow());
+        }
+        /// <summary>
+        /// 渡したWindowからWindowTextがあるOwnerWindowを辿って返す
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>       
+        private (IntPtr, string) GetOwnerWidndowWithText(IntPtr hWnd)
+        {
+            var str = new StringBuilder(65535);
+            int count = 0;
+            IntPtr h = hWnd;
+            _ = API.GetWindowText(h, str, 65535);
+            while (str.ToString() == "" && count < 20)
+            {
+                h = API.GetWindow(h, API.GETWINDOW_CMD.GW_OWNER);
+                API.GetWindowText(h, str, 65535);
+                count++;
+            }
+            if (str.ToString() == "") { return (IntPtr.Zero, str.ToString()); }
+            else return (h, str.ToString());
+        }
         private string GetWindowTitle(IntPtr hWnd)
         {
             var str = new StringBuilder(65535);
@@ -377,6 +453,11 @@ namespace _20210101_GetWindow
             return (str.ToString(), hOwner);
         }
 
+
+
+
+
+
         private void MyInitializeHotKey()
         {
             MyWindowHandle = new WindowInteropHelper(this).Handle;
@@ -449,9 +530,9 @@ namespace _20210101_GetWindow
             public int cbSize;
             public RECT rcWindow;
             public RECT rcClient;
-            public int dwStyle;
-            public int dwExStyle;
-            public int dwWindowStatus;
+            public uint dwStyle;
+            public uint dwExStyle;
+            public uint dwWindowStatus;
             public uint cxWindowBorders;
             public uint cyWindowBorders;
             public ushort atomWindowType;
@@ -545,6 +626,44 @@ namespace _20210101_GetWindow
 
         [DllImport("user32.dll")]
         internal static extern int GetWindowInfo(IntPtr hWnd, ref WINDOWINFO info);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetLastActivePopup(IntPtr hWnd);
+
+
+
+
+
+        //public delegate bool EnumWindowsDelegate(IntPtr hWnd, IntPtr lparam, List<IntPtr> intPtrs);
+        //[DllImport("user32.dll")]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        //internal static extern bool EnumChildWindows(IntPtr hWnd, EnumWindowsDelegate enumWindows, IntPtr lparam);
+
+
+        //internal static List<IntPtr> GetChildWindows(IntPtr hWnd)
+        //{
+        //    List<IntPtr> childList = new();
+        //    EnumChildWindows(hWnd, new EnumWindowsDelegate(EnumWindowCallBack), IntPtr.Zero);
+        //    return childList;
+        //}
+        //private static bool EnumWindowCallBack(IntPtr hWnd, IntPtr lparam, List<IntPtr> childList)
+        //{
+        //    childList.Add(hWnd);
+        //    return true;
+        //}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         //グローバルホットキー登録用
         internal const int WM_HOTKEY = 0x0312;
