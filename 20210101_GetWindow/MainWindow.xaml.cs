@@ -218,6 +218,10 @@ namespace _20210101_GetWindow
                 var activePop = API.GetLastActivePopup(foreWnd);//常にForegroundWindowになる
                 var foreInfo = GetWindowInfo(foreWnd);
                 var ispop = IsPopupWindow(foreWnd);
+                var npw = GetNextPopUpWindows(foreWnd);
+                var npwo = GetNextPopUpWindows2(foreWnd);
+
+
 
                 string title1 = GetWindowTitle(foreWnd);
                 var foreCMDRects = GetCMDRects(foreWnd);
@@ -285,6 +289,55 @@ namespace _20210101_GetWindow
         }
 
 
+        private (List<IntPtr>, List<API.RECT>) GetNextPopUpWindows2(IntPtr hWnd)
+        {
+            int count = 0;
+            List<IntPtr> wnd = new();
+            List<API.RECT> reList = new();
+            (string, IntPtr) owner = GetOwnerWithTitle(hWnd);
+            //IntPtr owner = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_OWNER);
+
+            IntPtr temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            while (temp != IntPtr.Zero || count < 20)
+            {
+                if (GetOwnerWithTitle(temp).Item1 == owner.Item1 && IsPopupWindow(temp))
+                {
+                    API.GetWindowRect(temp, out API.RECT re);
+                    wnd.Add(temp);
+                    reList.Add(re);
+                }
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                count++;
+            }
+            return (wnd, reList);
+        }
+        //同じOwnerWindowならtrueを返す
+        private bool IsSameOwner(IntPtr owner, IntPtr hWnd)
+        {
+            (string title, IntPtr owner) ot = GetOwnerWithTitle(hWnd);
+            return ot.owner == owner;
+        }
+
+        private (List<IntPtr>, List<API.RECT>) GetNextPopUpWindows(IntPtr hWnd)
+        {
+            List<IntPtr> wnd = new();
+            List<API.RECT> reList = new();
+
+            IntPtr temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            while (temp != IntPtr.Zero || wnd.Count < 20)
+            {
+                if (IsPopupWindow(temp))
+                {
+                    API.GetWindowRect(temp, out API.RECT re);
+                    wnd.Add(temp);
+                    reList.Add(re);
+                }
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
+            }
+            return (wnd, reList);
+        }
+
+        //WindowのStyleがPopupならtrueを返す
         private bool IsPopupWindow(IntPtr hWnd)
         {
             API.WINDOWINFO wi = GetWindowInfo(hWnd);
