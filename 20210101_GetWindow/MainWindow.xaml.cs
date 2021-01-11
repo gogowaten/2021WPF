@@ -207,9 +207,32 @@ namespace _20210101_GetWindow
                 var ForeのOwner = GetOwner(fHnd);
                 var ForeのOwnerすべて = GetOwners(fHnd, 20);
 
-                var lp = GetWindowRectAndText(API.GetLastActivePopup(ForeのOwner.ptr));
-                var tw = GetWindowRectAndText(API.GetTopWindow(ForeのOwner.ptr));
-                var ttw = GetWindowRectAndText(API.GetTopWindow(IntPtr.Zero));
+                var lastActPop = GetWindowRectAndText(API.GetLastActivePopup(ForeのOwner.ptr));
+                var topChildWindow = GetWindowRectAndText(API.GetTopWindow(ForeのOwner.ptr));
+                var topWindow = GetWindowRectAndText(API.GetTopWindow(IntPtr.Zero));
+
+                var menu = API.GetMenu(fHnd);
+                var ForeのOwnerのMenu = API.GetMenu(ForeのOwner.ptr);
+                var menuRect = GetWindowRect(menu);
+                var ForeMenuRect = GetWindowRect(ForeのOwnerのMenu);
+                var fmenu = API.GetMenu(fHnd);
+                var focus = API.GetFocus();
+
+                var mi = new API.MENUBARINFO();
+                mi.cbSize = Marshal.SizeOf(mi);
+                var mmc0 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_CLIENT, 0, mi);
+                //var mmm0 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_MENU, 0, mi);
+                //var mms0 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_SYSMENU, 0, mi);
+                //var mmc1 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_CLIENT, 1, mi);
+                //var mmm1 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_MENU, 1, mi);
+                //var mms1 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_SYSMENU, 1, mi);
+                //var mmc2 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_CLIENT, 2, mi);
+                //var mmm2 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_MENU, 2, mi);
+                //var mms2 = API.GetMenuBarInfo(fHnd, API.MenuObjectId.OBJID_SYSMENU, 2, mi);
+
+                //メニューバーのRECT
+                var mitem = API.GetMenuItemRect(fHnd, fmenu, 0, out API.RECT re);
+
 
             }
         }
@@ -816,6 +839,41 @@ namespace _20210101_GetWindow
         [DllImport("user32.dll")]
         internal static extern IntPtr GetTopWindow(IntPtr hWnd);
 
+        /// <summary>
+        /// 指定したWindowのメニューのハンドルを返す
+        /// </summary>
+        /// <param name="hWnd">Windowのハンドル</param>
+        /// <returns>Windowがメニューを持たない場合はnullを返す</returns>
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetMenu(IntPtr hWnd);
+
+        /// <summary>
+        /// キーボードフォーカスを持つWindowのハンドルを返す
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetMenuBarInfo(IntPtr hWnd, MenuObjectId idObject, long idItem, MENUBARINFO pmbi);
+
+        public struct MENUBARINFO
+        {
+            public long cbSize;
+            public RECT rcBar;
+            public IntPtr hMenu;
+            public bool fBarFocused;
+            public bool fFocused;
+        }
+        public enum MenuObjectId:long
+        {
+            OBJID_CLIENT = 0xFFFFFFFC,
+            OBJID_MENU = 0xFFFFFFFD,
+            OBJID_SYSMENU = 0xFFFFFFFF,
+        }
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetMenuItemRect(IntPtr hWnd, IntPtr hMenu, uint uItem, out RECT rect);
 
 
 
