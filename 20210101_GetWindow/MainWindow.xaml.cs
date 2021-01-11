@@ -201,101 +201,212 @@ namespace _20210101_GetWindow
             if (msg.message != API.WM_HOTKEY) return;
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
-                //MessageBox.Show("ホットキーーーーーーーーーーーー");
-                IntPtr foreWnd = API.GetForegroundWindow();
-                var parentWnd = API.GetParent(foreWnd);
-                var owner = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
+                IntPtr fHnd = API.GetForegroundWindow();
+                var Fore = GetWindowRectAndText(fHnd);
+                var ForeのChilds = GetChilds(fHnd);
+                var ForeのOwner = GetOwner(fHnd);
+                var ForeのOwnerすべて = GetOwners(fHnd, 20);
 
-                var tstr = GetOwnerWidndowWithText();
-                var tstr2 = GetOwnerWidndowWithText(foreWnd);
-                var foreのOwnerのChild = GetWindowEx(tstr2.Item1, API.GETWINDOW_CMD.GW_CHILD);
-                var ForeのOwnerのPopup = GetWindowEx(tstr2.Item1, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
-                var ForeのOwner = GetWindowEx(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
-                var ForeのOwnerのOwner = GetWindowEx(ForeのOwner.Item1, API.GETWINDOW_CMD.GW_OWNER);
-                var ForeのOwnerのPopupのOwner = GetWindowEx(ForeのOwnerのPopup.Item1, API.GETWINDOW_CMD.GW_OWNER);
-                var ForeのPopup = GetWindowEx(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
-
-                var activePop = API.GetLastActivePopup(foreWnd);//常にForegroundWindowになる
-                var foreInfo = GetWindowInfo(foreWnd);
-                var ispop = IsPopupWindow(foreWnd);
-                var npw = GetNextPopUpWindows(foreWnd);
-                var npwo = GetNextPopUpWindows2(foreWnd);
-
-
-
-                string title1 = GetWindowTitle(foreWnd);
-                var foreCMDRects = GetCMDRects(foreWnd);
-                var foreNextRects = GetNextWindowTextAndRects(foreWnd);
-                var forePrevRects = GetPrevWindowTextAndRects(foreWnd);
-                var wInfo = new API.WINDOWINFO();
-                wInfo.cbSize = Marshal.SizeOf(wInfo);
-                API.GetWindowInfo(foreWnd, ref wInfo);
-                var f = Convert.ToString(wInfo.dwStyle, 2);
-                var g = Convert.ToString(wInfo.dwStyle, 16);
-                var h = wInfo.dwStyle & 0x8000_0000;
-                var i = h == 0x8000_0000;
-                var j = Convert.ToString(h, 16);
-                (string, IntPtr) pp = GetParentWithTitle(foreWnd);
-                (string, IntPtr ioo) oo = GetOwnerWithTitle(foreWnd);
-                //var gp = GetPopupWindows(oo.ioo);
-                var gpt = GetPopupToTaitleWindow(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
-                var gptp = GetPopupToParentTaitleWindow(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
-                string title2 = GetWindowTitle(foreWnd);
-
-                var parentCMDRects = GetCMDRects(parentWnd);
-                var parentNextRects = GetNextWindowTextAndRects(parentWnd);
-                var parentPrevRects = GetPrevWindowTextAndRects(parentWnd);
-
-                var ownCMDRects = GetCMDRects(owner);
-                var ownNextRects = GetNextWindowTextAndRects(owner);
-                var ownPrevRects = GetPrevWindowTextAndRects(owner);
-
-                _ = API.GetWindowRect(foreWnd, out API.RECT fRe);
-                _ = API.GetWindowRect(parentWnd, out API.RECT pRe);
-                _ = API.GetWindowRect(owner, out API.RECT oRe);
-
-                var foreChildWnd = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_CHILD);
-                var foreChildCMDRects = GetCMDRects(foreChildWnd);
-                var foreChildsNextRect = GetNextWindowTextAndRects(foreChildWnd);
-                var foreChildsPrevRect = GetPrevWindowTextAndRects(foreChildWnd);
-
-                var parentChild = API.GetWindow(parentWnd, API.GETWINDOW_CMD.GW_CHILD);
-                var parentChildCMDRects = GetCMDRects(parentChild);
-                var parentChildsNextRect = GetNextWindowTextAndRects(parentChild);
-                var parentChildsPrevRect = GetPrevWindowTextAndRects(parentChild);
-
-                var ownChild = API.GetWindow(owner, API.GETWINDOW_CMD.GW_CHILD);
-                var ownChildCMDRects = GetCMDRects(ownChild);
-                var ownChildsNextRect = GetNextWindowTextAndRects(ownChild);
-                var ownPrevChildsNextRect = GetPrevWindowTextAndRects(ownChild);
-
-                API.GetWindowRect(foreWnd, out API.RECT foreRect);
-                API.GetWindowRect(parentWnd, out API.RECT PareRect);
-                API.GetWindowRect(foreChildWnd, out API.RECT ChildRect);
-                API.GetWindowRect(owner, out API.RECT OwnerRect);
-                API.GetWindowRect(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRect);
-                API.GetWindowRect(API.GetWindow(parentWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectParent);
-                API.GetWindowRect(API.GetWindow(foreChildWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectChild);
-                API.GetWindowRect(API.GetWindow(owner, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectOwner);
-
-
-                //var textFore = new StringBuilder(65535);
-                //API.GetWindowText(foreWnd, textFore, 65535);
-
-                //var stb = new StringBuilder(65535);
-                //int wndText = API.GetWindowText(parentWnd, stb, 65535);
+                var lp = GetWindowRectAndText(API.GetLastActivePopup(ForeのOwner.ptr));
+                var tw = GetWindowRectAndText(API.GetTopWindow(ForeのOwner.ptr));
+                var ttw = GetWindowRectAndText(API.GetTopWindow(IntPtr.Zero));
 
             }
         }
 
+        //タイトル付きのOwnerすべてを取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetOwners(IntPtr ptr, int loopCount)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
 
+            var temp = API.GetWindow(ptr, API.GETWINDOW_CMD.GW_OWNER);
+
+            //Ownerが無くなるまで辿る
+            while (temp != IntPtr.Zero && count < loopCount)
+            {
+                string str = GetWindowText(temp);
+                //タイトル付きならリストに追加
+                if (str != "")
+                {
+                    ptrs.Add(temp);
+                    res.Add(GetWindowRect(temp));
+                    strs.Add(str);
+                }
+
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_OWNER);
+                count++;
+            }
+            return (ptrs, res, strs);
+        }
+
+        //タイトル付きのOwner取得
+        private (IntPtr ptr, API.RECT re, string str) GetOwner(IntPtr hWnd)
+        {
+            int count = 0;
+            IntPtr ptr = hWnd;
+            string str = GetWindowText(hWnd);
+            while (str == "" && count < 20)
+            {
+                ptr = API.GetWindow(ptr, API.GETWINDOW_CMD.GW_OWNER);
+                str = GetWindowText(ptr);
+                count++;
+            }
+            _ = API.GetWindowRect(ptr, out API.RECT re);
+            return (ptr, re, str);
+        }
+
+        //RECTとText取得
+        private (API.RECT rect, string text) GetWindowRectAndText(IntPtr hWnd)
+        {
+            return (GetWindowRect(hWnd), GetWindowText(hWnd));
+        }
+
+        //すべてのChild
+        private (List<IntPtr> ptrs, List<API.RECT> rects, List<string> text) GetChilds(IntPtr hWnd)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> rects = new();
+            List<string> text = new();
+            IntPtr temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_CHILD);
+            while (temp != IntPtr.Zero)
+            {
+                ptrs.Add(temp);
+                rects.Add(GetWindowRect(temp));
+                text.Add(GetWindowText(temp));
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_CHILD);
+            }
+            return (ptrs, rects, text);
+        }
+        private API.RECT GetWindowRect(IntPtr hWnd)
+        {
+            API.GetWindowRect(hWnd, out API.RECT re);
+            return re;
+        }
+        private string GetWindowText(IntPtr hWnd)
+        {
+            var sb = new StringBuilder(65535);
+            _ = API.GetWindowText(hWnd, sb, 65535);
+            return sb.ToString();
+        }
+        private void Test1()
+        {
+            //MessageBox.Show("ホットキーーーーーーーーーーーー");
+            IntPtr foreWnd = API.GetForegroundWindow();
+            var parentWnd = API.GetParent(foreWnd);
+            var owner = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
+
+            var tstr = GetOwnerWidndowWithText();
+            var tstr2 = GetOwnerWidndowWithText(foreWnd);
+            var foreのOwnerのChild = GetWindowEx(tstr2.Item1, API.GETWINDOW_CMD.GW_CHILD);
+            var ForeのOwnerのPopup = GetWindowEx(tstr2.Item1, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
+            var ForeのOwner = GetWindowEx(foreWnd, API.GETWINDOW_CMD.GW_OWNER);
+            var ForeのOwnerのOwner = GetWindowEx(ForeのOwner.Item1, API.GETWINDOW_CMD.GW_OWNER);
+            var ForeのOwnerのPopupのOwner = GetWindowEx(ForeのOwnerのPopup.Item1, API.GETWINDOW_CMD.GW_OWNER);
+            var ForeのPopup = GetWindowEx(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
+
+            var activePop = API.GetLastActivePopup(foreWnd);//常にForegroundWindowになる
+            var foreInfo = GetWindowInfo(foreWnd);
+            var ispop = IsPopupWindow(foreWnd);
+
+            var npw = GetNextPopUpWindows(foreWnd);
+            var npwo = GetNextPopUpWindows2(foreWnd);
+            var ppwo = GetPrevPopUpWindows2(foreWnd);
+
+
+            string title1 = GetWindowTitle(foreWnd);
+            var foreCMDRects = GetCMDRects(foreWnd);
+            var foreNextRects = GetNextWindowTextAndRects(foreWnd);
+            var forePrevRects = GetPrevWindowTextAndRects(foreWnd);
+            var wInfo = new API.WINDOWINFO();
+            wInfo.cbSize = Marshal.SizeOf(wInfo);
+            API.GetWindowInfo(foreWnd, ref wInfo);
+            var f = Convert.ToString(wInfo.dwStyle, 2);
+            var g = Convert.ToString(wInfo.dwStyle, 16);
+            var h = wInfo.dwStyle & 0x8000_0000;
+            var i = h == 0x8000_0000;
+            var j = Convert.ToString(h, 16);
+            (string, IntPtr) pp = GetParentWithTitle(foreWnd);
+            (string, IntPtr ioo) oo = GetOwnerWithTitle(foreWnd);
+            //var gp = GetPopupWindows(oo.ioo);
+            var gpt = GetPopupToTaitleWindow(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+            var gptp = GetPopupToParentTaitleWindow(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+            string title2 = GetWindowTitle(foreWnd);
+
+            var parentCMDRects = GetCMDRects(parentWnd);
+            var parentNextRects = GetNextWindowTextAndRects(parentWnd);
+            var parentPrevRects = GetPrevWindowTextAndRects(parentWnd);
+
+            var ownCMDRects = GetCMDRects(owner);
+            var ownNextRects = GetNextWindowTextAndRects(owner);
+            var ownPrevRects = GetPrevWindowTextAndRects(owner);
+
+            _ = API.GetWindowRect(foreWnd, out API.RECT fRe);
+            _ = API.GetWindowRect(parentWnd, out API.RECT pRe);
+            _ = API.GetWindowRect(owner, out API.RECT oRe);
+
+            var foreChildWnd = API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_CHILD);
+            var foreChildCMDRects = GetCMDRects(foreChildWnd);
+            var foreChildsNextRect = GetNextWindowTextAndRects(foreChildWnd);
+            var foreChildsPrevRect = GetPrevWindowTextAndRects(foreChildWnd);
+
+            var parentChild = API.GetWindow(parentWnd, API.GETWINDOW_CMD.GW_CHILD);
+            var parentChildCMDRects = GetCMDRects(parentChild);
+            var parentChildsNextRect = GetNextWindowTextAndRects(parentChild);
+            var parentChildsPrevRect = GetPrevWindowTextAndRects(parentChild);
+
+            var ownChild = API.GetWindow(owner, API.GETWINDOW_CMD.GW_CHILD);
+            var ownChildCMDRects = GetCMDRects(ownChild);
+            var ownChildsNextRect = GetNextWindowTextAndRects(ownChild);
+            var ownPrevChildsNextRect = GetPrevWindowTextAndRects(ownChild);
+
+            API.GetWindowRect(foreWnd, out API.RECT foreRect);
+            API.GetWindowRect(parentWnd, out API.RECT PareRect);
+            API.GetWindowRect(foreChildWnd, out API.RECT ChildRect);
+            API.GetWindowRect(owner, out API.RECT OwnerRect);
+            API.GetWindowRect(API.GetWindow(foreWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRect);
+            API.GetWindowRect(API.GetWindow(parentWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectParent);
+            API.GetWindowRect(API.GetWindow(foreChildWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectChild);
+            API.GetWindowRect(API.GetWindow(owner, API.GETWINDOW_CMD.GW_ENABLEDPOPUP), out API.RECT popupRectOwner);
+
+
+            //var textFore = new StringBuilder(65535);
+            //API.GetWindowText(foreWnd, textFore, 65535);
+
+            //var stb = new StringBuilder(65535);
+            //int wndText = API.GetWindowText(parentWnd, stb, 65535);
+
+        }
+
+        private (List<IntPtr>, List<API.RECT>) GetPrevPopUpWindows2(IntPtr hWnd)
+        {
+            int count = 0;
+            List<IntPtr> wnd = new();
+            List<API.RECT> reList = new();
+            (string, IntPtr) owner = GetOwnerWithTitle(hWnd);
+
+            IntPtr temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDPREV);
+            while (temp != IntPtr.Zero || count < 20)
+            {
+                if (GetOwnerWithTitle(temp).Item1 == owner.Item1 && IsPopupWindow(temp))
+                {
+                    API.GetWindowRect(temp, out API.RECT re);
+                    wnd.Add(temp);
+                    reList.Add(re);
+                }
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDPREV);
+                count++;
+            }
+            return (wnd, reList);
+        }
         private (List<IntPtr>, List<API.RECT>) GetNextPopUpWindows2(IntPtr hWnd)
         {
             int count = 0;
             List<IntPtr> wnd = new();
             List<API.RECT> reList = new();
             (string, IntPtr) owner = GetOwnerWithTitle(hWnd);
-            //IntPtr owner = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_OWNER);
 
             IntPtr temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
             while (temp != IntPtr.Zero || count < 20)
@@ -495,16 +606,30 @@ namespace _20210101_GetWindow
         {
             int count = 0;
             var str = new StringBuilder(65535);
-            IntPtr hOwner = hWnd;
-            _ = API.GetWindowText(hOwner, str, 65535);
+            IntPtr hTemp = hWnd;
+            _ = API.GetWindowText(hTemp, str, 65535);
             while (string.IsNullOrEmpty(str.ToString()) && count < 20)
             {
-                hOwner = API.GetWindow(hOwner, API.GETWINDOW_CMD.GW_OWNER);
-                _ = API.GetWindowText(hOwner, str, 65535);
+                hTemp = API.GetWindow(hTemp, API.GETWINDOW_CMD.GW_OWNER);
+                _ = API.GetWindowText(hTemp, str, 65535);
                 count++;
             }
-            return (str.ToString(), hOwner);
+            return (str.ToString(), hTemp);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -682,6 +807,14 @@ namespace _20210101_GetWindow
 
         [DllImport("user32.dll")]
         internal static extern IntPtr GetLastActivePopup(IntPtr hWnd);
+
+        /// <summary>
+        /// 指定したWindowの一番上のChildWindowを返す
+        /// </summary>
+        /// <param name="hWnd">IntPtr.Zeroを指定すると一番上のWindowを返す</param>
+        /// <returns>ChildWindowを持たない場合はnullを返す</returns>
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetTopWindow(IntPtr hWnd);
 
 
 
