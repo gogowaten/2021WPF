@@ -201,11 +201,21 @@ namespace _20210101_GetWindow
             if (msg.message != API.WM_HOTKEY) return;
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
+                _ = API.GetCursorPos(out API.POINT cursoPoint);
                 IntPtr fHnd = API.GetForegroundWindow();
                 var Fore = GetWindowRectAndText(fHnd);
                 var ForeのChilds = GetChilds(fHnd);
                 var ForeのOwner = GetOwner(fHnd);
                 var ForeのOwnerすべて = GetOwners(fHnd, 20);
+                var ForeのOwnerのNexts = GetNextWindowTextAndRects(fHnd);
+                var ForeのOwnerのPrevs = GetPrevWindowTextAndRects(fHnd);
+                var ccNext = GetWindowsWithSameOwner(fHnd, ForeのOwner.ptr, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                var ccPrev = GetWindowsWithSameOwner(fHnd, ForeのOwner.ptr, API.GETWINDOW_CMD.GW_HWNDPREV);
+                var ccNextPops = GetPopupWindows(fHnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                var ccPrevPops = GetPopupWindows(fHnd, API.GETWINDOW_CMD.GW_HWNDPREV);
+
+                var nextStyleWindows = GetAnyStyleWindows(fHnd, API.GETWINDOW_CMD.GW_HWNDNEXT, API.WINDOW_STYLE.WS_TABSTOP);
+
 
                 var lastActPop = GetWindowRectAndText(API.GetLastActivePopup(ForeのOwner.ptr));
                 var topChildWindow = GetWindowRectAndText(API.GetTopWindow(ForeのOwner.ptr));
@@ -233,10 +243,145 @@ namespace _20210101_GetWindow
                 //メニューバーのRECT
                 var mitem = API.GetMenuItemRect(fHnd, fmenu, 0, out API.RECT re);
 
+                //マウスカーソル下のコントロール基準
+                var cursoWnd = API.WindowFromPoint(cursoPoint);
+                var cursorText = GetWindowRectAndText(cursoWnd);
+                var cursorOwners = GetOwners(cursoWnd, 20);
+                var cursorToOwners = GetWindowsToTextOwner(cursoWnd, 20);
+                var cursorOwner = GetOwner(cursoWnd);
+                var cursorOwner1 = API.GetWindow(cursoWnd, API.GETWINDOW_CMD.GW_OWNER);
+                var co = GetCMDRects(cursoWnd);
+                var conext = API.GetWindow(cursoWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                var conextrect = GetWindowRect(conext);
+                var nextNext = API.GetWindow(conext, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                var nextNextRect = GetWindowRect(nextNext);
+
+                var cursorWinInfo = GetWindowInfo(cursoWnd);
+                var coInfo = GetWindowInfo(conext);
+                var nextInfo = GetWindowInfo(nextNext);
+
+
+                var cursorParent = API.GetParent(cursoWnd);
+                var cursorParentRect = GetWindowRectAndText(cursorParent);
+
+                var cursorNexts = GetNextWindowTextAndRects(cursoWnd);
+                var cursorPrevs = GetPrevWindowTextAndRects(cursoWnd);
+
+                var cursorAancestorParent = GetWindowRectAndText(API.GetAncestor(cursoWnd, API.AncestorType.GA_PARENT));
+                var cursorAancestorRoot = GetWindowRectAndText(API.GetAncestor(cursoWnd, API.AncestorType.GA_ROOT));
+                var cursorAancestorRootOwner = GetWindowRectAndText(API.GetAncestor(cursoWnd, API.AncestorType.GA_ROOTOWNER));
+
+                var aa = GetWindowEx(cursoWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
+                var bb = GetWindowEx(API.GetAncestor(cursoWnd, API.AncestorType.GA_PARENT), API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
 
             }
         }
 
+
+
+        /// <summary>
+        /// 指定したWindowStyleを持つWindow全部取得
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="cmd">Next or Prev</param>
+        /// <returns></returns>
+        private (List<IntPtr> ptrs, List<API.RECT> rects, List<string> strs) GetAnyStyleWindows(IntPtr hWnd, API.GETWINDOW_CMD cmd, API.WINDOW_STYLE winStyle)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> rects = new();
+            List<string> strs = new();
+            var hWnds = GetWindowsNextOrPrev(hWnd, cmd);
+            foreach (var item in hWnds)
+            {
+                if (IsAnyStyleWindow(item, winStyle))
+                {
+                    ptrs.Add(item);
+                    rects.Add(GetWindowRect(item));
+                    strs.Add(GetWindowText(item));
+                }
+            }
+            return (ptrs, rects, strs);
+        }
+
+
+        /// <summary>
+        /// Popup属性を持つWindow全部取得
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="cmd">Next or Prev</param>
+        /// <returns></returns>
+        private (List<IntPtr> ptrs, List<API.RECT> rects, List<string> strs) GetPopupWindows(IntPtr hWnd, API.GETWINDOW_CMD cmd)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> rects = new();
+            List<string> strs = new();
+            var hWnds = GetWindowsNextOrPrev(hWnd, cmd);
+            foreach (var item in hWnds)
+            {
+                if (IsPopupWindow(item))
+                {
+                    ptrs.Add(item);
+                    rects.Add(GetWindowRect(item));
+                    strs.Add(GetWindowText(item));
+                }
+            }
+            return (ptrs, rects, strs);
+        }
+
+        private List<IntPtr> GetWindowsNextOrPrev(IntPtr hWnd, API.GETWINDOW_CMD cmd)
+        {
+            List<IntPtr> ptrs = new();
+            IntPtr temp = hWnd;
+            do
+            {
+                ptrs.Add(temp);
+                temp = API.GetWindow(temp, cmd);
+            } while (temp != IntPtr.Zero);
+
+            return ptrs;
+        }
+        //同じOwnerWindowを持つWindow全部取得、これだと通常アプリの右クリックメニューは取得できない
+        private (List<IntPtr> ptrs, List<API.RECT> rects, List<string> strs) GetWindowsWithSameOwner(IntPtr hWnd, IntPtr owner, API.GETWINDOW_CMD cmd)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> rects = new();
+            List<string> strs = new();
+            var hWnds = GetWindowsNextOrPrev(hWnd, cmd);
+
+            foreach (var item in hWnds)
+            {
+                var temp = GetOwner(item);
+                if (temp.ptr == owner)
+                {
+                    ptrs.Add(item);
+                    rects.Add(GetWindowRect(item));
+                    strs.Add(GetWindowText(item));
+                }
+            }
+            return (ptrs, rects, strs);
+        }
+        //タイトル付きのOwnerまでの、すべてのWindowを取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToTextOwner(IntPtr ptr, int loopCount)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
+
+            var temp = API.GetWindow(ptr, API.GETWINDOW_CMD.GW_OWNER);
+
+            //Ownerが無くなるまで辿る
+            while (temp != IntPtr.Zero && count < loopCount)
+            {
+                ptrs.Add(temp);
+                res.Add(GetWindowRect(temp));
+                strs.Add(GetWindowText(temp));
+
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_OWNER);
+                count++;
+            }
+            return (ptrs, res, strs);
+        }
         //タイトル付きのOwnerすべてを取得
         private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetOwners(IntPtr ptr, int loopCount)
         {
@@ -472,6 +617,15 @@ namespace _20210101_GetWindow
         }
 
         //WindowのStyleがPopupならtrueを返す
+        private bool IsAnyStyleWindow(IntPtr hWnd, API.WINDOW_STYLE wStyle)
+        {
+            API.WINDOWINFO wi = GetWindowInfo(hWnd);
+            uint uStyle = (uint)wStyle;
+            var style = wi.dwStyle & uStyle;
+            return style == uStyle;
+        }
+
+        //WindowのStyleがPopupならtrueを返す
         private bool IsPopupWindow(IntPtr hWnd)
         {
             API.WINDOWINFO wi = GetWindowInfo(hWnd);
@@ -486,6 +640,15 @@ namespace _20210101_GetWindow
             wi.cbSize = Marshal.SizeOf(wi);
             API.GetWindowInfo(hWnd, ref wi);
             return wi;
+        }
+
+        //WindowのStyleがPopupならtrueを返す
+        private bool IsPopupWindowWindow(IntPtr hWnd)
+        {
+            API.WINDOWINFO wi = GetWindowInfo(hWnd);
+            uint flag = (uint)API.WINDOW_STYLE.WS_POPUPWINDOW;
+            var style = wi.dwStyle & flag;
+            return style == flag;
         }
 
 
@@ -865,7 +1028,7 @@ namespace _20210101_GetWindow
             public bool fBarFocused;
             public bool fFocused;
         }
-        public enum MenuObjectId:long
+        public enum MenuObjectId : long
         {
             OBJID_CLIENT = 0xFFFFFFFC,
             OBJID_MENU = 0xFFFFFFFD,
@@ -875,6 +1038,22 @@ namespace _20210101_GetWindow
         [DllImport("user32.dll")]
         internal static extern IntPtr GetMenuItemRect(IntPtr hWnd, IntPtr hMenu, uint uItem, out RECT rect);
 
+
+        //指定座標にあるウィンドウのハンドル取得
+        [DllImport("user32.dll")]
+        internal static extern IntPtr WindowFromPoint(POINT pOINT);
+
+        //祖先ウィンドウを取得
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetAncestor(IntPtr hWnd, AncestorType type);
+
+        public enum AncestorType
+        {
+            GA_PARENT = 1,
+            GA_ROOT = 2,//Parentを辿ってルートを取得
+            GA_ROOTOWNER = 3,//GetParentを使ってルートを取得
+
+        }
 
 
 
@@ -916,5 +1095,8 @@ namespace _20210101_GetWindow
         [DllImport("user32.dll")]
         internal static extern int UnregisterHotKey(IntPtr hWnd, int id);
 
+        //マウスカーソル座標
+        [DllImport("user32.dll")]
+        internal static extern bool GetCursorPos(out POINT lpPoint);
     }
 }
