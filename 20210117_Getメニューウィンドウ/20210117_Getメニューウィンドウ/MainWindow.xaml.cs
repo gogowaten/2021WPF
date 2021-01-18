@@ -27,7 +27,7 @@ namespace _20210117_Getメニューウィンドウ
         private IntPtr MyWindowHandle;//アプリのハンドル
 
         //ウィンドウ探査loopの回数上限値
-        private const int LOOP_LIMIT = 20;
+        private const int LOOP_LIMIT = 10;
 
         public MainWindow()
         {
@@ -82,9 +82,14 @@ namespace _20210117_Getメニューウィンドウ
             if (msg.message != API.WM_HOTKEY) return;
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
-                _ = API.GetCursorPos(out API.POINT cursorPoint);
                 //WindowInfos(API.GetForegroundWindow());
-                WindowInfos(API.WindowFromPoint(cursorPoint));
+
+                //_ = API.GetCursorPos(out API.POINT cursorPoint);
+                //WindowInfos(API.WindowFromPoint(cursorPoint));
+
+                //WindowInfos(API.GetMenu(API.GetForegroundWindow()));
+
+                WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
 
             }
 
@@ -93,16 +98,70 @@ namespace _20210117_Getメニューウィンドウ
         private void WindowInfos(IntPtr hWnd)
         {
             var info = GetWindowRectAndText(hWnd);
-            var toWithTextParentWindow = GetWindowsToWithTextParent(hWnd, LOOP_LIMIT);
-            var toWithTextOwnerWindow = GetWindowsToWithTextOwner(hWnd, LOOP_LIMIT);
+            var parentWindows = GetWindowsParent(hWnd, LOOP_LIMIT);
+            var nextWindows = GetWindowsCMD(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT);
+            var ownerWindows = GetWindowsCMD(hWnd, API.GETWINDOW_CMD.GW_OWNER, LOOP_LIMIT);
             var ancestorParent = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_PARENT));
             var ancestorRoot = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOT));
             var ancestorRootOwner = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOTOWNER));
 
         }
 
-        //タイトル付きParentWindowまですべてのWindowを取得
-        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToWithTextParent(IntPtr hWnd, int loopCount)
+        //
+        /// <summary>
+        /// GetWindowでCMDを指定して指定回数まで遡って、すべて取得
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="cmd">API.GETWINDOW_CMDのどれかを指定</param>
+        /// <param name="loopCount">取得ウィンドウ数上限</param>
+        /// <returns></returns>
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsCMD(IntPtr hWnd, API.GETWINDOW_CMD cmd, int loopCount)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
+
+            var temp = API.GetWindow(hWnd, cmd);
+
+            //cmdが一致するウィンドウが無くなるまで辿る
+            while (temp != IntPtr.Zero && count < loopCount)
+            {
+                ptrs.Add(temp);
+                res.Add(GetWindowRect(temp));
+                strs.Add(GetWindowText(temp));
+
+                temp = API.GetWindow(temp, cmd);
+                count++;
+            }
+            return (ptrs, res, strs);
+        }
+
+        //NextWindowを指定回数まで遡って、すべて取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToWithTextNext(IntPtr hWnd, int loopCount)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
+
+            var temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
+
+            //Ownerが無くなるまで辿る
+            while (temp != IntPtr.Zero && count < loopCount)
+            {
+                ptrs.Add(temp);
+                res.Add(GetWindowRect(temp));
+                strs.Add(GetWindowText(temp));
+
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                count++;
+            }
+            return (ptrs, res, strs);
+        }
+
+        //ParentWindowを指定回数まで遡って、すべて取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsParent(IntPtr hWnd, int loopCount)
         {
             List<IntPtr> ptrs = new();
             List<API.RECT> res = new();
@@ -123,8 +182,8 @@ namespace _20210117_Getメニューウィンドウ
             }
             return (ptrs, res, strs);
         }
-        
-        //タイトル付きParentWindowまですべてのWindowを取得
+
+        //OwnerWindowを指定回数まで遡って、すべて取得
         private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToWithTextOwner(IntPtr hWnd, int loopCount)
         {
             List<IntPtr> ptrs = new();
@@ -141,7 +200,7 @@ namespace _20210117_Getメニューウィンドウ
                 res.Add(GetWindowRect(temp));
                 strs.Add(GetWindowText(temp));
 
-                temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_OWNER);
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_OWNER);
                 count++;
             }
             return (ptrs, res, strs);
