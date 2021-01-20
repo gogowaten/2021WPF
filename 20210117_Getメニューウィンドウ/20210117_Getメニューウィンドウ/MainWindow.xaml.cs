@@ -32,6 +32,8 @@ namespace _20210117_Getメニューウィンドウ
         public MainWindow()
         {
             InitializeComponent();
+
+            this.Top = 0; this.Left = 0;
             MyInitializeHotKey();
             //ホットキーにPrintScreenキーを登録
             ChangeHotKey(Key.PrintScreen, HOTKEY_ID1);
@@ -82,14 +84,20 @@ namespace _20210117_Getメニューウィンドウ
             if (msg.message != API.WM_HOTKEY) return;
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
-                //WindowInfos(API.GetForegroundWindow());
 
+
+                WindowInfos(API.GetForegroundWindow());
+
+                //マウスカーソル下のWindow
                 //_ = API.GetCursorPos(out API.POINT cursorPoint);
                 //WindowInfos(API.WindowFromPoint(cursorPoint));
 
+                //ForeのMenu
                 //WindowInfos(API.GetMenu(API.GetForegroundWindow()));
 
-                WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+                //GetWindowでForeのENABLEDPOPUP
+                //WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+
 
             }
 
@@ -97,7 +105,7 @@ namespace _20210117_Getメニューウィンドウ
 
         private void WindowInfos(IntPtr hWnd)
         {
-            var info = GetWindowRectAndText(hWnd);
+            var wnd = GetWindowRectAndText(hWnd);
             var parentWindows = GetWindowsParent(hWnd, LOOP_LIMIT);
             var nextWindows = GetWindowsCMD(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT);
             var ownerWindows = GetWindowsCMD(hWnd, API.GETWINDOW_CMD.GW_OWNER, LOOP_LIMIT);
