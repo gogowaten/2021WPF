@@ -84,9 +84,29 @@ namespace _20210117_Getメニューウィンドウ
             if (msg.message != API.WM_HOTKEY) return;
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
+                //var aa = GetWindowRectAndText(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_CHILD));
+                //var bb = GetWindowRectAndText(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_HWNDPREV));
+                //var cc = GetWindowRectAndText(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_HWNDNEXT));
+                //var dd = GetWindowRectAndText(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_HWNDFIRST));
+                //var ee = GetWindowRectAndText(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_HWNDLAST));
+                //var ff = GetWindowRectAndText(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_OWNER));
+                //var desktop = GetWindowRectAndText(API.GetDesktopWindow());
+                //var desktopPop = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+                //var desktopChi = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_CHILD));
+                //var desktopFir = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_HWNDFIRST));
+                //var desktopLas = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_HWNDLAST));
+                //var desktopNex = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_HWNDNEXT));
+                //var desktopPre = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_HWNDPREV));
+                //var desktopOwn = GetWindowRectAndText(API.GetWindow(desktop.Item1, API.GETWINDOW_CMD.GW_OWNER));
+                //var shell = GetWindowRectAndText(API.GetShellWindow());
+                //var topw = GetWindowRectAndText(API.GetTopWindow(IntPtr.Zero));
+                //var topf = GetWindowRectAndText(API.GetTopWindow(API.GetForegroundWindow()));
 
 
-                WindowInfos(API.GetForegroundWindow());
+
+
+
+                //WindowInfos(API.GetForegroundWindow());
 
                 //マウスカーソル下のWindow
                 //_ = API.GetCursorPos(out API.POINT cursorPoint);
@@ -96,7 +116,7 @@ namespace _20210117_Getメニューウィンドウ
                 //WindowInfos(API.GetMenu(API.GetForegroundWindow()));
 
                 //GetWindowでForeのENABLEDPOPUP
-                //WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+                WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
 
 
             }
@@ -112,6 +132,10 @@ namespace _20210117_Getメニューウィンドウ
             var ancestorParent = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_PARENT));
             var ancestorRoot = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOT));
             var ancestorRootOwner = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOTOWNER));
+
+            var submenu0 = GetWindowRectAndText(API.GetSubMenu(hWnd, 0));
+            var submenu1 = GetWindowRectAndText(API.GetSubMenu(hWnd, 1));
+            var submenu2 = GetWindowRectAndText(API.GetSubMenu(hWnd, -1));
 
         }
 

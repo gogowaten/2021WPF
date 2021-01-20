@@ -197,6 +197,18 @@ namespace _20210117_Getメニューウィンドウ
 
         }
 
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetDesktopWindow();
+
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetShellWindow();
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetSubMenu(IntPtr hWnd, int nPos);
+
+
+
 
 
         //public delegate bool EnumWindowsDelegate(IntPtr hWnd, IntPtr lparam, List<IntPtr> intPtrs);
