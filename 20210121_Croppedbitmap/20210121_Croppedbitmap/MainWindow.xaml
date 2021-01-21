@@ -1,0 +1,27 @@
+﻿<Window x:Class="_20210121_Croppedbitmap.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_20210121_Croppedbitmap"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="750" Width="800">
+  <Window.Resources>
+    <BitmapImage x:Key="masterImage" UriSource="D:\ブログ用\テスト用画像\赤と青のグラデーション.png"/>
+    <CroppedBitmap x:Key="croppedImage" Source="{StaticResource masterImage}" SourceRect="0 120 256 50"/>
+    <Style TargetType="Image">
+      <Setter Property="Margin" Value="10"/>
+    </Style>
+  </Window.Resources>
+    <Grid UseLayoutRounding="True">
+    <StackPanel x:Name="MyStackPanel">
+      <Image Source="{StaticResource masterImage}" Stretch="None"/>
+      <Image Source="{StaticResource croppedImage}" Stretch="None"/>      
+      <Image Stretch="None">
+        <Image.Source>
+          <CroppedBitmap Source="{StaticResource croppedImage}" SourceRect="128 0 128 50"/>
+        </Image.Source>
+      </Image>
+    </StackPanel>
+  </Grid>
+</Window>
