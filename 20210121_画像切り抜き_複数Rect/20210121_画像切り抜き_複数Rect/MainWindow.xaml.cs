@@ -20,9 +20,16 @@ namespace _20210121_画像切り抜き_複数Rect
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Rect MyR1;
+        private Rect MyR2;
+        private Rect MyR3;
+        private List<Rect> MyRects;
         private Geometry MyGeometry1;
         private Geometry MyGeometry2;
         private Geometry MyGeometry3;
+        private List<Geometry> MyGeometryList123;
+        private List<Geometry> MyGeometryList132;
+        private BitmapSource MyBitmapSource;
 
         public MainWindow()
         {
@@ -30,37 +37,41 @@ namespace _20210121_画像切り抜き_複数Rect
 
             MyInitialize();
 
+            BB(MyBitmapSource, MyRects);
+
         }
 
         private void MyInitialize()
         {
+            MyR1 = new Rect(5, 110, 85, 60);
+            MyR2 = new Rect(65, 135, 130, 130);
+            MyR3 = new Rect(270, 50, 135, 130);
+            MyRects = new() { MyR1, MyR2, MyR3 };
 
-            MyGeometry1 = new RectangleGeometry(new Rect(5, 110, 85, 60));
-            MyGeometry2 = new RectangleGeometry(new Rect(65, 135, 130, 130));
-            MyGeometry3 = new RectangleGeometry(new Rect(270, 50, 135, 130));
+            MyGeometry1 = new RectangleGeometry(MyR1);
+            MyGeometry2 = new RectangleGeometry(MyR2);
+            MyGeometry3 = new RectangleGeometry(MyR3);
+            MyGeometryList123 = new List<Geometry>
+            {
+                MyGeometry1,
+                MyGeometry2,
+                MyGeometry3
+            };
+            MyGeometryList132 = new List<Geometry>
+            {
+                MyGeometry1,
+                MyGeometry3,
+                MyGeometry2
+            };
 
 
 
-            GeometryGroup g12 = new GeometryGroup();
-            g12.Children.Add(MyGeometry1);
-            g12.Children.Add(MyGeometry2);
-            g12.Children.Add(MyGeometry3);
 
-
-
-
-
-            CombinedGeometry ff1 = new CombinedGeometry(GeometryCombineMode.Union, MyGeometry1, MyGeometry2);
-            ff1 = new CombinedGeometry(GeometryCombineMode.Union, ff1, MyGeometry3);
-            CombinedGeometry ff2 = new CombinedGeometry(GeometryCombineMode.Union, MyGeometry1, MyGeometry3);
-            ff2 = new CombinedGeometry(GeometryCombineMode.Union, ff2, MyGeometry2);
-
-            CombinedGeometry hh1 = new CombinedGeometry(GeometryCombineMode.Union, MyGeometry1, MyGeometry2);
-            PathGeometry hh2 = CombinedGeometry.Combine(hh1, MyGeometry3, GeometryCombineMode.Union, null);
 
 
             var img = new BitmapImage(new Uri(@"D:\ブログ用\チェック用2\WP_20201222_10_21_40_Pro_2020_12_22_午後わてん_ラーメン.jpg"));
             MyOriginImage.Source = img;
+            MyBitmapSource = img;
         }
 
         private BitmapSource CroppedBitmapEx1(BitmapSource source, Geometry geometry)
@@ -106,7 +117,87 @@ namespace _20210121_画像切り抜き_複数Rect
             return bmp;
         }
 
+        private void BB(BitmapSource source, List<Rect> rects)
+        {
+            var b1 = MyCroppe(source, rects[0]);
+            var b2 = MyCroppe(source, rects[1]);
+            var b3 = MyCroppe(source, rects[2]);
 
+            //var rr = Rect.Union(MyR1, MyR2);
+            //rr = Rect.Union(rr, MyR3);
+            var dv = new DrawingVisual();
+            //dv.Offset = new Vector(-rr.X, -rr.Y);
+            
+            using (var dc = dv.RenderOpen())
+            {
+                //var ib = new ImageBrush(b1);
+                dc.DrawImage(b1, rects[0]);
+                dc.DrawImage(b2, rects[1]);
+                dc.DrawImage(b3, rects[2]);
+            }
+
+            var rr = dv.ContentBounds;rr
+            rr.Offset(-rr.Left, -rr.Top);
+            int w = Ceiling(rr.Width);
+            int h = Ceiling(rr.Height);
+            var rb = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
+            rb.Render(dv);
+
+            var dd = dv.Drawing;
+            var ee = dv.Children;
+            var ff = dv.Clip;
+            var gg = dv.ContentBounds;
+            var hh = dv.Drawing;
+            
+        }
+        private BitmapSource MyCroppe(BitmapSource source, Rect rect)
+        {
+            return new CroppedBitmap(source, new Int32Rect(
+                Sisyagonyuu(rect.X), Sisyagonyuu(rect.Y), Sisyagonyuu(rect.Width), Sisyagonyuu(rect.Height)));
+        }
+        private int Sisyagonyuu(double value)
+        {
+            return (int)(value + 0.5);
+        }
+        private int Ceiling(double value)
+        {
+            return (int)Math.Ceiling(value);
+        }
+
+        //Geometryの連結方法1～3
+        //方法1
+        //PathGeometryにAddGeometryで連結、
+        //領域の重なった部分の処理ルールはFillRuleを使う、Nonzeroでor、EvenOddでxorになると思う
+        private Geometry CombineGeometry1(List<Geometry> geometries, FillRule fillRule = FillRule.Nonzero)
+        {
+            PathGeometry pg = new() { FillRule = fillRule };
+            foreach (var item in geometries)
+            {
+                pg.AddGeometry(item);
+            }
+            return pg;
+        }
+        //方法2
+        //GeometryGroupを使う、方法1同様重なった領域はFillRuleで指定
+        private Geometry CombineGeometry2(List<Geometry> geometries, FillRule fillRule = FillRule.Nonzero)
+        {
+            var gg = new GeometryGroup() { FillRule = fillRule };
+            gg.Children = new GeometryCollection(geometries);
+            return gg;
+        }
+        //方法3
+        //GeometryのCombineを使う方法
+        //整数のRectでも組み合わせる順番によって、小数点以下(誤差)が発生したりしなかったりする、という欠点があるけど
+        //領域の重なった部分の処理は柔軟なGeometryCombineModeが使える
+        private Geometry CombineGeometry3(List<Geometry> geometries, GeometryCombineMode mode = GeometryCombineMode.Union)
+        {
+            PathGeometry pg = Geometry.Combine(geometries[0], geometries[1], mode, null);
+            for (int i = 2; i < geometries.Count; i++)
+            {
+                pg = Geometry.Combine(pg, geometries[i], mode, null);
+            }
+            return pg;
+        }
 
 
         private void MyButton1_Click(object sender, RoutedEventArgs e)
@@ -125,36 +216,12 @@ namespace _20210121_画像切り抜き_複数Rect
 
         private void MyButton3_Click(object sender, RoutedEventArgs e)
         {
-            ////GeometryのCombineを使う方法
-            ////整数のRectでも組み合わせる順番によって、小数点以下が発生したりしなかったりする、という欠点がある
-            //PathGeometry geo = Geometry.Combine(MyGeometry1, MyGeometry3, GeometryCombineMode.Union, null);
-            //geo = Geometry.Combine(geo, MyGeometry2, GeometryCombineMode.Union, null);
-            //MyImage.Source = CroppedBitmapEx1((BitmapSource)MyOriginImage.Source, geo);
+            var pg = CombineGeometry1(MyGeometryList132);//おk
+            //var pg = CombineGeometry2(MyGeometryList132);//おk
+            //var pg = CombineGeometry3(MyGeometryList132);//ずれる
 
-            ////GeometryGroupを使う方法
-            ////GeometryCombineModeは指定できないけど
-            ////FillRuleのNonzeroでUnionと同じ効果、EvenOddでXorと同じ効果
-            //GeometryGroup gg = new() { FillRule = FillRule.Nonzero };
-            //gg.Children.Add(MyGeometry1);
-            //gg.Children.Add(MyGeometry3);
-            //gg.Children.Add(MyGeometry2);
-            //MyImage.Source = CroppedBitmapEx1((BitmapSource)MyOriginImage.Source, gg);
-
-            ////GetFlattenedPathGeometryを使う方法、これもGeometryCombineModeは指定できないのでFillRuleを使う
-            //PathGeometry pg = MyGeometry1.GetFlattenedPathGeometry();
-            //pg.AddGeometry(MyGeometry3);
-            //pg.AddGeometry(MyGeometry2);
-            //pg.FillRule = FillRule.Nonzero;
-            //MyImage.Source = CroppedBitmapEx1((BitmapSource)MyOriginImage.Source, pg);
-
-            //PathGeometryを直接使う方法、これもGeometryCombineModeは指定できないのでFillRuleを使う
-            PathGeometry pg = new() { FillRule = FillRule.Nonzero };
-            pg.AddGeometry(MyGeometry1);
-            pg.AddGeometry(MyGeometry3);
-            pg.AddGeometry(MyGeometry2);
             MyImage.Source = CroppedBitmapEx1((BitmapSource)MyOriginImage.Source, pg);
 
-            
         }
     }
 }
