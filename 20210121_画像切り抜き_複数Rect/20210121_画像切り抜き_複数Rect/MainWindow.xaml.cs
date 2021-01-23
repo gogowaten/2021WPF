@@ -35,6 +35,7 @@ namespace _20210121_画像切り抜き_複数Rect
         {
             InitializeComponent();
 
+            
             MyInitialize();
 
             BB(MyBitmapSource, MyRects);
@@ -117,39 +118,29 @@ namespace _20210121_画像切り抜き_複数Rect
             return bmp;
         }
 
-        private void BB(BitmapSource source, List<Rect> rects)
+        private void BB(BitmapSource source, List<Rect> rectList)
         {
-            var b1 = MyCroppe(source, rects[0]);
-            var b2 = MyCroppe(source, rects[1]);
-            var b3 = MyCroppe(source, rects[2]);
-
-            //var rr = Rect.Union(MyR1, MyR2);
-            //rr = Rect.Union(rr, MyR3);
             var dv = new DrawingVisual();
-            //dv.Offset = new Vector(-rr.X, -rr.Y);
             
-            using (var dc = dv.RenderOpen())
+            using (DrawingContext dc = dv.RenderOpen())
             {
-                //var ib = new ImageBrush(b1);
-                dc.DrawImage(b1, rects[0]);
-                dc.DrawImage(b2, rects[1]);
-                dc.DrawImage(b3, rects[2]);
+                foreach (var rect in rectList)
+                {
+                    dc.DrawImage(MyCroppe(source, rect), rect);                    
+                }
             }
 
-            var rr = dv.ContentBounds;rr
-            rr.Offset(-rr.Left, -rr.Top);
-            int w = Ceiling(rr.Width);
-            int h = Ceiling(rr.Height);
-            var rb = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
-            rb.Render(dv);
+            dv.Offset = new Vector(-dv.ContentBounds.X, -dv.ContentBounds.Y);
 
-            var dd = dv.Drawing;
-            var ee = dv.Children;
-            var ff = dv.Clip;
-            var gg = dv.ContentBounds;
-            var hh = dv.Drawing;
-            
+            var bmp = new RenderTargetBitmap(
+                (int)Math.Ceiling(dv.ContentBounds.Width),
+                (int)Math.Ceiling(dv.ContentBounds.Height),
+                96, 96, PixelFormats.Pbgra32);
+
+            bmp.Render(dv);
         }
+
+     
         private BitmapSource MyCroppe(BitmapSource source, Rect rect)
         {
             return new CroppedBitmap(source, new Int32Rect(
