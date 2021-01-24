@@ -35,7 +35,7 @@ namespace _20210121_画像切り抜き_複数Rect
         {
             InitializeComponent();
 
-            
+
             MyInitialize();
 
             BB(MyBitmapSource, MyRects);
@@ -121,12 +121,12 @@ namespace _20210121_画像切り抜き_複数Rect
         private void BB(BitmapSource source, List<Rect> rectList)
         {
             var dv = new DrawingVisual();
-            
+
             using (DrawingContext dc = dv.RenderOpen())
             {
                 foreach (var rect in rectList)
                 {
-                    dc.DrawImage(MyCroppe(source, rect), rect);                    
+                    dc.DrawImage(MyCroppe(source, rect), rect);
                 }
             }
 
@@ -140,7 +140,7 @@ namespace _20210121_画像切り抜き_複数Rect
             bmp.Render(dv);
         }
 
-     
+
         private BitmapSource MyCroppe(BitmapSource source, Rect rect)
         {
             return new CroppedBitmap(source, new Int32Rect(
