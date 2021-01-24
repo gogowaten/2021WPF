@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210124_画像の切り抜き_複数画像を1枚にする"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="800">
+        Title="MainWindow" Height="650" Width="600">
   <Window.Resources>
     <Style TargetType="Image">
       <Setter Property="Margin" Value="10"/>

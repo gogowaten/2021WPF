@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace _20210124_画像の切り抜き_複数画像を1枚にする
 {
@@ -22,13 +13,13 @@ namespace _20210124_画像の切り抜き_複数画像を1枚にする
             InitializeComponent();
 
             MyInitialize();
-
         }
 
         private void MyInitialize()
         {
             //元の画像の読み込みと表示
-            var img = new BitmapImage(new Uri(@"D:\ブログ用\チェック用2\WP_20201222_10_21_40_Pro_2020_12_22_午後わてん_ラーメン.jpg"));
+            var img = new BitmapImage(new Uri(
+                @"D:\ブログ用\チェック用2\WP_20201222_10_21_40_Pro_2020_12_22_午後わてん_ラーメン.jpg"));
             MyOriginImage.Source = img;
 
             //切り抜き範囲のリスト作成
@@ -39,8 +30,10 @@ namespace _20210124_画像の切り抜き_複数画像を1枚にする
                 new Rect(270, 50, 135, 130),
             };
 
-            //切り抜いて表示
-            MyImage.Source = CroppedBitmapFromRects(img, MyRectList);
+            //切り抜いて
+            BitmapSource bmp = CroppedBitmapFromRects(img, MyRectList);
+            MyImage.Source = bmp;//表示
+            SaveImage(bmp);//保存
         }
 
         /// <summary>
@@ -83,6 +76,7 @@ namespace _20210124_画像の切り抜き_複数画像を1枚にする
             return new Int32Rect((int)re.X, (int)re.Y, (int)re.Width, (int)re.Height);
         }
 
+        //今回は未使用
         //RectからInt32Rect作成、小数点以下四捨五入
         private Int32Rect RectToIntRectWith簡易四捨五入(Rect re)
         {
@@ -100,6 +94,19 @@ namespace _20210124_画像の切り抜き_複数画像を1枚にする
             }
         }
 
+        //bitmapをpng画像ファイルで保存
+        private void SaveImage(BitmapSource source)
+        {
+            PngBitmapEncoder encoder = new();
+            encoder.Frames.Add( BitmapFrame.Create(source));
+            string path = DateTime.Now.ToString("HH時mm分ss秒");
+            path = "cropped_" + path + ".png";
+            using (var pp = new System.IO.FileStream(
+                path, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            {
+                encoder.Save(pp);
+            }
+        }
 
     }
 }
