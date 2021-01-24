@@ -4,6 +4,9 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
+//WPF、画像から複数箇所を矩形(Rect)に切り抜いて、それぞれ位置を合わせて1枚の画像にしてファイルに保存する - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/01/24/233657
+
 namespace _20210124_画像の切り抜き_複数画像を1枚にする
 {
     public partial class MainWindow : Window
