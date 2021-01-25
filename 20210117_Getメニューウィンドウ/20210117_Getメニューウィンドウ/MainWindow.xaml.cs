@@ -116,12 +116,82 @@ namespace _20210117_Getメニューウィンドウ
                 //WindowInfos(API.GetMenu(API.GetForegroundWindow()));
 
                 //GetWindowでForeのENABLEDPOPUP
-                WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+                //WindowInfos(API.GetWindow(API.GetForegroundWindow(), API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
 
-
+                var reList = GetRects();
             }
 
         }
+
+        private List<Rect> GetRects()
+        {
+            //カーソル下のウィンドウを基準にRootOwnerWindowまでのRectを収集
+            _ = API.GetCursorPos(out API.POINT myPoint);
+            IntPtr w = API.WindowFromPoint(myPoint);
+            var neko = GetWindowRectAndText(w);
+            var row = API.GetAncestor(w, API.AncestorType.GA_ROOTOWNER);
+            List<Rect> reList = new();
+            //var temp = GetWindowsOwner(w, 20);
+            //var temp = GetWindowsParent(w, 20);
+            //var temp = GetWindowsToWithTextOwner(w, 20);
+            //var temp = GetWindowsToWithTextNexts(w, 20);
+            var temp = GetWindowsToWithTextAncestor(w, 20, API.AncestorType.GA_ROOT);
+            foreach (var item in temp.res)
+            {
+                reList.Add(MyApiRectToRect(item));
+            }
+            List<string> strList = new();
+            for (int i = 0; i < temp.ptrs.Count; i++)
+            {
+                strList.Add(GetWindowText(API.GetAncestor(temp.ptrs[i], API.AncestorType.GA_ROOTOWNER)));
+            }
+            return reList;
+        }
+        private Rect MyApiRectToRect(API.RECT rect)
+        {
+            return new Rect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+        }
+
+        /// <summary>
+        /// 複数Rect範囲を組み合わせた形にbitmapを切り抜く
+        /// </summary>
+        /// <param name="source">元の画像</param>
+        /// <param name="rectList">Rectのコレクション</param>
+        /// <returns></returns>
+        private BitmapSource CroppedBitmapFromRects(BitmapSource source, List<Rect> rectList)
+        {
+            var dv = new DrawingVisual();
+
+            using (DrawingContext dc = dv.RenderOpen())
+            {
+                //それぞれのRect範囲で切り抜いた画像を描画していく
+                foreach (var rect in rectList)
+                {
+                    dc.DrawImage(new CroppedBitmap(source, RectToIntRectWith切り捨て(rect)), rect);
+                }
+            }
+
+            //描画位置調整
+            dv.Offset = new Vector(-dv.ContentBounds.X, -dv.ContentBounds.Y);
+
+            //bitmap作成、縦横サイズは切り抜き後の画像全体がピッタリ収まるサイズにする
+            //PixelFormatsはPbgra32で決め打ち、これ以外だとエラーになるかも、
+            //画像を読み込んだbitmapImageのPixelFormats.Bgr32では、なぜかエラーになった
+            var bmp = new RenderTargetBitmap(
+                (int)Math.Ceiling(dv.ContentBounds.Width),
+                (int)Math.Ceiling(dv.ContentBounds.Height),
+                96, 96, PixelFormats.Pbgra32);
+
+            bmp.Render(dv);
+            return bmp;
+        }
+
+        //RectからInt32Rect作成、小数点以下切り捨て編
+        private Int32Rect RectToIntRectWith切り捨て(Rect re)
+        {
+            return new Int32Rect((int)re.X, (int)re.Y, (int)re.Width, (int)re.Height);
+        }
+
 
         private void WindowInfos(IntPtr hWnd)
         {
@@ -169,8 +239,61 @@ namespace _20210117_Getメニューウィンドウ
             return (ptrs, res, strs);
         }
 
+
+        //AncestorWindowを指定回数まで遡って、すべて取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToWithTextAncestor(IntPtr hWnd, int loopCount,API.AncestorType type)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
+
+            IntPtr temp = hWnd;
+            string text;
+
+            //text付きNextが見つかるまで辿る
+            do
+            {
+                ptrs.Add(temp);
+                res.Add(GetWindowRect(temp));
+                text = GetWindowText(temp);
+                strs.Add(text);
+
+                temp = API.GetAncestor(temp, type);
+                count++;
+            } while (text == "" && temp != IntPtr.Zero && count < loopCount);
+
+            return (ptrs, res, strs);
+        }
+        
         //NextWindowを指定回数まで遡って、すべて取得
-        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToWithTextNext(IntPtr hWnd, int loopCount)
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsToWithTextNexts(IntPtr hWnd, int loopCount)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
+
+            IntPtr temp = hWnd;
+            string text;
+
+            //text付きNextが見つかるまで辿る
+            do
+            {
+                ptrs.Add(temp);
+                res.Add(GetWindowRect(temp));
+                text = GetWindowText(temp);
+                strs.Add(text);
+
+                temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
+                count++;
+            } while (text == "" && temp != IntPtr.Zero && count < loopCount);
+
+            return (ptrs, res, strs);
+        }
+        
+        //NextWindowをすべて取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsNext(IntPtr hWnd, int loopCount)
         {
             List<IntPtr> ptrs = new();
             List<API.RECT> res = new();
@@ -179,7 +302,7 @@ namespace _20210117_Getメニューウィンドウ
 
             var temp = API.GetWindow(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT);
 
-            //Ownerが無くなるまで辿る
+            //Nextが無くなるまで辿る
             while (temp != IntPtr.Zero && count < loopCount)
             {
                 ptrs.Add(temp);
@@ -192,18 +315,19 @@ namespace _20210117_Getメニューウィンドウ
             return (ptrs, res, strs);
         }
 
-        //ParentWindowを指定回数まで遡って、すべて取得
+    
+
+        //すべてのParentWindowを指定回数まで遡って取得
         private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsParent(IntPtr hWnd, int loopCount)
         {
             List<IntPtr> ptrs = new();
             List<API.RECT> res = new();
             List<string> strs = new();
             int count = 0;
+            IntPtr temp = hWnd;
 
-            var temp = API.GetParent(hWnd);
-
-            //Ownerが無くなるまで辿る
-            while (temp != IntPtr.Zero && count < loopCount)
+            //Parentが無くなるまで辿る
+            do
             {
                 ptrs.Add(temp);
                 res.Add(GetWindowRect(temp));
@@ -211,7 +335,31 @@ namespace _20210117_Getメニューウィンドウ
 
                 temp = API.GetParent(temp);
                 count++;
-            }
+            } while (temp != IntPtr.Zero && count < loopCount);
+
+            return (ptrs, res, strs);
+        }
+        
+        //すべてのOwnerWindowを指定回数まで遡って取得
+        private (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) GetWindowsOwner(IntPtr hWnd, int loopCount)
+        {
+            List<IntPtr> ptrs = new();
+            List<API.RECT> res = new();
+            List<string> strs = new();
+            int count = 0;
+            IntPtr temp = hWnd;
+
+            //Ownerが無くなるまで辿る
+            do
+            {
+                ptrs.Add(temp);
+                res.Add(GetWindowRect(temp));                
+                strs.Add(GetWindowText(temp));
+
+                temp = API.GetWindow(temp,API.GETWINDOW_CMD.GW_OWNER);
+                count++;
+            } while (temp != IntPtr.Zero && count < loopCount);
+
             return (ptrs, res, strs);
         }
 
