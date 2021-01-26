@@ -77,6 +77,35 @@ namespace _20210117_Getメニューウィンドウ
             WS_VSCROLL = 0x00200000,
         }
 
+        //DWM（Desktop Window Manager）
+        //見た目通りのRectを取得できる、引数のdwAttributeにDWMWA_EXTENDED_FRAME_BOUNDSを渡す
+        //引数のcbAttributeにはRECTのサイズ、Marshal.SizeOf(typeof(RECT))これを渡す
+        //戻り値が0なら成功、0以外ならエラー値
+        [DllImport("dwmapi.dll")]
+        internal static extern long DwmGetWindowAttribute(IntPtr hWnd, DWMWINDOWATTRIBUTE dwAttribute, out RECT rect, int cbAttribute);
+
+        //ウィンドウ属性
+        //列挙値の開始は0だとずれていたので1からにした
+       internal enum DWMWINDOWATTRIBUTE
+        {
+            DWMWA_NCRENDERING_ENABLED = 1,
+            DWMWA_NCRENDERING_POLICY,
+            DWMWA_TRANSITIONS_FORCEDISABLED,
+            DWMWA_ALLOW_NCPAINT,
+            DWMWA_CAPTION_BUTTON_BOUNDS,
+            DWMWA_NONCLIENT_RTL_LAYOUT,
+            DWMWA_FORCE_ICONIC_REPRESENTATION,
+            DWMWA_FLIP3D_POLICY,
+            DWMWA_EXTENDED_FRAME_BOUNDS,//見た目通りのウィンドウのRect
+            DWMWA_HAS_ICONIC_BITMAP,
+            DWMWA_DISALLOW_PEEK,
+            DWMWA_EXCLUDED_FROM_PEEK,
+            DWMWA_CLOAK,
+            DWMWA_CLOAKED,
+            DWMWA_FREEZE_REPRESENTATION,
+            DWMWA_LAST
+        };
+
         //ウィンドウのRect取得
         [DllImport("user32.dll")]
         internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
@@ -252,6 +281,52 @@ namespace _20210117_Getメニューウィンドウ
         //マウスカーソル座標
         [DllImport("user32.dll")]
         internal static extern bool GetCursorPos(out POINT lpPoint);
+
+
+        //Bitmap描画関連
+        //DC取得
+        //nullを渡すと画面全体のDCを取得、ウィンドウハンドルを渡すとそのウィンドウのクライアント領域DC
+        //失敗した場合の戻り値はnull
+        //使い終わったらReleaseDC
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetDC(IntPtr hWnd);
+
+        //渡したDCに互換性のあるDC作成
+        //失敗した場合の戻り値はnull
+        //使い終わったらDeleteDC
+        [DllImport("gdi32.dll")]
+        internal static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+        //指定されたDCに関連付けられているデバイスと互換性のあるビットマップを作成
+        //使い終わったらDeleteObject
+        [DllImport("gdi32.dll")]
+        internal static extern IntPtr CreateCompatibleBitmap(IntPtr hdc, int cx, int cy);
+
+        //DCにオブジェクトを指定する、オブジェクトの種類はbitmap、brush、font、pen、Regionなど
+        [DllImport("gdi32.dll")]
+        internal static extern IntPtr SelectObject(IntPtr hdc, IntPtr h);
+
+        //画像転送
+        [DllImport("gdi32.dll")]
+        internal static extern bool BitBlt(IntPtr hdc, int x, int y, int cx, int cy, IntPtr hdcSrc, int x1, int y1, uint rop);
+        internal const int SRCCOPY = 0x00cc0020;
+        internal const int SRCINVERT = 0x00660046;
+
+        ////
+        //[DllImport("user32.dll")]
+        //private static extern bool PrintWindow(IntPtr hWnd, IntPtr hDC, uint nFlags);
+        //private const uint nFrags_PW_CLIENTONLY = 0x00000001;
+
+        //[DllImport("user32.dll")]
+        //private static extern bool DeleteDC(IntPtr hdc);
+
+        [DllImport("user32.dll")]
+        internal static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport("gdi32.dll")]
+        internal static extern bool DeleteObject(IntPtr ho);
+
+
     }
 
 }
