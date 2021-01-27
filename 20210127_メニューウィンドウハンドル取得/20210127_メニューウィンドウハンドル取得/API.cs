@@ -156,6 +156,15 @@ namespace _20210127_メニューウィンドウハンドル取得
             //取得されたハンドルは、指定されたウィンドウの所有者ウィンドウを識別します（存在する場合）。詳細については、「所有するWindows」を参照してください。
         }
 
+        //ウィンドウのクライアント領域のRect取得
+        [DllImport("user32.dll")]
+        internal static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        //クライアント領域の座標を画面全体での座標に変換
+        [DllImport("user32.dll")]
+        internal static extern bool ClientToScreen(IntPtr hWnd, out POINT lpPoint);
+
+
         [DllImport("user32.dll")]
         internal static extern int GetWindowInfo(IntPtr hWnd, ref WINDOWINFO info);
 

@@ -31,6 +31,9 @@ namespace _20210127_メニューウィンドウハンドル取得
             //アプリ終了時にホットキーの解除
             Closing += MainWindow_Closing;
 
+            var r1 = new Rect(0, 0, 100, 100);
+            var r2 = new Rect(90, 90, 100, 10);
+            RectRect(r1, r2);
         }
 
         #region ホットキー関連
@@ -78,8 +81,8 @@ namespace _20210127_メニューウィンドウハンドル取得
             //ホットキー(今回はPrintScreen)が押されたら
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
-               //マウスカーソル下にあるWindowを基準にRectを収集
-                var reList2 = GetWidndowRectsFromCursorPoint();
+                //マウスカーソル下にあるWindowを基準にRectを収集
+                List<Rect> reList2 = GetWidndowRectsFromCursorPoint();
                 //最前面Windowの見た目通りのRectを付け足す
                 reList2.Add(GetWindowRectMitame(API.GetForegroundWindow()));
                 //収集したRectに従って画像を切り抜いて1枚の画像にする
@@ -175,11 +178,25 @@ namespace _20210127_メニューウィンドウハンドル取得
                     preR = imaR;
                 }
             }
-            
+
             return reList;
         }
 
-    
+        private void RectRect(Rect r1,Rect r2)
+        {
+            RectangleGeometry rg1 = new RectangleGeometry(r1);
+            RectangleGeometry rg2 = new RectangleGeometry(r2);
+            GeometryGroup gg = new GeometryGroup();
+            IntersectionDetail neko = rg1.FillContainsWithDetail(rg2);
+            gg
+            
+            gg.Children.Add(rg1);
+            if (gg.FillContains(rg2))
+            {
+                gg.Children.Add(rg2);
+            }
+        }
+
 
         //メニューウィンドウの収集、メニューウィンドウにはTextがないので、これを利用している
         /// <summary>
@@ -196,18 +213,24 @@ namespace _20210127_メニューウィンドウハンドル取得
             int count = 0;
 
             IntPtr temp = hWnd;
-            string text;
 
             //NextWindowの収集
             do
             {
                 if (temp == IntPtr.Zero) break;//Nextがなければ完了
-                text = GetWindowText(temp);
-                if (text != "") break;//TextがあるWindowなら完了
+                string text = GetWindowText(temp);
+                //TextがあるWindowなら完了
+                if (text != "") break;
+                //Rectの幅や高さが0なら完了
+                API.RECT r = GetWindowRect(temp);
+                if (r.bottom - r.top == 0 || r.right - r.left == 0) break;
+
+                //リストに追加
                 ptrs.Add(temp);
-                res.Add(GetWindowRect(temp));
+                res.Add(r);
                 strs.Add(text);
 
+                //下の階層(next)のWindow取得
                 temp = API.GetWindow(temp, API.GETWINDOW_CMD.GW_HWNDNEXT);
                 count++;
             } while (count < loopCount);

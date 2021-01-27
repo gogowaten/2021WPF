@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:_20210127_メニューウィンドウハンドル取得"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="600">
-    <Grid>
-    <Image x:Name="MyImage"/>
+  <Grid UseLayoutRounding="True">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+      <Image x:Name="MyImage" Stretch="None"/>
+    </ScrollViewer>
   </Grid>
 </Window>
