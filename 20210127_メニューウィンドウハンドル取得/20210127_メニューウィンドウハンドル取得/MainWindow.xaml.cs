@@ -31,9 +31,13 @@ namespace _20210127_メニューウィンドウハンドル取得
             //アプリ終了時にホットキーの解除
             Closing += MainWindow_Closing;
 
-            var r1 = new Rect(0, 0, 100, 100);
-            var r2 = new Rect(90, 90, 100, 10);
-            RectRect(r1, r2);
+            //var r1 = new Rect(0, 0, 100, 100);
+            //var r2 = new Rect(50, 50, 100, 100);
+            //var r3 = new Rect(200, 200, 100, 100);
+            //var neko = IsOverlappingRects(r1, r2);
+
+            //List<Rect> rList = new() { r1, r2, r3 };
+            //List<Rect> overLapping = OverlappedRects(rList);
         }
 
         #region ホットキー関連
@@ -179,23 +183,54 @@ namespace _20210127_メニューウィンドウハンドル取得
                 }
             }
 
-            return reList;
+            return OverlappedRects(reList);
         }
 
-        private void RectRect(Rect r1,Rect r2)
+
+
+        private bool IsOverlappingRects(Rect r1, Rect r2)
         {
-            RectangleGeometry rg1 = new RectangleGeometry(r1);
-            RectangleGeometry rg2 = new RectangleGeometry(r2);
-            GeometryGroup gg = new GeometryGroup();
-            IntersectionDetail neko = rg1.FillContainsWithDetail(rg2);
-            gg
-            
-            gg.Children.Add(rg1);
-            if (gg.FillContains(rg2))
-            {
-                gg.Children.Add(rg2);
-            }
+            return IsOverlappingRects(new RectangleGeometry(r1), new RectangleGeometry(r2));
         }
+        private bool IsOverlappingRects(Geometry r1, Geometry r2)
+        {
+            return !(r1.FillContainsWithDetail(r2) == IntersectionDetail.Empty);
+        }
+
+        /// <summary>
+        /// 重なっているRectを返す、リストの先頭から重ねて行って、重ならないRectが出てきた時点で返す
+        /// </summary>
+        /// <param name="rList"></param>
+        /// <returns></returns>
+        private List<Rect> OverlappedRects(List<Rect> rList)
+        {
+            if (rList.Count == 0) return rList;
+
+            List<Rect> result = new();
+            result.Add(rList[0]);
+
+            //最初のRectからGeometryを作成してGeometryGropuに追加
+            GeometryGroup gg = new();
+            gg.Children.Add(new RectangleGeometry(rList[0]));
+            //GeometryGroupとRectの重なりを判定
+            for (int i = 1; i < rList.Count; i++)
+            {
+                RectangleGeometry rg = new(rList[i]);
+                //グループとRectの重なり判定
+                if (IsOverlappingRects(gg, rg))
+                {
+                    result.Add(rList[i]);//リストに追加
+                    gg.Children.Add(rg);//グループに追加
+                }
+                else
+                {
+                    //重なりが途切れたら終了
+                    return result;
+                }
+            }
+            return result;
+        }
+
 
 
         //メニューウィンドウの収集、メニューウィンドウにはTextがないので、これを利用している
