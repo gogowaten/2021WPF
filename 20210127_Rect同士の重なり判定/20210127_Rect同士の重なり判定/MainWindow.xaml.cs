@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
+﻿using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
+//IntersectionDetail 列挙型(System.Windows.Media) | Microsoft Docs
+//https://docs.microsoft.com/ja-jp/dotnet/api/system.windows.media.intersectiondetail
+
 
 namespace _20210127_Rect同士の重なり判定
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// RectからRectangleGeometryを作って、FillContainsWithDetailメソッドを使って判定できる
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -27,22 +19,22 @@ namespace _20210127_Rect同士の重なり判定
             Rect r1 = new(0, 0, 100, 100);//座標0,0   サイズ100,100
 
             //true    Intersects
-            bool r1r2 = IsOverlapping(r1, new(10, 10, 100, 100));
+            var r1r2 = IsOverlapping(r1, new(10, 10, 100, 100));
 
             //true    FullyContains
-            bool r1r3 = IsOverlapping(r1, new(10, 10, 10, 10));
+            var r1r3 = IsOverlapping(r1, new(10, 10, 50, 50));
 
             //false   Empty
-            bool r1r4 = IsOverlapping(r1, new(100, 100, 100, 100));
+            var r1r4 = IsOverlapping(r1, new(100, 100, 100, 100));
 
             //true    intersects
-            bool r1r5 = IsOverlapping(r1, new(99, 99, 100, 100));
+            var r1r5 = IsOverlapping(r1, new(99, 99, 100, 100));
 
             //false   Empty
-            bool r1r6 = IsOverlapping(r1, new(200, 200, 100, 100));
-            
+            var r1r6 = IsOverlapping(r1, new(110, 50, 100, 100));
+
             //true    FullyInside
-            bool r1r7 = IsOverlapping(r1, new(-10, -10, 200, 200));
+            var r1r7 = IsOverlapping(r1, new(-10, -10, 200, 200));
         }
 
         /// <summary>
@@ -51,13 +43,20 @@ namespace _20210127_Rect同士の重なり判定
         /// <param name="r1"></param>
         /// <param name="r2"></param>
         /// <returns></returns>
-        private bool IsOverlapping(Rect r1, Rect r2)
+        private (bool, IntersectionDetail) IsOverlapping(Rect r1, Rect r2)
         {
             RectangleGeometry geo1 = new(r1);
             IntersectionDetail detail = geo1.FillContainsWithDetail(new RectangleGeometry(r2));
-            return detail != IntersectionDetail.Empty;
-            //return result != IntersectionDetail.Empty || result != IntersectionDetail.NotCalculated;
+            return (detail != IntersectionDetail.Empty, detail);
+            //return (detail != IntersectionDetail.Empty || detail != IntersectionDetail.NotCalculated, detail);
         }
+
+        //IntersectionDetail列挙型
+        //Empty             全く重なっていない
+        //FullyContains     r2はr1の領域に完全に収まっている
+        //FullyInside       r1はr2の領域に完全に収まっている
+        //Intersects        一部が重なっている
+        //NotCalculated     計算されません(よくわからん)
 
     }
 }
