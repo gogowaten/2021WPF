@@ -4,6 +4,8 @@ using System.Windows.Media;
 //IntersectionDetail 列挙型(System.Windows.Media) | Microsoft Docs
 //https://docs.microsoft.com/ja-jp/dotnet/api/system.windows.media.intersectiondetail
 
+//WPFのRectの重なり判定、RectangleGeometryにしてからFillContainsWithDetailメソッドでできた - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/01/28/124714
 
 namespace _20210127_Rect同士の重なり判定
 {
