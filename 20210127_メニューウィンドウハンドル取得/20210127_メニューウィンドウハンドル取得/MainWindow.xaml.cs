@@ -86,11 +86,25 @@ namespace _20210127_メニューウィンドウハンドル取得
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
                 //マウスカーソル下にあるWindowを基準にRectを収集
-                List<Rect> reList2 = GetWidndowRectsFromCursorPoint();
-                //最前面Windowの見た目通りのRectを付け足す
-                reList2.Add(GetWindowRectMitame(API.GetForegroundWindow()));
+                List<Rect> reList = GetWidndowRectsFromCursorPoint();
+
+                //最前面Windowとの重なりを判定
+                Rect foreWin = GetWindowRectMitame(API.GetForegroundWindow());
+                if (IsOverlappingRects(new RectangleGeometry(foreWin), MakeGeometryGroup(reList)))
+                {
+                    //一部でも重なっていたら
+                    //最前面Windowの見た目通りのRectを付け足す
+                    reList.Add(foreWin);
+                }
+                else
+                {
+                    //全く重なっていない場合
+                    //最前面Windowの見た目通りのRectだけ
+                    reList = new() { foreWin };
+                }
+
                 //収集したRectに従って画像を切り抜いて1枚の画像にする
-                var bmp = CroppedBitmapFromRects(ScreenCapture(), reList2);
+                var bmp = CroppedBitmapFromRects(ScreenCapture(), reList);
                 //確認のためにアプリに表示
                 MyImage.Source = bmp;
                 //確認のために画像をクリップボードにコピー
@@ -165,27 +179,51 @@ namespace _20210127_メニューウィンドウハンドル取得
             _ = API.GetCursorPos(out API.POINT myPoint);
             IntPtr hWnd = API.WindowFromPoint(myPoint);
 
-            //Textの無いウィンドウを収集
-            List<Rect> reList = new();
+            //Textの無いNextウィンドウを収集            
             (List<IntPtr> ptrs, List<API.RECT> res, List<string> strs) = GetNextWindowsWithNoneText(hWnd, LOOP_LIMIT);
+            //List<(IntPtr ptrs, API.RECT res, string strs)> neko = new();
+            //List<(IntPtr ptrs, API.RECT res, string strs)> inu = new();
+            //List<(IntPtr ptrs, API.RECT res, string strs)> uma = new();
+            //foreach (var item in ptrs)
+            //{
+            //    neko.Add(GetWindowRectAndText(API.GetAncestor(item, API.AncestorType.GA_ROOTOWNER)));
+            //    inu.Add(GetWindowRectAndText(API.GetAncestor(item, API.AncestorType.GA_ROOT)));
+            //    uma.Add(GetWindowRectAndText(API.GetAncestor(item, API.AncestorType.GA_PARENT)));
+            //}
 
             //Rectを収集
-            //左上座標が同じWindowはドロップシャドウ用のWindowなのでリストに加えない
+            //左上座標が同じWindowはドロップシャドウ用のWindowなのでリストから除外
+            List<Rect> reList = DeleteSameLocateRect(res);
+
+            //重なりがあるRectだけのリストにする
+            return OverlappedRects(reList);
+        }
+        //同じ座標のRectを除外する
+        private List<Rect> DeleteSameLocateRect(List<API.RECT> rects)
+        {
+            List<Rect> rList = new();
+            for (int i = 0; i < rects.Count; i++)
+            {
+                rList.Add(MyConvertApiRectToRect(rects[i]));//そのままのRect、RECTからRectに変換)
+            }
+            return DeleteSameLocateRect(rList);
+        }
+        private List<Rect> DeleteSameLocateRect(List<Rect> rects)
+        {
+            List<Rect> reList = new();
             Rect preR;
-            for (int i = 0; i < ptrs.Count; i++)
+            for (int i = 0; i < rects.Count; i++)
             {
                 //Rect imaR = GetWindowRectMitame(ptrs[i]);//見た目通りのRect(そのままのRectと変化なかった)
-                Rect imaR = MyConvertApiRectToRect(res[i]);//そのままのRect、RECTからRectに変換
+                Rect imaR = rects[i];
                 if (preR.TopLeft != imaR.TopLeft)
                 {
                     reList.Add(imaR);
                     preR = imaR;
                 }
             }
-
-            return OverlappedRects(reList);
+            return reList;
         }
-
 
 
         private bool IsOverlappingRects(Rect r1, Rect r2)
@@ -231,6 +269,16 @@ namespace _20210127_メニューウィンドウハンドル取得
             return result;
         }
 
+        //RectのリストからGeometryGroup作成
+        private GeometryGroup MakeGeometryGroup(List<Rect> rects)
+        {
+            GeometryGroup gg = new();
+            foreach (var item in rects)
+            {
+                gg.Children.Add(new RectangleGeometry(item));
+            }
+            return gg;
+        }
 
 
         //メニューウィンドウの収集、メニューウィンドウにはTextがないので、これを利用している
