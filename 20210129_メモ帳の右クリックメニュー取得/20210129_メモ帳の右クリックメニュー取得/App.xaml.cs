@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace _20210129_メモ帳の右クリックメニュー取得
+namespace _20210129_最前面アプリの右クリックメニュー取得
 {
     /// <summary>
     /// Interaction logic for App.xaml

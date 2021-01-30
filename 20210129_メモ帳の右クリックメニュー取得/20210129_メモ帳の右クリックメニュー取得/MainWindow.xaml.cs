@@ -19,7 +19,7 @@ using System.Windows.Interop;
 //唯一できた方法はカーソル下のウィンドウハンドルを取得する方法
 //でもこれじゃ右クリックメニューって判定しているわけじゃないから、これじゃない感じ
 
-namespace _20210129_メモ帳の右クリックメニュー取得
+namespace _20210129_最前面アプリの右クリックメニュー取得
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -31,7 +31,7 @@ namespace _20210129_メモ帳の右クリックメニュー取得
         private IntPtr MyWindowHandle;//アプリのハンドル
 
         //ウィンドウ探査loopの回数上限値
-        private const int LOOP_LIMIT = 10;
+        private const int LOOP_LIMIT = 3;
 
         public MainWindow()
         {

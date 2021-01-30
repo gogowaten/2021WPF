@@ -3,7 +3,7 @@ using System.Text;
 
 using System.Runtime.InteropServices;//dllインポート用
 
-namespace _20210129_メモ帳の右クリックメニュー取得
+namespace _20210129_最前面アプリの右クリックメニュー取得
 {
     static class API
     {
