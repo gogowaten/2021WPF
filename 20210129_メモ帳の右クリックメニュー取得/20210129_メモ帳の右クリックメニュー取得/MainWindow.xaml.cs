@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using System.Windows.Interop;
 
@@ -71,7 +62,7 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
             //int mod = GetModifierKeySum();
             //int mod = 2;//ctrl
             //int mod = 1;//alt
-            int mod = 0;
+            int mod = 0;//修飾キーなし
             if (API.RegisterHotKey(MyWindowHandle, hotkeyId, mod, vKey) == 0)
             {
                 MessageBox.Show("登録に失敗");
@@ -95,6 +86,7 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
                 var foreInfo = GetWindowRectAndText(API.GetForegroundWindow());//メモ帳のウィンドウ
                 var focusInfo = GetWindowRectAndText(API.GetFocus());//なし
                 var shellInfo = GetWindowRectAndText(API.GetShellWindow());//program manager
+                var activeInfo = GetWindowRectAndText(API.GetActiveWindow());
 
                 //Foregroundwindowから取得できるウィンドウ
                 IntPtr foreW = API.GetForegroundWindow();
@@ -109,42 +101,40 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
                 //Foregroundwindowのcmd各種
                 var childs = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_CHILD, LOOP_LIMIT));//メモ帳のウィンドウのクライアント、その後はnone
                 var popups = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_ENABLEDPOPUP, LOOP_LIMIT));//none
-                var first = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_HWNDFIRST, LOOP_LIMIT));//すべてTextはDefault IME
-                var last = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_HWNDLAST, LOOP_LIMIT));//すべてTextはProgram Manager
+                var first = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_HWNDFIRST, LOOP_LIMIT));//TextはすべてDefault IME
+                var last = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_HWNDLAST, LOOP_LIMIT));//TextはすべてProgram Manager
                 var nexts = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));//全て関係ないアプリ
                 var prevs = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));//すべて関係ないアプリ
                 var owners = GetWindowRectAndTexts(GetCmdWindows(foreW, API.GETWINDOW_CMD.GW_OWNER, LOOP_LIMIT));//none
 
-                CursorWindos();
+
+                //カーソルの下のウィンドウハンドル
+                API.GetCursorPos(out API.POINT cP);
+                IntPtr hWnd = API.WindowFromPoint(cP);
+                var CursorW = GetWindowRectAndText(hWnd);//右クリックメニュー
+
+                var AncesParent = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_PARENT));//Textなしの全画面サイズ
+                var AncesRoot = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOT));//右クリックメニュー
+                var AncesRootOwner = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOTOWNER));//右クリックメニュー
+                var LastPop = GetWindowRectAndText(API.GetLastActivePopup(hWnd));//右クリックメニュー
+                var Menu = GetWindowRectAndText(API.GetMenu(hWnd));//none
+                var Parent = GetWindowRectAndText(API.GetParent(hWnd));//none
+                var TopChild = GetWindowRectAndText(API.GetTopWindow(hWnd));//none
+
+                var Childs = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_CHILD, LOOP_LIMIT));//すべてnone
+                var Popups = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP, LOOP_LIMIT));//none
+                var First = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDFIRST, LOOP_LIMIT));//TextはすべてDefault IME
+                var Last = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDLAST, LOOP_LIMIT));//TextはすべてProgram Manager
+                var Nexts = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));//右クリックメニューの影ウィンドウ、それ以降は関係ないアプリ
+                var Prevs = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));//8個noneが続いたあと関係ないアプリ
+                var Owners = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_OWNER, LOOP_LIMIT));//none
+
             }
         }
-        private void CursorWindos()
-        {
-            //カーソルの下のウィンドウハンドル
-            API.GetCursorPos(out API.POINT cP);
-            IntPtr hWnd = API.WindowFromPoint(cP);
-            var cursorW = GetWindowRectAndText(hWnd);//右クリックメニュー
-
-            var ancesParent = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_PARENT));//Textなしの全画面サイズ
-            var ancesRoot = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOT));//右クリックメニュー
-            var ancesRootOwner = GetWindowRectAndText(API.GetAncestor(hWnd, API.AncestorType.GA_ROOTOWNER));//右クリックメニュー
-            var lastPop = GetWindowRectAndText(API.GetLastActivePopup(hWnd));//右クリックメニュー
-            var menu = GetWindowRectAndText(API.GetMenu(hWnd));//none
-            var parent = GetWindowRectAndText(API.GetParent(hWnd));//none
-            var topChild = GetWindowRectAndText(API.GetTopWindow(hWnd));//none
-
-            var childs = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_CHILD, LOOP_LIMIT));//すべてnone
-            var popups = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP, LOOP_LIMIT));//none
-            var first = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDFIRST, LOOP_LIMIT));//すべてTextはDefault IME
-            var last = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDLAST, LOOP_LIMIT));//すべてTextはProgram Manager
-            var nexts = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));//右クリックメニューの影ウィンドウ、それ以降は関係ないアプリ
-            var prevs = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));//8個noneが続いたあと関係ないアプリ
-            var owners = GetWindowRectAndTexts(GetCmdWindows(hWnd, API.GETWINDOW_CMD.GW_OWNER, LOOP_LIMIT));//none
-
-        }
-
+     
         //指定したAPI.GETWINDOW_CMDを収集
-        private List<IntPtr> GetCmdWindows(IntPtr hWnd, API.GETWINDOW_CMD cmd, int loopCount)
+        private List<IntPtr> GetCmdWindows
+            (IntPtr hWnd, API.GETWINDOW_CMD cmd, int loopCount)
         {
             List<IntPtr> v = new();
             IntPtr temp = API.GetWindow(hWnd, cmd);
@@ -157,40 +147,13 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
         }
 
 
-
-        //RectからInt32Rect作成、小数点以下切り捨て編
-        private Int32Rect RectToIntRectWith切り捨て(Rect re)
-        {
-            return new Int32Rect((int)re.X, (int)re.Y, (int)re.Width, (int)re.Height);
-        }
-
-
-        //見た目通りのRect取得
-        private Rect GetWindowRectMitame(IntPtr hWnd)
-        {
-            //見た目通りのWindowRectを取得
-            API.RECT myRECT;
-            API.DwmGetWindowAttribute(
-                hWnd,
-                API.DWMWINDOWATTRIBUTE.DWMWA_EXTENDED_FRAME_BOUNDS,
-                out myRECT, System.Runtime.InteropServices.Marshal.SizeOf(typeof(API.RECT)));
-
-            return MyConvertApiRectToRect(myRECT);
-        }
-        private Rect MyConvertApiRectToRect(API.RECT rect)
-        {
-            return new Rect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-        }
-
-
-
-
         //ウィンドウハンドルからText(タイトル名)やRECTを取得
         private (IntPtr, API.RECT re, string text) GetWindowRectAndText(IntPtr hWnd)
         {
             return (hWnd, GetWindowRect(hWnd), GetWindowText(hWnd));
         }
-        private (List<IntPtr> ptrs, List<API.RECT> rs, List<string> strs) GetWindowRectAndTexts(List<IntPtr> pList)
+        private (List<IntPtr> ptrs, List<API.RECT> rs, List<string> strs)
+            GetWindowRectAndTexts(List<IntPtr> pList)
         {
             List<IntPtr> ptrs = new();
             List<API.RECT> rs = new();
@@ -204,32 +167,20 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
             return (ptrs, rs, strs);
         }
 
+        //ウィンドウハンドルからRECT取得
         private API.RECT GetWindowRect(IntPtr hWnd)
         {
             _ = API.GetWindowRect(hWnd, out API.RECT re);
             return re;
         }
+
+        //ウィンドウハンドルからText取得
         private string GetWindowText(IntPtr hWnd)
         {
             var text = new StringBuilder(65535);
             _ = API.GetWindowText(hWnd, text, 65535);
             return text.ToString();
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 }

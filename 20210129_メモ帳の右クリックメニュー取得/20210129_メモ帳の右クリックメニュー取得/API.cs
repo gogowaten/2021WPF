@@ -103,6 +103,11 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
             DWMWA_LAST
         };
 
+
+        //
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetActiveWindow();
+
         //ウィンドウのRect取得
         [DllImport("user32.dll")]
         internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
@@ -242,6 +247,8 @@ namespace _20210129_最前面アプリの右クリックメニュー取得
         [DllImport("user32.dll")]
         internal static extern IntPtr GetSubMenu(IntPtr hWnd, int nPos);
 
+        [DllImport("user32.dll")]
+        internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
 
 
