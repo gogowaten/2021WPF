@@ -5,8 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210202_右クリックメニュー取得"
         mc:Ignorable="d"
-        Title="MainWindow" Height="150" Width="600">
-    <Grid>
-
-    </Grid>
+        Title="MainWindow" Height="450" Width="600">
+  <Grid UseLayoutRounding="True">
+    <DockPanel>
+      <Button Content="save" Click="Button_Click"/>
+      <Image x:Name="MyImage" StretchDirection="DownOnly"/>
+    </DockPanel>
+  </Grid>
 </Window>
