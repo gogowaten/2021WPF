@@ -9,6 +9,10 @@ using System.Windows.Media.Imaging;
 
 using System.Windows.Interop;
 
+//アプリのウィンドウキャプチャで、枠外のメニューウィンドウもキャプチャ - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/02/04/150711
+
+
 //スクショテストアプリ
 //ctrl + shift + PrintScreen でキャプチャ
 //キャプチャされるのは最前面アプリのウィンドウとそのメニューウィンドウ
@@ -32,6 +36,7 @@ namespace _20210202_右クリックメニュー取得
         public MainWindow()
         {
             InitializeComponent();
+
 
             MyInitializeHotKey();
 
@@ -82,16 +87,15 @@ namespace _20210202_右クリックメニュー取得
             {
                 //PopupのNEXT(下にあるウィンドウハンドル)を収集
                 List<IntPtr> pops = GetCmdWindows(popup, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT);
-                var infoPops = GetWindowRectAndTexts(pops);//確認用
-                //Textを持つウィンドウ以降を除去
-                List<IntPtr> noneText = DeleteWithTextWindow(pops);
+                var infoPops = GetWindowRectAndTexts(pops);//確認用               
 
-                //残ったウィンドウのRect取得
-                List<Rect> rs = noneText.Select(x => GetWindowRect(x)).ToList();
-                //ドロップシャドウウィンドウのRectを除去
-                result = DeleteShadowRect(rs);
-                //前後のRectが重なっているところまで選択して、以降は除外
-                result = SelectOverlappedRect(result);
+                //必要なRectだけを選別
+                result = SelectRects(pops);
+                ////Textを持つウィンドウ以降を除去
+                ////残ったウィンドウのRect取得
+                ////ドロップシャドウウィンドウのRectを除去
+                ////前後のRectが重なっているところまで選択して、以降は除外
+
                 //GetForegroundwindowの見た目通りのRectを追加
                 result.Add(GetWindowRectMitame(fore));
             }
@@ -102,18 +106,58 @@ namespace _20210202_右クリックメニュー取得
                 Rect foreRect = GetWindowRectMitame(fore);
                 result.Add(foreRect);
 
-                //マウスカーソル下のウィンドウの見た目通りのRect取得
+                //マウスカーソル下のウィンドウハンドル取得、これを基準にする
                 API.GetCursorPos(out API.POINT cursorP);
-                Rect cursorRect = GetWindowRectMitame(API.WindowFromPoint(cursorP));
-                //2つのRectが重なっていた場合は、カーソル下のウィンドウRectを追加
-                if (IsOverlapping(foreRect, cursorRect))
+                IntPtr cursor = API.WindowFromPoint(cursorP);
+                //Rect cursorRect = GetWindowRectMitame(cursor);
+
+                //カーソル下のウィンドウRectとForegroundのRect重なり判定
+                //関係あるウィンドウなら、Textがない and Rectが重なっている
+                //重なりはメニューウィンドウ全域と重なっていればおk判定にする
+                List<Rect> rs = new();
+                if (GetWindowText(cursor) == "")
                 {
-                    result.Add(cursorRect);
+                    //基準の上下それぞれのウィンドウハンドル取得
+                    List<IntPtr> prev = GetCmdWindows(cursor, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT);//上
+                    List<IntPtr> next = GetCmdWindows(cursor, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT);//下
+                    //必要なRectだけを選別
+                    List<Rect> rsPrev = SelectRects(prev);
+                    List<Rect> rsNext = SelectRects(next);
+                    //前後のRectリストを統合
+                    rs = rsPrev.Union(rsNext).ToList();
                 }
+
+                //重なり判定はForegroundのRectと、それ以外のRectを結合したRectで判定する
+                //Rectの結合はGeometryGroupを使う
+                GeometryGroup gg = new();
+                for (int i = 0; i < rs.Count; i++)
+                {
+                    gg.Children.Add(new RectangleGeometry(rs[i]));
+                }
+                //重なり判定、重なっていたらForegroundのRect＋それ以外のRect
+                if (IsOverlapping(gg, new RectangleGeometry(foreRect)))
+                {
+                    result = result.Union(rs).ToList();
+                }
+                //重なっていない場合はメニューウィンドウは開かれていないと判定して
+                //ForegroundのウィンドウRectだけでいい
             }
             return result;
         }
 
+        private List<Rect> SelectRects(List<IntPtr> pList)
+        {
+            //Textを持つウィンドウ以降を除去
+            List<IntPtr> noneText = DeleteWithTextWindow(pList);
+            //残ったウィンドウの見た目通りのRect取得
+            List<Rect> rs = noneText.Select(x => GetWindowRectMitame(x)).ToList();
+            //ドロップシャドウウィンドウのRectを除去
+            var result = DeleteShadowRect(rs);
+            //サイズが0のRectを除去
+            result = result.Where(x => x.Size.Width != 0 && x.Size.Height != 0).ToList();
+            //前後のRectが重なっているところまで選択して、以降は除外
+            return SelectOverlappedRect(result);
+        }
 
         //ウィンドウの見た目通りのRect取得はDwmGetWindowAttribute
         //https://gogowaten.hatenablog.com/entry/2020/11/17/004505
@@ -144,6 +188,8 @@ namespace _20210202_右クリックメニュー取得
         private List<Rect> SelectOverlappedRect(List<Rect> rList)
         {
             List<Rect> result = new();
+            if (rList.Count == 0) return result;
+
             result.Add(rList[0]);
 
             //順番に判定
@@ -164,17 +210,27 @@ namespace _20210202_右クリックメニュー取得
         }
 
         /// <summary>
+        /// 2つのGeometryが一部でも重なっていたらTrueを返す
+        /// </summary>
+        /// <param name="g1"></param>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        private bool IsOverlapping(Geometry g1, Geometry g2)
+        {
+
+            IntersectionDetail detail = g1.FillContainsWithDetail(g2);
+            return detail != IntersectionDetail.Empty;
+            //return (detail != IntersectionDetail.Empty || detail != IntersectionDetail.NotCalculated, detail);
+        }
+        /// <summary>
         /// 2つのRectが一部でも重なっていたらtrueを返す
         /// </summary>
         /// <param name="r1"></param>
         /// <param name="r2"></param>
-        /// <returns></returns>
+        /// <returns></returns>        
         private bool IsOverlapping(Rect r1, Rect r2)
         {
-            RectangleGeometry geo1 = new(r1);
-            IntersectionDetail detail = geo1.FillContainsWithDetail(new RectangleGeometry(r2));
-            return detail != IntersectionDetail.Empty;
-            //return (detail != IntersectionDetail.Empty || detail != IntersectionDetail.NotCalculated, detail);
+            return IsOverlapping(new RectangleGeometry(r1), new RectangleGeometry(r2));
         }
         //IntersectionDetail列挙型
         //Empty             全く重なっていない
@@ -182,6 +238,7 @@ namespace _20210202_右クリックメニュー取得
         //FullyInside       r1はr2の領域に完全に収まっている
         //Intersects        一部が重なっている
         //NotCalculated     計算されません(よくわからん)
+
 
         /// <summary>
         /// Textがないものをリストに追加していって、Textをもつウィンドウが出た時点で終了、リストを返す
@@ -211,20 +268,30 @@ namespace _20210202_右クリックメニュー取得
         /// ドロップシャドウ用のウィンドウを判定して、取り除いて返す。前後のRectのtopleftが同じなら後のRectはドロップシャドウと判定する
         /// </summary>
         /// <param name="rList"></param>
-        /// <returns></returns>
-        private static List<Rect> DeleteShadowRect(List<Rect> rList)
+        /// <returns></returns>       
+        private List<Rect> DeleteShadowRect(List<Rect> rList)
         {
             List<Rect> result = new();
             result.Add(rList[0]);
             Rect preRect = rList[0];//前Rect
-            for (int i = 1; i < rList.Count; i++)
+            for (int i = 0; i < rList.Count; i++)
             {
-                //前後のRectのleftとtopが同じならドロップシャドウと判定して
-                //リストには加えない
+                //リストに加えて
                 Rect imaRect = rList[i];//後Rect
-                if (imaRect.TopLeft != preRect.TopLeft)
+                result.Add(imaRect);
+
+                //前後の座標が同じ場合は
+                if (imaRect.TopLeft == preRect.TopLeft)
                 {
-                    result.Add(rList[i]);
+                    //サイズが大きい方を削除
+                    if (imaRect.Size.Width < preRect.Size.Width)
+                    {
+                        result.Remove(rList[i - 1]);
+                    }
+                    else
+                    {
+                        result.Remove(rList[i]);
+                    }
                 }
                 preRect = imaRect;//前Rectに後Rectを入れて次へ
             }
