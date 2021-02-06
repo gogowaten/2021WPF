@@ -52,14 +52,16 @@ namespace _20210205_エクセルのメニュー
             //ホットキー(今回はPrintScreen)が押されたら
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
-                RRR();
+                //RRR();
+
 
                 //Rect収集
                 //List<Rect> rectList = MakeForeWinndwWithMenuWindowRectList();
                 //全画面画像取得
-                //var bmp = GetScreenBitmap();
+                var bmp = GetScreenBitmap();
                 //収集したRectを使って切り抜き画像作成して表示
                 //MyImage.Source = CroppedBitmapFromRects(bmp, rectList);
+                MyImage.Source = CroppedBitmapFromRects(bmp, GeRectFromExcel());
             }
         }
 
@@ -67,33 +69,119 @@ namespace _20210205_エクセルのメニュー
         //
         private void RRR()
         {
+            BitmapSource bmp = GetScreenBitmap();
+
             //Foregroundのハンドル取得
             IntPtr fore = API.GetForegroundWindow();
-            var infoFore = GetWindowRectAndText(fore);
+            var infoFore = GetWindowInfo(fore);
             //ForegroundのPopupハンドルとRect取得            
             IntPtr popup = API.GetWindow(fore, API.GETWINDOW_CMD.GW_ENABLEDPOPUP);
             Rect popupRect = GetWindowRect(popup);
-            var infoPop = GetWindowRectAndText(popup);//確認用
+            var infoPop = GetWindowInfo(popup);//確認用
             var foreMitame = GetWindowRectMitame(fore);
-            var foreParent = GetWindowRectAndText(API.GetParent(fore));
-            var foreOwner = GetWindowRectAndText(API.GetWindow(fore, API.GETWINDOW_CMD.GW_OWNER));
-            var foreRootOwner = GetWindowRectAndText(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
+            var foreParent = GetWindowInfo(API.GetParent(fore));
+            var foreOwner = GetWindowInfo(API.GetWindow(fore, API.GETWINDOW_CMD.GW_OWNER));
+            var foreRootOwner = GetWindowInfo(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
+            IntPtr preTemp = fore;
+            List<MyStruct> menus = new();
+            menus.Add(GetWindowInfo(fore));
+            for (int i = 0; i < 5; i++)
+            {
+                var nextTemp = API.GetParent(preTemp);
+                menus.Add(GetWindowInfo(nextTemp));
+                preTemp = nextTemp;
+            }
+            var NextInfo = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));
+            var PrevInfo = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));
 
+            var nextOwner = NextInfo.Select(x => GetWindowInfo(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
 
             //マウスカーソル下のウィンドウの見た目通りのRect取得
             API.GetCursorPos(out API.POINT cursorP);
             IntPtr cursor = API.WindowFromPoint(cursorP);
-            var cursorInfo = GetWindowRectAndText(cursor);
+            var cursorInfo = GetWindowInfo(cursor);
             var cursorMitame = GetWindowRectMitame(cursor);
-            var cursorParent = GetWindowRectAndText(API.GetParent(cursor));
-            var cursorOwner = GetWindowRectAndText(API.GetWindow(cursor, API.GETWINDOW_CMD.GW_OWNER));
-            var cursorRootOwner = GetWindowRectAndText(API.GetAncestor(cursor, API.AncestorType.GA_ROOTOWNER));
+            var cursorParent = GetWindowInfo(API.GetParent(cursor));
+            var cursorOwner = GetWindowInfo(API.GetWindow(cursor, API.GETWINDOW_CMD.GW_OWNER));
+            var cursorRootOwner = GetWindowInfo(API.GetAncestor(cursor, API.AncestorType.GA_ROOTOWNER));
 
-            var nextInfo = GetWindowRectAndTexts(GetCmdWindows(cursor, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));
-            var prevInfo = GetWindowRectAndTexts(GetCmdWindows(cursor, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));
-            
+            var cursorNextInfo = GetWindowInfos(GetCmdWindows(cursor, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));
+            var cursorPrevInfo = GetWindowInfos(GetCmdWindows(cursor, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));
+            MyStruct nn;
 
+            BitmapSource croppedBmp;
+            croppedBmp = new CroppedBitmap(bmp, MyConverterRectToInt32Rect(cursorInfo.Rect));
+            croppedBmp = new CroppedBitmap(bmp, MyConverterRectToInt32Rect(cursorMitame));
         }
+        private Int32Rect MyConverterRectToInt32Rect(Rect r)
+        {
+            return new Int32Rect((int)r.X, (int)r.Y, (int)r.Width, (int)r.Height);
+        }
+
+        //エクセルの右クリックメニュー、リボンメニューのRect収集
+        private List<Rect> GeRectFromExcel()
+        {
+            IntPtr fore = API.GetForegroundWindow();
+            if (GetWindowText(fore) == "")
+            {
+                //if(カーソル下のウィンドウ)
+                var foreOwnder = GetWindowInfo(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
+                List<MyStruct> foreNexts = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDNEXT, 20));
+                List<MyStruct> nexts = foreNexts.Where(x => foreOwnder.text == GetWindowText(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
+
+
+                List<Rect> nextRect = nexts.Select(x => x.Rect).ToList();
+
+                List<Rect> nextRect2 = SelectNoneZeroRects(nextRect);
+                //List<Rect> nextRect3 = SelectOverlappedRect(nextRect2);
+                nextRect2.Add(GetWindowRectMitame(foreOwnder.hWnd));
+                return nextRect2;
+            }
+            else
+            {
+                //Parenを辿るのはダイアログボックス系のウィンドウを開いているときなのでメニューウィンドウは関係ない
+                var parents = GetParentWindows(fore,10);
+                var ppp = GetWindowInfos(parents);
+                var prect = ppp.Select(x => GetWindowRectMitame(x.hWnd)).ToList();
+                var noneZero = SelectNoneZeroRects(prect);
+                noneZero.Add(GetWindowRectMitame(fore));
+                return noneZero;
+            }
+        }
+        private List<IntPtr> GetParentWindows(IntPtr hWnd,int count)
+        {
+            List<IntPtr> parents = new();            
+            IntPtr temp = hWnd;
+            for (int i = 0; i < count; i++)
+            {
+                temp = API.GetParent(temp);                
+                parents.Add(temp);
+            }
+            return parents;
+        }
+        private bool IsSameRootOwner(IntPtr rootOwner, IntPtr wh)
+        {
+            return rootOwner == API.GetAncestor(wh, API.AncestorType.GA_ROOTOWNER);
+        }
+
+        //RectのListを順番にwidthが0を探して、見つかったらそれ以降のRectは除外して返す
+        private List<Rect> SelectNoneZeroRects(List<Rect> rl)
+        {
+            List<Rect> r = new();
+            for (int i = 0; i < rl.Count; i++)
+            {
+                if (rl[i].Width == 0)
+                {
+                    return r;
+                }
+                else
+                {
+                    r.Add(rl[i]);
+                }
+            }
+            return r;
+        }
+
 
         #region Rect取得
 
@@ -282,7 +370,19 @@ namespace _20210205_エクセルのメニュー
             return v;
         }
 
-
+        private List<MyStruct> GetWindowInfos(List<IntPtr> hWnd)
+        {
+            List<MyStruct> l = new();
+            foreach (var item in hWnd)
+            {
+                l.Add(GetWindowInfo(item));
+            }
+            return l;
+        }
+        private MyStruct GetWindowInfo(IntPtr hWnd)
+        {
+            return new MyStruct() { hWnd = hWnd, Rect = GetWindowRect(hWnd), text = GetWindowText(hWnd) };
+        }
         //ウィンドウハンドルからText(タイトル名)やRECTを取得
         private (IntPtr, Rect re, string text) GetWindowRectAndText(IntPtr hWnd)
         {
@@ -493,6 +593,20 @@ namespace _20210205_エクセルのメニュー
 
 
 
+        private struct MyStruct
+        {
+            public IntPtr hWnd;
+            public Rect Rect;
+            public string text;
 
+            public override string ToString()
+            {
+
+                return $"IntPtr({hWnd.ToString("x16")}), Rect({Rect}), Text({text})";
+            }
+        }
     }
+
+
 }
+
