@@ -250,6 +250,8 @@ namespace _20210202_右クリックメニュー取得
         [DllImport("user32.dll")]
         internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
+        [DllImport("user32.dll")]
+        internal static extern bool IsWindowVisible(IntPtr hWnd);
 
 
 

@@ -10,6 +10,10 @@ using System.Windows.Media.Imaging;
 using _20210202_右クリックメニュー取得;
 using System.Windows.Interop;
 
+//エクセルのスクショ時にウィンドウ枠外のメニュー、右クリックメニューも同時に撮りたい、WPFとWinAPI - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/02/07/191939
+
+
 //エクセルのリボンメニューや右クリックメニューがエクセルのウィンドウ枠にある場合も途切れずに取得するテスト
 //リボンメニューを使ったアプリならエクセル以外でもキャプチャできるかも
 //キャプチャはPrintScreenキー
@@ -48,7 +52,7 @@ namespace _20210206_エクセルのメニューRect取得
 
             //ホットキー(今回はPrintScreen)が押されたら
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
-            {  
+            {
                 //画面全体をキャプチャして、Rect収集して、それを使って切り抜き画像作成して表示
                 MyImage.Source = CroppedBitmapFromRects(GetScreenBitmap(), GetExcelMenuRects());
             }
@@ -61,15 +65,18 @@ namespace _20210206_エクセルのメニューRect取得
         private List<Rect> GetExcelMenuRects()
         {
             IntPtr fore = API.GetForegroundWindow();
-
+            
             var foreOwnder = GetWindowInfo(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
             var popup = GetWindowInfo(API.GetWindow(foreOwnder.hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
-            
+
             //Foreの下層にあるウィンドウハンドルをGetWindowのNEXTで20個程度取得
             List<MyStruct> foreNexts = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDNEXT, 20));
+                        
+            //可視状態のものだけ残す
+            var noneZero = foreNexts.Where(x => x.IsVisible == true).ToList();
 
             //ForeNEXTのRootOWNERとForeOWNERを比較、同じものだけ残す
-            List<MyStruct> nexts = foreNexts.Where(x => foreOwnder.text == GetWindowText(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
+            List<MyStruct> nexts = noneZero.Where(x => foreOwnder.Text == GetWindowText(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
 
             //見た目通りのRectを取得
             List<Rect> nextRect = nexts.Select(x => GetWindowRectMitame(x.hWnd)).ToList();
@@ -81,16 +88,14 @@ namespace _20210206_エクセルのメニューRect取得
             if (popup.Rect.Width != 0)
             {
                 nextRect2.Add(popup.Rect);
-                //nextRect2.Add(GetWindowRectMitame(popup.hWnd));
             }
-
 
             //最後にRootOWNERの見た目通りのRectを追加
             nextRect2.Add(GetWindowRectMitame(foreOwnder.hWnd));
             return nextRect2;
 
         }
-    
+     
 
         //RectのListを順番にwidthが0を探して、見つかったらそれ以降のRectは除外して返す
         private List<Rect> SelectNoneZeroRects(List<Rect> rl)
@@ -135,7 +140,7 @@ namespace _20210206_エクセルのメニューRect取得
             return new Rect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
         }
 
-   
+
 
         //指定したAPI.GETWINDOW_CMDを収集、自分自身も含む
         private List<IntPtr> GetCmdWindows
@@ -164,9 +169,14 @@ namespace _20210206_エクセルのメニューRect取得
         }
         private MyStruct GetWindowInfo(IntPtr hWnd)
         {
-            return new MyStruct() { hWnd = hWnd, Rect = GetWindowRect(hWnd), text = GetWindowText(hWnd) };
+            return new MyStruct() { 
+                hWnd = hWnd, 
+                Rect = GetWindowRect(hWnd),
+                Text = GetWindowText(hWnd),
+                IsVisible = API.IsWindowVisible(hWnd) };
+
         }
-      
+
         //ウィンドウハンドルからRect取得
         private Rect GetWindowRect(IntPtr hWnd)
         {
@@ -338,17 +348,18 @@ namespace _20210206_エクセルのメニューRect取得
 
 
         //ウィンドウハンドルからウィンドウの情報用
-        //ウィンドウのハンドル、Rect、Text
+        //ウィンドウのハンドル、Rect、Text、IsVisible
         private struct MyStruct
         {
             public IntPtr hWnd;
             public Rect Rect;
-            public string text;
+            public bool IsVisible;
+            public string Text;
 
             public override string ToString()
             {
                 //x16は書式で、xが16進数で表示、16が表示桁数
-                return $"IntPtr({hWnd.ToString("x16")}), Rect({Rect}), Text({text})";
+                return $"IntPtr({hWnd.ToString("x16")}), Rect({Rect}), 可視{IsVisible}, Text({Text})";
             }
         }
     }
