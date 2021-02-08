@@ -53,7 +53,7 @@ namespace _20210202_右クリックメニュー取得
         {
             if (msg.message != API.WM_HOTKEY) return;
 
-            //ホットキー(今回はPrintScreen)が押されたら
+            //ホットキー(今回はctrl + shift + PrintScreen)が押されたら
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
                 //Rect収集
