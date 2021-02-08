@@ -51,10 +51,23 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
             //ホットキー(今回はPrintScreen)が押されたら
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
+                //画面全体をキャプチャして、Rect収集して、それを使って切り抜き画像作成
+                BitmapSource bmp = CroppedBitmapFromRects(GetScreenBitmap(), RR());
+                //画像表示
+                MyImage.Source = bmp;
+                
+                //png形式にして画像をクリップボードにコピー
+                //クリップボードのpng形式画像を読み込めるアプリ用
+                var enc = new PngBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bmp));
+                using var ms = new System.IO.MemoryStream();
+                enc.Save(ms);
+                Clipboard.SetData("PNG", ms);
 
-                MyImage.Source = CroppedBitmapFromRects(GetScreenBitmap(), RR());
-                //画面全体をキャプチャして、Rect収集して、それを使って切り抜き画像作成して表示
-                //MyImage.Source = CroppedBitmapFromRects(GetScreenBitmap(), GetExcelMenuRects());
+                //クリップボードのpng形式画像を読み込むことができないアプリ用
+                //ただし透明部分は真っ黒になる
+                //Clipboard.SetImage(cc);
+
             }
         }
 
