@@ -5,8 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210208_メニューキャプチャ普通のアプリとエクセル"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="20210209Test" Height="450" Width="800">
   <Grid UseLayoutRounding="True">
-    <Image x:Name="MyImage" StretchDirection="DownOnly"/>
+    <DockPanel>
+      <Menu DockPanel.Dock="Top">
+        <MenuItem Header="save" 
+                  ToolTip="実行ファイルと同じフォルダに保存" 
+                  Click="MenuItem_Click"/>
+        <MenuItem Header="copy"
+                  ToolTip="アルファ値はなくなるけど多くのアプリに貼り付け可能" 
+                  Click="MenuItem_Click_1"/>
+        <MenuItem Header="copy(PNG)"
+                  ToolTip="アルファ値は保たれるけど利用可能なアプリは限られる"
+                  Click="MenuItem_Click_2"/>
+      </Menu>
+      <Image x:Name="MyImage" StretchDirection="DownOnly"/>
+    </DockPanel>
   </Grid>
 </Window>

@@ -15,6 +15,9 @@ using System.Windows.Shapes;
 
 using System.Windows.Interop;
 
+//アプリのスクショでウィンドウ枠外のメニューもキャプチャしたい - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/02/09/213524
+
 
 namespace _20210208_メニューキャプチャ普通のアプリとエクセル
 {
@@ -28,7 +31,10 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
         private IntPtr MyWindowHandle;//アプリのハンドル
 
         //ウィンドウ探査loopの回数上限値
-        private const int LOOP_LIMIT = 10;
+        private const int LOOP_LIMIT = 20;
+
+        //
+        private BitmapSource MyBitmapSource;
 
         public MainWindow()
         {
@@ -36,8 +42,15 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
 
             MyInitializeHotKey();
 
-            //ホットキーにPrintScreenキーを登録
-            ChangeHotKey(Key.PrintScreen, HOTKEY_ID1);
+            //ホットキーに修飾キーとPrintScreenキーを登録
+            //int mod = GetModifierKeySum();
+            //int mod = 2;//ctrl
+            //int mod = 1;//alt
+            //int mod = 4;//shift
+            //int mod = 6;//ctrl + shift
+            //int mod = 0;//修飾キーなし
+            int mod = 0;
+            ChangeHotKey(mod, Key.PrintScreen, HOTKEY_ID1);
 
             //アプリ終了時にホットキーの解除
             Closing += MainWindow_Closing;
@@ -48,25 +61,14 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
         {
             if (msg.message != API.WM_HOTKEY) return;
 
-            //ホットキー(今回はPrintScreen)が押されたら
+            //ホットキーが押されたら
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
                 //画面全体をキャプチャして、Rect収集して、それを使って切り抜き画像作成
-                BitmapSource bmp = CroppedBitmapFromRects(GetScreenBitmap(), RR());
+                MyBitmapSource = CroppedBitmapFromRects(GetScreenBitmap(), RR());
                 //画像表示
-                MyImage.Source = bmp;
-                
-                //png形式にして画像をクリップボードにコピー
-                //クリップボードのpng形式画像を読み込めるアプリ用
-                var enc = new PngBitmapEncoder();
-                enc.Frames.Add(BitmapFrame.Create(bmp));
-                using var ms = new System.IO.MemoryStream();
-                enc.Save(ms);
-                Clipboard.SetData("PNG", ms);
-
-                //クリップボードのpng形式画像を読み込むことができないアプリ用
-                //ただし透明部分は真っ黒になる
-                //Clipboard.SetImage(cc);
+                MyImage.Source = MyBitmapSource;
+              
 
             }
         }
@@ -79,9 +81,7 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
 
             //エクセル系アプリ
             if (fore.Text == "")
-            {
-
-                
+            {   
                 MyWidndowInfo rootOwner = GetWindowInfo(
                     API.GetAncestor(fore.hWnd, API.AncestorType.GA_ROOTOWNER));
                 MyWidndowInfo parent = GetWindowInfo(
@@ -111,7 +111,7 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
                     R.Add(popup.Rect);
                 }
                                 
-                //ParentのTextが""ならRootOwnerのRectを追加
+                //ParentのTextが""ならParentは無いので、代わりにRootOwnerのRectを追加
                 if (parent.Text == "")
                 {
                     R.Add(GetWindowRectMitame(rootOwner.hWnd));
@@ -572,22 +572,15 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
             MyWindowHandle = new WindowInteropHelper(this).Handle;
             ComponentDispatcher.ThreadPreprocessMessage += ComponentDispatcher_ThreadPreprocessMessage;
         }
-        private void ChangeHotKey(Key Key, int hotkeyId)
+        private void ChangeHotKey(int mod, Key Key, int hotkeyId)
         {
-            ChangeHotKey(KeyInterop.VirtualKeyFromKey(Key), hotkeyId);
+            ChangeHotKey(mod, KeyInterop.VirtualKeyFromKey(Key), hotkeyId);
         }
-        private void ChangeHotKey(int vKey, int hotkeyId)
+        private void ChangeHotKey(int mod, int vKey, int hotkeyId)
         {
             //上書きはできないので、古いのを削除してから登録
             _ = API.UnregisterHotKey(MyWindowHandle, hotkeyId);
 
-            //int mod = GetModifierKeySum();
-            //int mod = 2;//ctrl
-            //int mod = 1;//alt
-            //int mod = 4;//shift
-            //int mod = 6;//ctrl + shift
-            //int mod = 0;//修飾キーなし
-            int mod = 0;
             if (API.RegisterHotKey(MyWindowHandle, hotkeyId, mod, vKey) == 0)
             {
                 MessageBox.Show("登録に失敗");
@@ -623,6 +616,36 @@ namespace _20210208_メニューキャプチャ普通のアプリとエクセル
                 return $"IntPtr({hWnd.ToString("x16")}), Rect({Rect}), {visible}, Text({Text})";
             }
         }
+
+        #region ボタンクリックイベントでの動作
+        //画像保存
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            SaveImage(MyBitmapSource);
+        }
+
+        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            //クリップボードのpng形式画像を読み込むことができないアプリ用
+            //ただし透明部分は真っ黒になる
+            Clipboard.SetImage(MyBitmapSource);
+        }
+
+        private void MenuItem_Click_2(object sender, RoutedEventArgs e)
+        {
+            //png形式にして画像をクリップボードにコピー
+            //クリップボードのpng形式画像を読み込めるアプリ用
+            var enc = new PngBitmapEncoder();
+            enc.Frames.Add(BitmapFrame.Create(MyBitmapSource));
+            using var ms = new System.IO.MemoryStream();
+            enc.Save(ms);
+            Clipboard.SetData("PNG", ms);
+        }
+
+
+        #endregion ボタンクリックイベントでの動作
+
+
     }
 
 
