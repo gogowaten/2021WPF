@@ -2,6 +2,10 @@
 using System.Windows;
 using System.Windows.Media.Imaging;
 
+//アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/02/10/134406
+
+
 namespace _20210210_Clipboardへ画像コピー
 {
     /// <summary>
