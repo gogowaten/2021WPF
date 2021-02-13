@@ -230,60 +230,43 @@ namespace _20210211_関連ウィンドウをキャプチャ
             }
             return R;
         }
-        private void RRR()
-        {
-            var fore = GetWindowInfo(API.GetForegroundWindow());
-            var rootOwner = GetWindowInfo(API.GetAncestor(fore.hWnd, API.AncestorType.GA_ROOTOWNER));
-            //var popup = GetWindowInfos(GetCmdWindows(fore.hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP, LOOP_LIMIT));
-            //var next = GetWindowInfos(GetCmdWindows(fore.hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));
-            //var prev = GetWindowInfos(GetCmdWindows(fore.hWnd, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));
-            //var child = GetWindowInfos(GetCmdWindows(fore.hWnd, API.GETWINDOW_CMD.GW_CHILD, LOOP_LIMIT));
-
-            API.GetCursorPos(out API.POINT cp);
-            var cursor = GetWindowInfo(API.WindowFromPoint(cp));
-            var cursorrootOwner = GetWindowInfo(API.GetAncestor(cursor.hWnd, API.AncestorType.GA_ROOTOWNER));
-            var cursorpopup = GetWindowInfos(GetCmdWindows(cursor.hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP, LOOP_LIMIT));
-            var cursornext = GetWindowInfos(GetCmdWindows(cursor.hWnd, API.GETWINDOW_CMD.GW_HWNDNEXT, LOOP_LIMIT));
-            var cursorprev = GetWindowInfos(GetCmdWindows(cursor.hWnd, API.GETWINDOW_CMD.GW_HWNDPREV, LOOP_LIMIT));
-            var cursorchild = GetWindowInfos(GetCmdWindows(cursor.hWnd, API.GETWINDOW_CMD.GW_CHILD, LOOP_LIMIT));
-
-        }
+      
         #region エクセルとかリボンメニューのアプリのRect取得      
 
-        //エクセルの右クリックメニュー、リボンメニューのRect収集
-        private List<Rect> GetExcelMenuRects()
-        {
-            IntPtr fore = API.GetForegroundWindow();
+        ////エクセルの右クリックメニュー、リボンメニューのRect収集
+        //private List<Rect> GetExcelMenuRects()
+        //{
+        //    IntPtr fore = API.GetForegroundWindow();
 
-            var foreOwnder = GetWindowInfo(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
-            var popup = GetWindowInfo(API.GetWindow(foreOwnder.hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
+        //    var foreOwnder = GetWindowInfo(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
+        //    var popup = GetWindowInfo(API.GetWindow(foreOwnder.hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
 
-            //Foreの下層にあるウィンドウハンドルをGetWindowのNEXTで20個程度取得
-            List<MyWidndowInfo> foreNexts = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDNEXT, 20));
+        //    //Foreの下層にあるウィンドウハンドルをGetWindowのNEXTで20個程度取得
+        //    List<MyWidndowInfo> foreNexts = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDNEXT, 20));
 
-            //可視状態のものだけ残す
-            var noneZero = foreNexts.Where(x => x.IsVisible == true).ToList();
+        //    //可視状態のものだけ残す
+        //    var noneZero = foreNexts.Where(x => x.IsVisible == true).ToList();
 
-            //ForeNEXTのRootOWNERとForeOWNERを比較、同じものだけ残す
-            List<MyWidndowInfo> nexts = noneZero.Where(x => foreOwnder.Text == GetWindowText(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
+        //    //ForeNEXTのRootOWNERとForeOWNERを比較、同じものだけ残す
+        //    List<MyWidndowInfo> nexts = noneZero.Where(x => foreOwnder.Text == GetWindowText(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
 
-            //見た目通りのRectを取得
-            List<Rect> nextRect = nexts.Select(x => GetWindowRectMitame(x.hWnd)).ToList();
+        //    //見た目通りのRectを取得
+        //    List<Rect> nextRect = nexts.Select(x => GetWindowRectMitame(x.hWnd)).ToList();
 
-            //ForeNEXTを上から順番にRectを見て、0が見つかったらそれ以降は除外
-            List<Rect> nextRect2 = SelectNoneZeroRects(nextRect);
+        //    //ForeNEXTを上から順番にRectを見て、0が見つかったらそれ以降は除外
+        //    List<Rect> nextRect2 = SelectNoneZeroRects(nextRect);
 
-            //popupウィンドウのRectを追加
-            if (popup.Rect.Width != 0)
-            {
-                nextRect2.Add(popup.Rect);
-            }
+        //    //popupウィンドウのRectを追加
+        //    if (popup.Rect.Width != 0)
+        //    {
+        //        nextRect2.Add(popup.Rect);
+        //    }
 
-            //最後にRootOWNERの見た目通りのRectを追加
-            nextRect2.Add(GetWindowRectMitame(foreOwnder.hWnd));
-            return nextRect2;
+        //    //最後にRootOWNERの見た目通りのRectを追加
+        //    nextRect2.Add(GetWindowRectMitame(foreOwnder.hWnd));
+        //    return nextRect2;
 
-        }
+        //}
 
 
         //RectのListを順番にwidthが0を探して、見つかったらそれ以降のRectは除外して返す
