@@ -138,7 +138,7 @@ namespace _20210211_関連ウィンドウをキャプチャ
                 {
                     R.Add(GetWindowRectMitame(rootOwner.hWnd));
                 }
-                //関連ウィンドウを集める場合は、parentをさかのぼってい追加
+                //関連ウィンドウを集める場合は、parentをさかのぼって追加
                 else if (isRelatedParent)
                 {
                     R.AddRange(GetOwnerWindowsInfo(parent.hWnd, LOOP_LIMIT).Select(x => GetWindowRectMitame(x.hWnd)));
