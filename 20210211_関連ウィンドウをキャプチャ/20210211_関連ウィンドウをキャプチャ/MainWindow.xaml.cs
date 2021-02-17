@@ -62,7 +62,7 @@ namespace _20210211_関連ウィンドウをキャプチャ
             else if (msg.wParam.ToInt32() == HOTKEY_ID1)
             {
                 //画面全体をキャプチャして、Rect収集して、それを使って切り抜き画像作成
-                MyBitmapSource = CroppedBitmapFromRects(GetScreenBitmap(), RR(true));
+                MyBitmapSource = CroppedBitmapFromRects(GetScreenBitmap(), GetCroppedRects(true));
                 //画像表示
                 MyImage.Source = MyBitmapSource;
 
@@ -71,12 +71,12 @@ namespace _20210211_関連ウィンドウをキャプチャ
         }
 
         ///// <summary>
-        ///// 基準になる最初のウィンドウを指定してParentをさかのぼって情報収集
+        ///// 指定ウィンドウからParentをさかのぼって情報収集
         ///// </summary>
         ///// <param name="hWnd">最初のウィンドウ、これもリストに入る</param>
         ///// <param name="count">遡る上限数</param>
         ///// <returns></returns>
-        //private List<MyWidndowInfo> GetParentWindowsInfo(IntPtr hWnd, int count)
+        //private List<MyWidndowInfo> GetParentsWindowInfo(IntPtr hWnd, int count)
         //{          
         //    List<MyWidndowInfo> infos = new();
         //    infos.Add(GetWindowInfo(hWnd));
@@ -93,13 +93,14 @@ namespace _20210211_関連ウィンドウをキャプチャ
         //    }
         //    return infos;
         //}
+
         /// <summary>
-        /// 基準になる最初のウィンドウを指定してOwnerをさかのぼって情報収集
+        /// 指定ウィンドウからOwnerをさかのぼって情報収集
         /// </summary>
-        /// <param name="hWnd">最初のウィンドウ、これもリストに入る</param>
+        /// <param name="hWnd">指定ウィンドウ、これもリストに入る</param>
         /// <param name="count">遡る上限数</param>
         /// <returns></returns>
-        private List<MyWidndowInfo> GetOwnerWindowsInfo(IntPtr hWnd, int count)
+        private List<MyWidndowInfo> GetOwnersWindowInfo(IntPtr hWnd, int count)
         {          
             List<MyWidndowInfo> infos = new();
             infos.Add(GetWindowInfo(hWnd));
@@ -117,7 +118,7 @@ namespace _20210211_関連ウィンドウをキャプチャ
             return infos;
         }
 
-        private List<Rect> RR(bool isRelatedParent)
+        private List<Rect> GetCroppedRects(bool isRelatedParent)
         {
             List<Rect> R = new();
 
@@ -141,7 +142,7 @@ namespace _20210211_関連ウィンドウをキャプチャ
                 //関連ウィンドウを集める場合は、parentをさかのぼって追加
                 else if (isRelatedParent)
                 {
-                    R.AddRange(GetOwnerWindowsInfo(parent.hWnd, LOOP_LIMIT).Select(x => GetWindowRectMitame(x.hWnd)));
+                    R.AddRange(GetOwnersWindowInfo(parent.hWnd, LOOP_LIMIT).Select(x => GetWindowRectMitame(x.hWnd)));
                 }
                 //関連ウィンドウを集めない場合
                 else
@@ -209,7 +210,7 @@ namespace _20210211_関連ウィンドウをキャプチャ
                 if (isRelatedParent)
                 {
                     //関連ウィンドウを収集、追加
-                    R.AddRange(GetOwnerWindowsInfo(fore.hWnd, LOOP_LIMIT).Select(x => GetWindowRectMitame(x.hWnd)));
+                    R.AddRange(GetOwnersWindowInfo(fore.hWnd, LOOP_LIMIT).Select(x => GetWindowRectMitame(x.hWnd)));
                 }
                 else
                 {
@@ -233,41 +234,7 @@ namespace _20210211_関連ウィンドウをキャプチャ
       
         #region エクセルとかリボンメニューのアプリのRect取得      
 
-        ////エクセルの右クリックメニュー、リボンメニューのRect収集
-        //private List<Rect> GetExcelMenuRects()
-        //{
-        //    IntPtr fore = API.GetForegroundWindow();
-
-        //    var foreOwnder = GetWindowInfo(API.GetAncestor(fore, API.AncestorType.GA_ROOTOWNER));
-        //    var popup = GetWindowInfo(API.GetWindow(foreOwnder.hWnd, API.GETWINDOW_CMD.GW_ENABLEDPOPUP));
-
-        //    //Foreの下層にあるウィンドウハンドルをGetWindowのNEXTで20個程度取得
-        //    List<MyWidndowInfo> foreNexts = GetWindowInfos(GetCmdWindows(fore, API.GETWINDOW_CMD.GW_HWNDNEXT, 20));
-
-        //    //可視状態のものだけ残す
-        //    var noneZero = foreNexts.Where(x => x.IsVisible == true).ToList();
-
-        //    //ForeNEXTのRootOWNERとForeOWNERを比較、同じものだけ残す
-        //    List<MyWidndowInfo> nexts = noneZero.Where(x => foreOwnder.Text == GetWindowText(API.GetAncestor(x.hWnd, API.AncestorType.GA_ROOTOWNER))).ToList();
-
-        //    //見た目通りのRectを取得
-        //    List<Rect> nextRect = nexts.Select(x => GetWindowRectMitame(x.hWnd)).ToList();
-
-        //    //ForeNEXTを上から順番にRectを見て、0が見つかったらそれ以降は除外
-        //    List<Rect> nextRect2 = SelectNoneZeroRects(nextRect);
-
-        //    //popupウィンドウのRectを追加
-        //    if (popup.Rect.Width != 0)
-        //    {
-        //        nextRect2.Add(popup.Rect);
-        //    }
-
-        //    //最後にRootOWNERの見た目通りのRectを追加
-        //    nextRect2.Add(GetWindowRectMitame(foreOwnder.hWnd));
-        //    return nextRect2;
-
-        //}
-
+     
 
         //RectのListを順番にwidthが0を探して、見つかったらそれ以降のRectは除外して返す
         private List<Rect> SelectNoneZeroRects(List<Rect> rl)
