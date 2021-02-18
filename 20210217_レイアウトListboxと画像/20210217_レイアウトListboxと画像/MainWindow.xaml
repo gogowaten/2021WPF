@@ -5,28 +5,54 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210217_レイアウトListboxと画像"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="600">
-  <Grid>
+        Title="MainWindow" Height="450" Width="600"
+        Name="MyMainWindow">
+  <Window.Resources>
+    <local:MyConverter x:Key="MyConv"/>
+  </Window.Resources>
+  <Grid UseLayoutRounding="True">
     <DockPanel>
       <Menu DockPanel.Dock="Top">
         <MenuItem Header="test" Click="MenuItem_Click"/>
         <MenuItem Header="add" Click="MenuItem_Click_1"/>
 
       </Menu>
+
       <DockPanel>
-        
-        <ListBox x:Name="MyListBox" ItemsSource="{Binding}" SelectionMode="Extended" SelectionChanged="MyListBox_SelectionChanged">
+
+        <ListBox x:Name="MyListBox" ItemsSource="{Binding}" SelectionMode="Extended"
+                 SelectionChanged="MyListBox_SelectionChanged">
           <ListBox.ItemTemplate>
             <DataTemplate>
-              <StackPanel Orientation="Horizontal">
-                <CheckBox IsChecked="{Binding Path=IsSave}"/>
-                <TextBlock Text="{Binding Path=Name}"/>
-                <!--<Image Source="{Binding Path=Image}"/>-->
+              <StackPanel Orientation="Horizontal" Margin="0,5">
+                <CheckBox IsChecked="{Binding Path=IsSaved}" Name="MyCheckBox" VerticalAlignment="Center"
+                          Content="{Binding Path=Name}"/>
+                <Image Source="{Binding Path=Image}" StretchDirection="DownOnly" HorizontalAlignment="Left"
+                       Width="{Binding ElementName=MyMainWindow, Path=ActualWidth, Converter={StaticResource MyConv}}"/>
               </StackPanel>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <Image x:Name="MyImage" Stretch="None" Source="{Binding}"/>
+
+        <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <Image x:Name="MyImage" Stretch="None" Source="{Binding}"/>
+        </ScrollViewer>-->
+
+        <!--<ListBox x:Name="MyImageList" ItemsSource="{Binding}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel>
+                <CheckBox IsChecked="{Binding Path=IsSave}" Content="{Binding Path=Name}"/>
+
+                <Image Source="{Binding Path=Image}" StretchDirection="DownOnly"/>
+
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+          
+        </ListBox>-->
+
+
       </DockPanel>
     </DockPanel>
   </Grid>
