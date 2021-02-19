@@ -22,12 +22,12 @@ namespace _20210217_レイアウトListboxと画像
     public partial class MainWindow : Window
     {
         System.Collections.ObjectModel.ObservableCollection<MyData> MyDatas;
-        
+
         public MainWindow()
         {
             InitializeComponent();
 
-           
+
             this.VisualBitmapScalingMode = BitmapScalingMode.Fant;
 
             MyDatas = new();
@@ -44,7 +44,7 @@ namespace _20210217_レイアウトListboxと画像
             AddItem(GetNowText(), new BitmapImage(new Uri(@"D:\ブログ用\20210216_Pixcren124_16.png")), true);
 
 
-            
+
         }
 
         private string GetNowText()
@@ -52,26 +52,16 @@ namespace _20210217_レイアウトListboxと画像
             DateTime ima = DateTime.Now;
             return ima.ToString("yyyyMMdd_hhmmss_fff");
         }
-        private void AddItem(string name,BitmapSource image,bool isSaved)
+        private void AddItem(string name, BitmapSource image, bool isSaved)
         {
-            MyDatas.Add(new MyData(name, image, isSaved));
+            MyDatas.Add(new MyData(name, image, isSaved, "dammyPath"));
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             var neko = MyDatas;
 
-            DataTemplate itemTemp = MyListBox.ItemTemplate;
-            
-            //var ttt = MyListBox.ItemTemplate.FindName("MyCheckBox", );
-            
-
-            //var dttcb = dTemp.FindName("MyCheckBox", MyListBox);
-
-            var tp = MyListBox.Template;
-            var cb = tp.FindName("MyCheckBox", MyListBox);
-            //VisualTreeHelper.GetChild(MyListBox.Template, 0);
-
+          
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
@@ -81,10 +71,19 @@ namespace _20210217_レイアウトListboxと画像
 
         private void MyListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //var data = (MyData)MyListBox.SelectedItem;
-            //MyImage.Source = data.Image;
+            var data = (MyData)MyListBox.SelectedItem;
+            MyImage.Source = data.Image;
             //MyImageList.ScrollIntoView(MyDatas[MyListBox.SelectedIndex]);
         }
+
+        private void MyButtonSave_Click(object sender, RoutedEventArgs e)
+        {
+            var neko = (Button)sender;
+            var dc = neko.DataContext;
+
+        }
+
+
     }
 
 
@@ -92,18 +91,18 @@ namespace _20210217_レイアウトListboxと画像
 
     public class MyData
     {
-        public MyData(string name, BitmapSource image, bool isSave)
+        public MyData(string name, BitmapSource image, bool isSave, string savePath)
         {
             Name = name;
             Image = image;
             IsSaved = isSave;
-
+            SavePath = savePath;
         }
 
         public string Name { get; set; }
         public BitmapSource Image { get; set; }
         public bool IsSaved { get; set; }
-        
+        public string SavePath { get; set; }
     }
 
 

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210217_レイアウトListboxと画像"
+        xmlns:MyNamespace="clr-namespace:_20210217_レイアウトListboxと画像"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="600"
         Name="MyMainWindow">
@@ -20,38 +21,29 @@
 
       <DockPanel>
 
+     
+
         <ListBox x:Name="MyListBox" ItemsSource="{Binding}" SelectionMode="Extended"
                  SelectionChanged="MyListBox_SelectionChanged">
           <ListBox.ItemTemplate>
             <DataTemplate>
-              <StackPanel Orientation="Horizontal" Margin="0,5">
-                <CheckBox IsChecked="{Binding Path=IsSaved}" Name="MyCheckBox" VerticalAlignment="Center"
+              <DockPanel Margin="10,12">
+                <CheckBox DockPanel.Dock="top" IsChecked="{Binding Path=IsSaved}" Name="MyCheckBox" VerticalAlignment="Center"
                           Content="{Binding Path=Name}"/>
+                <Button DockPanel.Dock="Top" x:Name="MyButtonSave" Content="save" Click="MyButtonSave_Click"/>
                 <Image Source="{Binding Path=Image}" StretchDirection="DownOnly" HorizontalAlignment="Left"
+                       MaxWidth="200"
                        Width="{Binding ElementName=MyMainWindow, Path=ActualWidth, Converter={StaticResource MyConv}}"/>
-              </StackPanel>
+              </DockPanel>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
 
-        <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
           <Image x:Name="MyImage" Stretch="None" Source="{Binding}"/>
-        </ScrollViewer>-->
+        </ScrollViewer>
 
-        <!--<ListBox x:Name="MyImageList" ItemsSource="{Binding}">
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <StackPanel>
-                <CheckBox IsChecked="{Binding Path=IsSave}" Content="{Binding Path=Name}"/>
-
-                <Image Source="{Binding Path=Image}" StretchDirection="DownOnly"/>
-
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-          
-        </ListBox>-->
-
+      
 
       </DockPanel>
     </DockPanel>
