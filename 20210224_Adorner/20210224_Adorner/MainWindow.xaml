@@ -1,0 +1,18 @@
+﻿<Window x:Class="_20210224_Adorner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_20210224_Adorner"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="400">
+  <Grid>
+    <StackPanel x:Name="MyStackPanel">
+      <TextBox Text="text"/>
+      <local:ResizableTextBox Text="resizable"/>
+      <local:MyTextBox Text="mytextbox"/>
+      <local:MyTextBox2 Text="mytextbox2"/>
+      <local:MyTextBox3 Text="mytextbox3"/>
+    </StackPanel>
+  </Grid>
+</Window>
