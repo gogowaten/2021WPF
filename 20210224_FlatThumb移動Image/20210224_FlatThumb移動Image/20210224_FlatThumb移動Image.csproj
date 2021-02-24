@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <RootNamespace>_20210224_FlatThumb移動Image</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="collection_1.png" />
+    <None Remove="collection_2.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="collection_1.png" />
+    <EmbeddedResource Include="collection_2.png" />
+  </ItemGroup>
+
+</Project>
