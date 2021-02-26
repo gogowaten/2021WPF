@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls.Primitives;
 
+//WPF、Image(画像)をマウスドラッグ移動、ThumbのTemplateを変更して作成 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/02/27/005213
 
 namespace _20210226_FlatThumb移動画像
 {    
