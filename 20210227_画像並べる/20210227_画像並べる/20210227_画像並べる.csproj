@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <RootNamespace>_20210227_画像並べる</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>
