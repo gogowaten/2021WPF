@@ -23,6 +23,7 @@ namespace _20210227_thumb移動入れ替え
     public partial class MainWindow : Window
     {
         private ObservableCollection<FlatThumb> MyThumbs;
+        private double moto重なり面積;
         public MainWindow()
         {
             InitializeComponent();
@@ -41,11 +42,10 @@ namespace _20210227_thumb移動入れ替え
                     MyCanvas.Children.Add(t);
                     Canvas.SetLeft(t, x * 100);
                     Canvas.SetTop(t, y * 100);
-                    t.DragDelta += T_DragDelta;
+                    t.DragDelta += Thumb_DragDelta;
                     t.DragCompleted += Thumb_DragCompleted;
                     MyThumbs.Add(t);
                 }
-
             }
         }
 
@@ -69,13 +69,13 @@ namespace _20210227_thumb移動入れ替え
             var p = MyCanvas.PointToScreen(new Point());
             RectangleGeometry tg = GetGeometry(t, p);
             List<double> kasanai面積 = new();
-            int tID = GetNowIndex(t);
+            int tID = MyThumbs.IndexOf(t);//ドラッグ移動中ThumbのIndex
             MyStatus.Content = tID.ToString();
+
+            //重なり面積のリスト作成
             for (int i = 0; i < MyThumbs.Count; i++)
             {
-                RectangleGeometry g = GetGeometry(MyThumbs[i], p);
-                PathGeometry cg = Geometry.Combine(tg, g, GeometryCombineMode.Intersect, null);
-                Rect bound = cg.Bounds;
+                Rect bound = Geometry.Combine(tg, GetGeometry(MyThumbs[i], p), GeometryCombineMode.Intersect, null).Bounds;
                 if (bound == Rect.Empty)
                 {
                     kasanai面積.Add(0);
@@ -86,6 +86,7 @@ namespace _20210227_thumb移動入れ替え
                 }
             }
 
+            //重なり面積が4000以上のThumbがあれば、移動中Thumbと入れ替える
             int saki = 0;
             double max = 0;
             for (int i = 0; i < kasanai面積.Count; i++)
@@ -96,15 +97,27 @@ namespace _20210227_thumb移動入れ替え
                     saki = i;
                 }
             }
-            if (max > 4000)
-            {
-                Idou(saki, tID, t);
 
+            //元の位置との重なり面積
+            int x = tID % 3 * 100;
+            int y = tID / 3 * 100;
+            var motoRect = new RectangleGeometry(new Rect(new Point(x, y), new Size(100, 100)));
+            var moto重なりbound = Geometry.Combine(motoRect, tg, GeometryCombineMode.Intersect, null).Bounds;
+            var moto重なり面積temp = moto重なりbound.Width * moto重なりbound.Height;
+
+            if (max > 4000 && moto重なり面積 > moto重なり面積temp)
+            {
+                Idou(saki, tID, t, tg);
+            }
+            else
+            {
+                moto重なり面積 = moto重なり面積temp;
             }
         }
-        private void Idou(int saki, int tID, FlatThumb t)
-        {
 
+        //Thumbの場所入れ替え
+        private void Idou(int saki, int tID, FlatThumb t, RectangleGeometry tg)
+        {
             if (saki > tID)
             {
                 for (int tt = tID + 1; tt <= saki; tt++)
@@ -152,21 +165,15 @@ namespace _20210227_thumb移動入れ替え
                 MyThumbs.Insert(saki, t);
             }
 
+            //元の位置との重なり面積
+            int x = saki % 3 * 100;
+            int y = saki / 3 * 100;
+            var motoRect = new RectangleGeometry(new Rect(new Point(x, y), new Size(100, 100)));
+            var moto重なりbound = Geometry.Combine(motoRect, tg, GeometryCombineMode.Intersect, null).Bounds;
+            moto重なり面積 = moto重なりbound.Width * moto重なりbound.Height;
 
         }
-        private int GetNowIndex(FlatThumb t)
-        {
-            int tID = 0;
-            for (int i = 0; i < MyThumbs.Count; i++)
-            {
-                if (MyThumbs[i] == t)
-                {
-                    tID = i;
-                    break;
-                }
-            }
-            return tID;
-        }
+
         private RectangleGeometry GetGeometry(FlatThumb t, Point p)
         {
             Rect tr = new((Point)Point.Subtract(t.PointToScreen(new Point()), p), new Size(100, 100));
@@ -175,7 +182,7 @@ namespace _20210227_thumb移動入れ替え
         }
 
 
-        private void T_DragDelta(object sender, DragDeltaEventArgs e)
+        private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             FlatThumb t = sender as FlatThumb;
             Canvas.SetLeft(t, Canvas.GetLeft(t) + e.HorizontalChange);
