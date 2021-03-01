@@ -1,30 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Controls.Primitives;
 using System.Collections.ObjectModel;
 
+// _20210227_thumb移動入れ替え
+//↑の改良版、入れ替え処理判定を面積から距離にした
 
 namespace _20210301_Thumb移動入れ替えクラス
 {
     public partial class MainWindow : Window
     {
         private ObservableCollection<FlatThumb> MyThumbs;
-        private const int MASU_X = 2;
-        private const int MASU_Y = 2;
-        private const int MASU_WIDTH = 160;
-        private const int MASU_HEIGHT = 90;
+        private const int MASU_X = 12;
+        private const int MASU_Y = 5;
+        private const int MASU_WIDTH = 50;
+        private const int MASU_HEIGHT = 80;
         private List<Point> MyPoints;//indexに対応する座標
         private double Paste距離;//元の位置との距離記録用
 
@@ -64,8 +57,6 @@ namespace _20210301_Thumb移動入れ替えクラス
                     MyPoints.Add(p);
                 }
             }
-
-
         }
 
         //ドラッグ移動終了イベント時、
@@ -174,7 +165,6 @@ namespace _20210301_Thumb移動入れ替えクラス
             Idou移動中処理(t, x, y);
         }
     }
-
 
 
 
