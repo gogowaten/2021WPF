@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31019.35
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20210302_Thumb移動入れ替え2回め", "20210302_Thumb移動入れ替え2回め\20210302_Thumb移動入れ替え2回め.csproj", "{031E0B0A-CA12-431C-AC4D-2582A0F86F89}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{031E0B0A-CA12-431C-AC4D-2582A0F86F89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{031E0B0A-CA12-431C-AC4D-2582A0F86F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{031E0B0A-CA12-431C-AC4D-2582A0F86F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{031E0B0A-CA12-431C-AC4D-2582A0F86F89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A37B6582-C82A-49A5-932F-5B9E18D9E10A}
+	EndGlobalSection
+EndGlobal
