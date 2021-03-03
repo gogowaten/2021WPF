@@ -13,10 +13,10 @@ namespace _20210302_Thumb移動入れ替え2回め
 {
     public partial class MainWindow : Window
     {
-        private const int MASU_X = 5;//横に並べる個数指定
+        private const int MASU_X = 3;//横に並べる個数指定
         private const int MASU_Y = 3;//縦
-        private const int MASU_WIDTH = 100;//Thumbの横幅指定
-        private const int MASU_HEIGHT = 100;//縦幅
+        private const int MASU_WIDTH = 80;//Thumbの横幅指定
+        private const int MASU_HEIGHT = 80;//縦幅
         //Thumbのリスト
         private ObservableCollection<FlatThumb> MyThumbs;
         //座標リスト
