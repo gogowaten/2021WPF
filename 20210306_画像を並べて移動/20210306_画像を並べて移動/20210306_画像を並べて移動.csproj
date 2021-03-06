@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <RootNamespace>_20210306_画像を並べて移動</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="ControlLibraryCore20200620">
+      <HintPath>..\..\..\userControl\ControlLibraryCore20200620\ControlLibraryCore20200620\bin\x64\Release\netcoreapp3.1\ControlLibraryCore20200620.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

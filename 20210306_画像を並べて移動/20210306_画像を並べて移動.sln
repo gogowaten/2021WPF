@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31025.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20210306_画像を並べて移動", "20210306_画像を並べて移動\20210306_画像を並べて移動.csproj", "{DE527B8E-CA12-4BF0-9B20-0FA3F17AA28F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE527B8E-CA12-4BF0-9B20-0FA3F17AA28F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE527B8E-CA12-4BF0-9B20-0FA3F17AA28F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE527B8E-CA12-4BF0-9B20-0FA3F17AA28F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE527B8E-CA12-4BF0-9B20-0FA3F17AA28F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {337D5D1B-3513-44B9-B7FC-D2B4846B3CE4}
+	EndGlobalSection
+EndGlobal
