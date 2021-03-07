@@ -1,0 +1,9 @@
+﻿<Application x:Class="_20210307_画像拡大縮小保存test.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:_20210307_画像拡大縮小保存test"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>
