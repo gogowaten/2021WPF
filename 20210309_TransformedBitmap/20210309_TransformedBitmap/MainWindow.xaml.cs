@@ -50,7 +50,7 @@ namespace _20210309_TransformedBitmap
             wBmp.Freeze();//要る？
             MyStackPanel.Children.Add(new Image() { Source = wBmp, Stretch = Stretch.None });
             Clipboard.SetImage(wBmp);
-
+            
 
         }
     }
