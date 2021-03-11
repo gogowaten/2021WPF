@@ -1,0 +1,9 @@
+﻿<Application x:Class="_20210311_複数縮小画像DrawingVisual_RenderTargetBitmap.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:_20210311_複数縮小画像DrawingVisual_RenderTargetBitmap"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>
