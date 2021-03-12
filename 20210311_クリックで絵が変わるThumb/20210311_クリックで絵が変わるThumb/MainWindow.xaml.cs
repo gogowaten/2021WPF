@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Controls.Primitives;
 
+//これは失敗、よくわからん
 
 namespace _20210311_クリックで絵が変わるThumb
 {
@@ -73,6 +74,7 @@ namespace _20210311_クリックで絵が変わるThumb
             
         }
 
+        //マウスオーバーで表示を変化させようとしたけど、無反応
         private void MyLabel_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var mdo = this.IsMouseDirectlyOver;

@@ -1,0 +1,9 @@
+﻿<Application x:Class="_2021031_画像ファイルから画像並べ1枚に.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:_2021031_画像ファイルから画像並べ1枚に"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>
