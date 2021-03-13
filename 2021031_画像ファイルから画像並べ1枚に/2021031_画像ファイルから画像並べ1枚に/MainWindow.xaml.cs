@@ -17,19 +17,23 @@ using System.Windows.Controls.Primitives;
 
 namespace _2021031_画像ファイルから画像並べ1枚に
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        private int MasuYoko = 2;
+        private double MasuSize = 200;
         private List<FlatThumb> MyThumbs = new();
         public MainWindow()
         {
             InitializeComponent();
             this.AllowDrop = true;
             this.Drop += MainWindow_Drop;
+            this.Top = 0; this.Left = 0;
 
 
+        }
+
+        private void BindingTest()
+        {
             TextBlock tb = new();
             MyCanvas.Children.Add(tb);
             Canvas.SetLeft(tb, 0);
@@ -68,17 +72,31 @@ namespace _2021031_画像ファイルから画像並べ1枚に
                 {
                     Source = source,
                     Stretch = Stretch.Uniform,
-                    Width = 200,
-                    Height = 200,
+                    Width = MasuSize,
+                    Height = MasuSize,
                 };
-                var t = new FlatThumb(img, 100, 0);
+                source.Freeze();
+
+                int count = MyThumbs.Count;
+                double x = count % MasuYoko * MasuSize;
+                double y = count / MasuYoko * MasuSize;
+                var t = new FlatThumb(img, x, y);
                 MyThumbs.Add(t);
                 MyCanvas.Children.Add(t);
-                //t.MySetLocate(0, i * 20);
                 t.DragDelta += T_DragDelta;
-            }
 
+            }
         }
+
+        private void Replace()
+        {
+            for (int i = 0; i < MyThumbs.Count; i++)
+            {
+                MyThumbs[i].MyXLocate = (i % MasuYoko) * MasuSize;
+                MyThumbs[i].MyYLocate = (i / MasuYoko) * MasuSize;
+            }
+        }
+
 
         private void T_DragDelta(object sender, DragDeltaEventArgs e)
         {
@@ -116,6 +134,51 @@ namespace _2021031_画像ファイルから画像並べ1枚に
             t.MyXLocate = 222;
             var x = Canvas.GetLeft(t);
         }
+
+        private void MyButtonSave_Click(object sender, RoutedEventArgs e)
+        {
+            var path = MakeSavePath();
+            var source = MakeSaveBitmapSource();
+            Save(source, path);
+        }
+        private BitmapSource MakeSaveBitmapSource()
+        {
+            DrawingVisual dv = new();
+            using (var dc = dv.RenderOpen())
+            {
+                for (int i = 0; i < MyThumbs.Count; i++)
+                {
+                    FlatThumb t = MyThumbs[i];
+                    Rect r = new(t.MyXLocate, t.MyYLocate, MasuSize, MasuSize);
+                    dc.DrawImage(t.MyBitmap, r);
+                }                
+            }
+            int w =(int)( MasuYoko * MasuSize);
+            int h =(int)( MyThumbs.Count / MasuYoko * MasuSize);
+            RenderTargetBitmap rb = new(w, h, 96, 96, PixelFormats.Pbgra32);
+            rb.Render(dv);
+            return rb;
+        }
+        private string MakeSavePath()
+        {
+            DateTime time = DateTime.Now;
+            string ts = time.ToString("yyyyMMdd_hhmmssfff");
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            path = System.IO.Path.Combine(path, ts);
+            path += ".png";
+            return path;
+        }
+        private void Save(BitmapSource source, string path)
+        {
+            PngBitmapEncoder encoder = new();
+            encoder.Frames.Add(BitmapFrame.Create(source));
+            using (var fs = new System.IO.FileStream(
+                path, System.IO.FileMode.CreateNew, System.IO.FileAccess.Write))
+            {
+                encoder.Save(fs);
+            }
+
+        }
     }
 
 
@@ -123,8 +186,8 @@ namespace _2021031_画像ファイルから画像並べ1枚に
     public class FlatThumb : Thumb
     {
         private Canvas MyPanel;
-
-        public System.Collections.ObjectModel.ObservableCollection<ElementData> MyElementDatas = new();
+        public BitmapSource MyBitmap;
+        //public System.Collections.ObjectModel.ObservableCollection<ElementData> MyElementDatas = new();
 
         public double MyXLocate
         {
@@ -147,11 +210,11 @@ namespace _2021031_画像ファイルから画像並べ1枚に
 
 
 
-        public FlatThumb(UIElement element, double x = 0, double y = 0, double ex = 0, double ey = 0)
+        public FlatThumb(Image img, double x = 0, double y = 0, double ex = 0, double ey = 0)
         {
             this.Loaded += (s, e) => { this.VisualBitmapScalingMode = BitmapScalingMode.Fant; };
-            
-            MyElementDatas.CollectionChanged += ElementDatas_CollectionChanged;
+
+            //MyElementDatas.CollectionChanged += ElementDatas_CollectionChanged;
 
             ControlTemplate template = new(typeof(Thumb));
             template.VisualTree = new FrameworkElementFactory(typeof(Canvas), "panel");
@@ -159,11 +222,12 @@ namespace _2021031_画像ファイルから画像並べ1枚に
             this.ApplyTemplate();
             MyPanel = (Canvas)template.FindName("panel", this);
             MyPanel.Background = Brushes.Aqua;
+            
+            //var data = new ElementData(element, ex, ey);
+            //MyElementDatas.Add(data);
 
-            var data = new ElementData(element, ex, ey);
-            MyElementDatas.Add(data);
-
-            MyAddElement(element, ex, ey);
+            MyAddElement(img, ex, ey);
+            MyBitmap = img.Source as BitmapSource;
 
             MyXLocate = x;
             var b = new Binding();
@@ -195,8 +259,8 @@ namespace _2021031_画像ファイルから画像並べ1枚に
             MyYLocate += vChanged;
 
         }
-      
-      
+
+
         public void MyElementSetLocate(UIElement element, double x, double y)
         {
             //ElementDatas.IndexOf(element)
@@ -220,18 +284,18 @@ namespace _2021031_画像ファイルから画像並べ1枚に
         }
     }
 
-    public class ElementData
-    {
-        public ElementData(UIElement uIElement, double x = 0, double y = 0)
-        {
-            UIElement = uIElement;
-            Point = new Point(x, y);
-        }
+    //public class ElementData
+    //{
+    //    public ElementData(UIElement uIElement, double x = 0, double y = 0)
+    //    {
+    //        UIElement = uIElement;
+    //        Point = new Point(x, y);
+    //    }
 
-        public UIElement UIElement { get; set; }
-        public Point Point { get; set; }
+    //    public UIElement UIElement { get; set; }
+    //    public Point Point { get; set; }
 
-    }
+    //}
 
 
 }
