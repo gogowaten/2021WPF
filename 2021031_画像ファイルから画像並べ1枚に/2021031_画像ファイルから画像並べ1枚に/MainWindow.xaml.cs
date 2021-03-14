@@ -32,31 +32,31 @@ namespace _2021031_画像ファイルから画像並べ1枚に
 
         }
 
-        private void BindingTest()
-        {
-            TextBlock tb = new();
-            MyCanvas.Children.Add(tb);
-            Canvas.SetLeft(tb, 0);
-            Canvas.SetTop(tb, 20);
+        //private void BindingTest()
+        //{
+        //    TextBlock tb = new();
+        //    MyCanvas.Children.Add(tb);
+        //    Canvas.SetLeft(tb, 0);
+        //    Canvas.SetTop(tb, 20);
 
-            Slider s = new();
-            s.Value = 20;
-            Canvas.SetLeft(s, 0);
-            Canvas.SetTop(s, 40);
-            s.Width = 100;
-            MyCanvas.Children.Add(s);
+        //    Slider s = new();
+        //    s.Value = 20;
+        //    Canvas.SetLeft(s, 0);
+        //    Canvas.SetTop(s, 40);
+        //    s.Width = 100;
+        //    MyCanvas.Children.Add(s);
 
-            //Binding、ソースがスライダー、ターゲットがテキストブロックの場合
-            var b = new Binding();
-            b.Source = s;
-            b.Path = new PropertyPath(Slider.ValueProperty);
+        //    //Binding、ソースがスライダー、ターゲットがテキストブロックの場合
+        //    var b = new Binding();
+        //    b.Source = s;
+        //    b.Path = new PropertyPath(Slider.ValueProperty);
 
-            //セット方法1、SetBindingを使う
-            //tb.SetBinding(TextBlock.TextProperty, b);
+        //    //セット方法1、SetBindingを使う
+        //    //tb.SetBinding(TextBlock.TextProperty, b);
 
-            //セット方法2、BindingOperationsを使う
-            BindingOperations.SetBinding(tb, TextBlock.TextProperty, b);
-        }
+        //    //セット方法2、BindingOperationsを使う
+        //    BindingOperations.SetBinding(tb, TextBlock.TextProperty, b);
+        //}
 
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
@@ -84,10 +84,17 @@ namespace _2021031_画像ファイルから画像並べ1枚に
                 MyThumbs.Add(t);
                 MyCanvas.Children.Add(t);
                 t.DragDelta += T_DragDelta;
-
             }
+            SetCanvasSize();
         }
 
+        //スクロールバー表示できるようにCanvasのサイズを指定する
+        private void SetCanvasSize()
+        {
+            if (MyCanvas == null) return;
+            MyCanvas.Width = MasuSize * MasuYoko;
+            MyCanvas.Height = (MyThumbs.Count + 1) / MasuYoko * MasuSize;// ((int)Math.Ceiling(MyThumbsCount / (double)MyData.MasuX)) * MyHeight;
+        }
         private void Replace()
         {
             for (int i = 0; i < MyThumbs.Count; i++)
@@ -149,13 +156,31 @@ namespace _2021031_画像ファイルから画像並べ1枚に
                 for (int i = 0; i < MyThumbs.Count; i++)
                 {
                     FlatThumb t = MyThumbs[i];
-                    Rect r = new(t.MyXLocate, t.MyYLocate, MasuSize, MasuSize);
+                    //アスペクト比保持でのサイズ計算
+                    double rate;
+                    int pw = t.MyBitmap.PixelWidth;
+                    int ph = t.MyBitmap.PixelHeight;
+                    if (pw > ph)
+                        rate = MasuSize / pw;
+                    else
+                        rate = MasuSize / ph;
+
+                    int w = (int)(pw * rate);
+                    int h = (int)(ph * rate);
+
+                    //中央揃えの座標計算
+                    int x = (int)t.MyXLocate + (int)(MasuSize - w) / 2;
+                    int y = (int)t.MyYLocate + (int)(MasuSize - h) / 2;
+                    //描画座標と描画サイズRect
+                    Rect r = new(x, y, w, h);
+                    //描画
                     dc.DrawImage(t.MyBitmap, r);
-                }                
+                }
             }
-            int w =(int)( MasuYoko * MasuSize);
-            int h =(int)( MyThumbs.Count / MasuYoko * MasuSize);
-            RenderTargetBitmap rb = new(w, h, 96, 96, PixelFormats.Pbgra32);
+            //最終的な画像サイズ計算
+            int rw = (int)(MasuYoko * MasuSize);
+            int rh = (int)((MyThumbs.Count + 1) / MasuYoko * MasuSize);
+            RenderTargetBitmap rb = new(rw, rh, 96, 96, PixelFormats.Pbgra32);
             rb.Render(dv);
             return rb;
         }
@@ -222,12 +247,15 @@ namespace _2021031_画像ファイルから画像並べ1枚に
             this.ApplyTemplate();
             MyPanel = (Canvas)template.FindName("panel", this);
             MyPanel.Background = Brushes.Aqua;
-            
+            MyPanel.Width = img.Width;
+            MyPanel.Height = img.Height;
+
             //var data = new ElementData(element, ex, ey);
             //MyElementDatas.Add(data);
 
             MyAddElement(img, ex, ey);
             MyBitmap = img.Source as BitmapSource;
+
 
             MyXLocate = x;
             var b = new Binding();
