@@ -20,9 +20,9 @@ namespace _2021031_画像ファイルから画像並べ1枚に
     public partial class MainWindow : Window
     {
         private int MasuYoko = 2;
-        private double MasuWidth = 200;//ある程度固定
-        private double MasuHeight = 0;//最初の画像のアスペクト比に追従
-        private double MyAspectRatio = 0;//1枚目のアスペクト比
+        private int MasuWidth = 200;//ある程度固定
+        //private int MasuHeight = 200;//最初の画像のアスペクト比に追従
+        //private double MyAspectRatio = 0;//1枚目のアスペクト比
         private List<FlatThumb> MyThumbs = new();
         public MainWindow()
         {
@@ -70,23 +70,23 @@ namespace _2021031_画像ファイルから画像並べ1枚に
             for (int i = 0; i < paths.Count; i++)
             {
                 BitmapSource source = MakeBitmapSource(paths[i]);
-                if (MasuHeight == 0)
-                {
-                    MasuHeight = source.PixelHeight * (MasuWidth / source.PixelWidth);
-                    MyAspectRatio = source.PixelWidth / (double)source.PixelHeight;
-                }
+                //if (MasuHeight == 0)
+                //{
+                //    MasuHeight = source.PixelHeight * (MasuWidth / source.PixelWidth);
+                //    MyAspectRatio = source.PixelWidth / (double)source.PixelHeight;
+                //}
                 Image img = new()
                 {
                     Source = source,
                     Stretch = Stretch.Uniform,
                     Width = MasuWidth,
-                    Height = MasuHeight,
+                    Height = MasuWidth,
                 };
                 source.Freeze();
 
                 int count = MyThumbs.Count;
                 double x = count % MasuYoko * MasuWidth;
-                double y = count / MasuYoko * MasuHeight;
+                double y = count / MasuYoko * MasuWidth;
                 var t = new FlatThumb(img, x, y);
                 MyThumbs.Add(t);
                 MyCanvas.Children.Add(t);
@@ -100,14 +100,14 @@ namespace _2021031_画像ファイルから画像並べ1枚に
         {
             if (MyCanvas == null) return;
             MyCanvas.Width = MasuWidth * MasuYoko;
-            MyCanvas.Height = (MyThumbs.Count + 1) / MasuYoko * MasuHeight;// ((int)Math.Ceiling(MyThumbsCount / (double)MyData.MasuX)) * MyHeight;
+            MyCanvas.Height = (MyThumbs.Count + 1) / MasuYoko * MasuWidth;// ((int)Math.Ceiling(MyThumbsCount / (double)MyData.MasuX)) * MyHeight;
         }
         private void Replace()
         {
             for (int i = 0; i < MyThumbs.Count; i++)
             {
                 MyThumbs[i].MyXLocate = (i % MasuYoko) * MasuWidth;
-                MyThumbs[i].MyYLocate = (i / MasuYoko) * MasuHeight;
+                MyThumbs[i].MyYLocate = (i / MasuYoko) * MasuWidth;
             }
         }
 
@@ -157,42 +157,97 @@ namespace _2021031_画像ファイルから画像並べ1枚に
         }
         private BitmapSource MakeSaveBitmapSource()
         {
-            DrawingVisual dv = new();
+            //描画する座標とサイズを取得
+            List<Rect> drawRects = MakeRects();
 
-            using (var dc = dv.RenderOpen())
+            DrawingVisual dv = new();
+            using (DrawingContext dc = dv.RenderOpen())
             {
                 for (int i = 0; i < MyThumbs.Count; i++)
                 {
+                    //DrawingContextに描画
                     FlatThumb t = MyThumbs[i];
-                    //アスペクト比保持でのサイズ計算
-                    int pw = t.MyBitmap.PixelWidth;
-                    int ph = t.MyBitmap.PixelHeight;
-                    double aspect = (double)pw / ph;
-                    double rate;
-                    if (MyAspectRatio > aspect)
-                        rate = MasuHeight / ph;
-                    else
-                        rate = MasuWidth / pw;
-
-                    int w = (int)(pw * rate);
-                    int h = (int)(ph * rate);
-
-                    //中央揃えの座標計算
-                    int x = (int)t.MyXLocate + (int)(MasuWidth - w) / 2;
-                    int y = (int)t.MyYLocate + (int)(MasuHeight - h) / 2;
-                    //描画座標と描画サイズRect
-                    Rect r = new(x, y, w, h);
-                    //描画
-                    dc.DrawImage(t.MyBitmap, r);
+                    dc.DrawImage(t.MyBitmap, drawRects[i]);
                 }
             }
-            //最終的な画像サイズ計算
-            int rw = (int)(MasuYoko * MasuWidth);
-            int rh = (int)((MyThumbs.Count + 1) / MasuYoko * MasuHeight);
+            //最終的な全体画像サイズ計算、RectのUnionを使う
+            Rect dRect = new();
+            for (int i = 0; i < drawRects.Count; i++)
+            {
+                dRect = Rect.Union(dRect, drawRects[i]);
+            }
+            //RenderTargetBitmapに描画、BitmapSource完成
+            int rw = (int)dRect.Width;
+            int rh = (int)dRect.Height;
             RenderTargetBitmap rb = new(rw, rh, 96, 96, PixelFormats.Pbgra32);
             rb.Render(dv);
             return rb;
         }
+
+        //描画サイズと座標の計算
+        //E:\オレ\エクセル\作りたいアプリのメモ.xlsm_2021031_$A$214
+        private List<Rect> MakeRects()
+        {
+            List<Rect> drawRects = new();
+
+            //サイズとX座標
+            //指定横幅に縮小、アスペクト比は保持
+            for (int i = 0; i < MyThumbs.Count; i++)
+            {
+                //サイズ
+                BitmapSource bmp = MyThumbs[i].MyBitmap;
+                double width = bmp.PixelWidth;
+                double ratio = MasuWidth / width;
+                if (ratio > 1) ratio = 1;
+                width *= ratio;
+
+                //X座標、中央揃え
+                double x = (i % MasuYoko) * MasuWidth;
+                x = x + (MasuWidth - width) / 2;
+
+                //Y座標は後で計算
+                drawRects.Add(new(x, 0, width, bmp.PixelHeight * ratio));
+            }
+
+            //Y座標計算
+            //Y座標はその行にある画像の中で最大の高さを求めて、中央揃えのY座標を計算
+            //行ごとに計算する必要がある
+
+            //今の行の基準Y座標、次の行へは今の行の高さを加算していく
+            double kijun = 0;            
+            int count = 0;
+            while (count < MyThumbs.Count)
+            {
+                int end = count + MasuYoko;
+                if (end > MyThumbs.Count) end = MyThumbs.Count;
+                //Y座標計算
+                kijun += SubFunc(count, end, kijun);
+                //横に並べる個数が3なら0 3 6…
+                count += MasuYoko;
+            }
+
+            //Y座標計算
+            //開始と終了Index指定、基準値
+            double SubFunc(int begin, int end, double kijun)
+            {
+                //行の高さを求める(最大の画像が収まる)
+                double max = 0;
+                for (int i = begin; i < end; i++)
+                {
+                    if (drawRects[i].Height > max) max = drawRects[i].Height;
+                }
+                //Y座標 = 基準値 + (行の高さ - 画像の高さ) / 2
+                for (int i = begin; i < end; i++)
+                {
+                    Rect temp = drawRects[i];
+                    temp.Y = kijun + (max - drawRects[i].Height) / 2;
+                    drawRects[i] = temp;
+                }
+                return max;
+            }
+            return drawRects;
+        }
+
         private string MakeSavePath()
         {
             DateTime time = DateTime.Now;
@@ -217,9 +272,8 @@ namespace _2021031_画像ファイルから画像並べ1枚に
         private void MyButtonClear_Click(object sender, RoutedEventArgs e)
         {
             MyThumbs.Clear();
-            MasuHeight = 0;
             MyCanvas.Children.Clear();
-            MyAspectRatio = 0;
+            //MyAspectRatio = 0;
         }
     }
 
