@@ -42,7 +42,8 @@ namespace _20210318_画像連結テスト
 
             for (int i = 0; i < paths.Count; i++)
             {
-                BitmapSource source = MakeBitmapSource(paths[i]);
+                //BitmapSource source = FileToBitmapSource(paths[i],PixelFormats.Indexed2);
+                BitmapSource source = FileToBitmapSourceBgra32(paths[i]);
                 Image img = new()
                 {
                     Source = source,
@@ -59,7 +60,35 @@ namespace _20210318_画像連結テスト
         }
 
 
-        private BitmapSource MakeBitmapSource(string filePath, double dpiX = 96, double dpiY = 96)
+        /// <summary>
+        /// PixelFormatsやdpiなどは元の画像のまま画像読み込み
+        /// </summary>
+        /// <param name="filePath">フルパス</param>
+        /// <returns></returns>
+        private BitmapSource FileToBitmapSource(string filePath)
+        {
+            BitmapSource source = null;
+            try
+            {
+                using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                {
+                    source = BitmapFrame.Create(stream);
+                };
+            }
+            catch (Exception)
+            { }
+            return source;
+        }
+
+        //
+        /// <summary>
+        /// dpiを指定してファイルから画像読み込み
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="dpiX"></param>
+        /// <param name="dpiY"></param>
+        /// <returns></returns>
+        private BitmapSource FileToBitmapSource(string filePath, double dpiX = 96, double dpiY = 96)
         {
             BitmapSource source = null;
             try
@@ -76,11 +105,79 @@ namespace _20210318_画像連結テスト
                 };
             }
             catch (Exception)
-            {
-
-            }
+            { }
             return source;
         }
+
+        
+        /// <summary>
+        /// PixelFormatとdpiを指定してファイルから画像読み込み
+        /// </summary>
+        /// <param name="filePath">フルパス</param>
+        /// <param name="format">ピクセルフォーマット、画像と違ったときは指定フォーマットににコンバートする</param>
+        /// <param name="dpiX"></param>
+        /// <param name="dpiY"></param>
+        /// <returns></returns>
+        private BitmapSource FileToBitmapSource(string filePath, PixelFormat format, double dpiX = 96, double dpiY = 96)
+        {
+            BitmapSource source = null;
+            try
+            {
+                using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                {
+                    source = BitmapFrame.Create(stream);
+                    //画像と違ったときは指定フォーマットににコンバートする
+                    if (source.Format != format)
+                    {                        
+                        source = new FormatConvertedBitmap(source, format, null, 0);                        
+                    }
+                    int w = source.PixelWidth;
+                    int h = source.PixelHeight;
+                    int stride = (w * source.Format.BitsPerPixel + 7) / 8;
+                    var pixels = new byte[h * stride];
+                    source.CopyPixels(pixels, stride, 0);
+                    source = BitmapSource.Create(w, h, dpiX, dpiY, format, source.Palette, pixels, stride);
+                };
+            }
+            catch (Exception)
+            { }
+            return source;
+        }
+
+
+        //
+        /// <summary>
+        /// PixelFormatをBgar32固定、dpiは指定してファイルから画像読み込み
+        /// </summary>
+        /// <param name="filePath">フルパス</param>
+        /// <param name="dpiX"></param>
+        /// <param name="dpiY"></param>
+        /// <returns></returns>
+        private BitmapSource FileToBitmapSourceBgra32(string filePath, double dpiX = 96, double dpiY = 96)
+        {
+            BitmapSource source = null;
+            try
+            {
+                using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                {
+                    source = BitmapFrame.Create(stream);
+                    if(source.Format != PixelFormats.Bgra32)
+                    {
+                        source = new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
+                    }                    
+                    int w = source.PixelWidth;
+                    int h = source.PixelHeight;
+                    int stride = (w * source.Format.BitsPerPixel + 7) / 8;
+                    var pixels = new byte[h * stride];
+                    source.CopyPixels(pixels, stride, 0);
+                    source = BitmapSource.Create(w, h, dpiX, dpiY, PixelFormats.Bgra32, source.Palette, pixels, stride);
+                };
+            }
+            catch (Exception)
+            { }
+            return source;
+        }
+
 
         private void MyButtonSave_Click(object sender, RoutedEventArgs e)
         {
@@ -88,12 +185,8 @@ namespace _20210318_画像連結テスト
         }
         private void SaveFile()
         {
-            int width = (int)MySliderCellWidth.Value;
-            //横に並べる個数
-            int yokoCount = (int)(MyPanel.Width / MyImageSize);
-            var bmp = MyImages[0].Source as BitmapSource;
-            double scale = (double)width / bmp.PixelWidth;
-            int height = (int)(bmp.PixelHeight * scale);
+            //描画する座標とサイズを取得
+            List<Rect> drawRects = MakeRects();
 
             DrawingVisual dv = new();
             using (var dc = dv.RenderOpen())
@@ -101,14 +194,17 @@ namespace _20210318_画像連結テスト
                 for (int i = 0; i < MyImages.Count; i++)
                 {
                     BitmapSource source = MyImages[i].Source as BitmapSource;
-                    int x = (int)MySliderCellWidth.Value * (i % yokoCount);
-                    int y = height * (int)(i / (double)yokoCount);
-                    Rect r = new(x, y, width, height);
-                    dc.DrawImage(source, r);
+                    dc.DrawImage(source, drawRects[i]);
                 }
             }
-            width *= yokoCount;
-            height *= (int)Math.Ceiling(MyImages.Count / (double)yokoCount);
+            //最終的な全体画像サイズ計算、RectのUnionを使う
+            Rect dRect = new();
+            for (int i = 0; i < drawRects.Count; i++)
+            {
+                dRect = Rect.Union(dRect, drawRects[i]);
+            }
+            int width = (int)dRect.Width;
+            int height = (int)dRect.Height;
             RenderTargetBitmap render = new(width, height, 96, 96, PixelFormats.Pbgra32);
             render.Render(dv);
             SaveBitmapToPngFile(render, MakeSavePath());
@@ -119,21 +215,24 @@ namespace _20210318_画像連結テスト
         private List<Rect> MakeRects()
         {
             List<Rect> drawRects = new();
-
+            //横に並べる個数
+            int MasuYoko = (int)(MyPanel.Width / MyImageSize);
+            if (MasuYoko == 0) MasuYoko = 1;
+            int imageCount = MyImages.Count;
             //サイズとX座標
             //指定横幅に縮小、アスペクト比は保持
-            for (int i = 0; i < MyImages.Count; i++)
+            for (int i = 0; i < imageCount; i++)
             {
                 //サイズ
                 BitmapSource bmp = MyImages[i].Source as BitmapSource;
                 double width = bmp.PixelWidth;
-                double ratio = MasuWidth / width;
+                double ratio = MySliderCellWidth.Value / width;
                 if (ratio > 1) ratio = 1;
                 width *= ratio;
 
                 //X座標、中央揃え
-                double x = (i % MasuYoko) * MasuWidth;
-                x = x + (MasuWidth - width) / 2;
+                double x = (i % MasuYoko) * MySliderCellWidth.Value;
+                x = x + (MySliderCellWidth.Value - width) / 2;
 
                 //Y座標は後で計算
                 drawRects.Add(new(x, 0, width, bmp.PixelHeight * ratio));
@@ -146,10 +245,10 @@ namespace _20210318_画像連結テスト
             //今の行の基準Y座標、次の行へは今の行の高さを加算していく
             double kijun = 0;
             int count = 0;
-            while (count < MyThumbs.Count)
+            while (count < imageCount)
             {
                 int end = count + MasuYoko;
-                if (end > MyThumbs.Count) end = MyThumbs.Count;
+                if (end > imageCount) end = imageCount;
                 //Y座標計算
                 kijun += SubFunc(count, end, kijun);
                 //横に並べる個数が3なら0 3 6…
