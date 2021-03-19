@@ -12,13 +12,23 @@
     <DockPanel UseLayoutRounding="True">
       <Menu DockPanel.Dock="Top">
         <MenuItem Header="item1"/>
-        <Slider x:Name="MySlider" Value="300" Width="200" IsSnapToTickEnabled="True"
+        <Slider x:Name="MySliderPanelWidth" Value="400" Width="200" IsSnapToTickEnabled="True"
                 Minimum="80" Maximum="960" TickFrequency="10" LargeChange="40" SmallChange="40"/>
-        <TextBlock Text="{Binding ElementName=MySlider, Path=Value}"/>
+        <TextBlock Text="{Binding ElementName=MySliderPanelWidth, Path=Value, StringFormat=全体の表示幅0}"/>
+        
+        <!--<Slider x:Name="MySliderImageWidth" Value="200" Width="200" IsSnapToTickEnabled="True"
+                Minimum="80" Maximum="960" TickFrequency="10" LargeChange="40" SmallChange="40"/>
+        <TextBlock Text="{Binding ElementName=MySliderImageWidth, Path=Value, StringFormat=1つの表示幅0}"/>-->
+        
+        <Slider x:Name="MySliderCellWidth" Value="200" Width="200" IsSnapToTickEnabled="True"
+                Minimum="80" Maximum="960" TickFrequency="10" LargeChange="40" SmallChange="40"/>
+        <TextBlock Text="{Binding ElementName=MySliderCellWidth, Path=Value, StringFormat=1つの保存幅0}"/>
+        
+        <Button x:Name="MyButtonSave" Content="Save" Click="MyButtonSave_Click"/>
       </Menu>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <WrapPanel Name="MyPanel" Background="AliceBlue"
-                   Width="{Binding ElementName=MySlider, Path=Value}" FlowDirection="LeftToRight">
+                   Width="{Binding ElementName=MySliderPanelWidth, Path=Value}" FlowDirection="LeftToRight">
           <WrapPanel.Children >
             <!--<Border/>-->
           </WrapPanel.Children>
