@@ -70,10 +70,14 @@ namespace _20210318_画像連結テスト
             BitmapSource source = null;
             try
             {
-                using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                using (var stream = System.IO.File.OpenRead(filePath))
                 {
                     source = BitmapFrame.Create(stream);
-                };
+                }
+                //using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                //{
+                //    source = BitmapFrame.Create(stream);
+                //};
             }
             catch (Exception)
             { }
@@ -109,12 +113,12 @@ namespace _20210318_画像連結テスト
             return source;
         }
 
-        
+
         /// <summary>
         /// PixelFormatとdpiを指定してファイルから画像読み込み
         /// </summary>
         /// <param name="filePath">フルパス</param>
-        /// <param name="format">ピクセルフォーマット、画像と違ったときは指定フォーマットににコンバートする</param>
+        /// <param name="format">ピクセルフォーマット、画像と違ったときは指定フォーマットにコンバートする</param>
         /// <param name="dpiX"></param>
         /// <param name="dpiY"></param>
         /// <returns></returns>
@@ -128,8 +132,8 @@ namespace _20210318_画像連結テスト
                     source = BitmapFrame.Create(stream);
                     //画像と違ったときは指定フォーマットににコンバートする
                     if (source.Format != format)
-                    {                        
-                        source = new FormatConvertedBitmap(source, format, null, 0);                        
+                    {
+                        source = new FormatConvertedBitmap(source, format, null, 0);
                     }
                     int w = source.PixelWidth;
                     int h = source.PixelHeight;
@@ -161,10 +165,10 @@ namespace _20210318_画像連結テスト
                 using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                 {
                     source = BitmapFrame.Create(stream);
-                    if(source.Format != PixelFormats.Bgra32)
+                    if (source.Format != PixelFormats.Bgra32)
                     {
                         source = new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
-                    }                    
+                    }
                     int w = source.PixelWidth;
                     int h = source.PixelHeight;
                     int stride = (w * source.Format.BitsPerPixel + 7) / 8;
