@@ -42,7 +42,7 @@ namespace _20210318_画像連結テスト
 
             for (int i = 0; i < paths.Count; i++)
             {
-                //BitmapSource source = FileToBitmapSource(paths[i],PixelFormats.Indexed2);
+                //BitmapSource source = FileToBitmapSource(paths[i],PixelFormats.Indexed2);                
                 BitmapSource source = FileToBitmapSourceBgra32(paths[i]);
                 Image img = new()
                 {
@@ -60,29 +60,29 @@ namespace _20210318_画像連結テスト
         }
 
 
-        /// <summary>
-        /// PixelFormatsやdpiなどは元の画像のまま画像読み込み
-        /// </summary>
-        /// <param name="filePath">フルパス</param>
-        /// <returns></returns>
-        private BitmapSource FileToBitmapSource(string filePath)
-        {
-            BitmapSource source = null;
-            try
-            {
-                using (var stream = System.IO.File.OpenRead(filePath))
-                {
-                    source = BitmapFrame.Create(stream);
-                }
-                //using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
-                //{
-                //    source = BitmapFrame.Create(stream);
-                //};
-            }
-            catch (Exception)
-            { }
-            return source;
-        }
+        ///// <summary>
+        ///// PixelFormatsやdpiなどは元の画像のまま画像読み込み
+        ///// </summary>
+        ///// <param name="filePath">フルパス</param>
+        ///// <returns></returns>
+        //private BitmapSource FileToBitmapSource(string filePath)
+        //{
+        //    BitmapSource source = null;
+        //    try
+        //    {
+        //        using (var stream = System.IO.File.OpenRead(filePath))
+        //        {
+        //            source = BitmapFrame.Create(stream);
+        //        }
+        //        //using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+        //        //{
+        //        //    source = BitmapFrame.Create(stream);
+        //        //};
+        //    }
+        //    catch (Exception)
+        //    { }
+        //    return source;
+        //}
 
         //
         /// <summary>
