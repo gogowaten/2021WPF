@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
+//WPF、画像ファイルを開いてBitmapSourceで取得するときにdpi変換とPixelFormat変換 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/03/22/154357
+
 
 namespace _20210321_画像読み込み
 {
@@ -24,7 +19,12 @@ namespace _20210321_画像読み込み
         {
             InitializeComponent();
 
+            //拡大縮小表示の補完方法指定(dpiが96以外のとき用)、指定なしだとバイリニア法
+            //再近傍補完法
             //MyImage.Loaded += (s, e) => { RenderOptions.SetBitmapScalingMode(MyImage, BitmapScalingMode.NearestNeighbor); };
+            //高画質(バイキュービック法？)
+            //MyImage.Loaded += (s, e) => { RenderOptions.SetBitmapScalingMode(MyImage, BitmapScalingMode.Fant); };
+
         }
 
         //ドロップされたファイル群の先頭ファイルから画像読み込み
@@ -37,13 +37,13 @@ namespace _20210321_画像読み込み
             paths.Sort();
 
             //BitmapSource source = MakeBitmapSourceFromFile(paths[0]);
-            //BitmapSource source = MakeBitmapSourceFromFile(paths[0], 48, 48);
-            //BitmapSource source = MakeBitmapSourceFromFile(paths[0], 120, 120);            
-            //BitmapSource source = MakeBitmapSourceFromFile(paths[0], PixelFormats.Indexed2);
-            BitmapSource source = MakeBitmapSourceFromFile(paths[0], PixelFormats.Indexed2, 192, 192);
-            //BitmapSource source = MakeBitmapSourceFromFile(paths[0], PixelFormats.Indexed2, 48, 48);
-            //BitmapSource source = MakeBitmapSourceFromFile(paths[0], PixelFormats.Gray8);
-            //BitmapSource source = MakeBitmapSourceBgra32FromFile(paths[0]);
+            //BitmapSource source = MakeBitmapSourceDpiFromFile(paths[0]);
+            //BitmapSource source = MakeBitmapSourceDpiFromFile(paths[0], 120, 120);
+            //BitmapSource source = MakeBitmapSourceFormatFromFile(paths[0], PixelFormats.Indexed2);
+            //BitmapSource source = MakeBitmapSourceFormatFromFile(paths[0], PixelFormats.Indexed2, 192, 192);
+            //BitmapSource source = MakeBitmapSourceFormatFromFile(paths[0], PixelFormats.Indexed2, 48, 48);
+            //BitmapSource source = MakeBitmapSourceFormatFromFile(paths[0], PixelFormats.Gray8);
+            BitmapSource source = MakeBitmapSourceBgra32FromFile(paths[0]);
 
             source.Freeze();//要る？
             MyImage.Source = source;
@@ -51,7 +51,7 @@ namespace _20210321_画像読み込み
         }
 
         /// <summary>
-        /// PixelFormatsやdpiなどは元の画像のまま画像読み込み
+        /// PixelFormatsやdpiなどは元の画像のまま読み込み
         /// </summary>
         /// <param name="filePath">フルパス</param>
         /// <returns></returns>
@@ -81,6 +81,7 @@ namespace _20210321_画像読み込み
             { }
             return source;
         }
+     
 
         //
         /// <summary>
@@ -90,7 +91,7 @@ namespace _20210321_画像読み込み
         /// <param name="dpiX"></param>
         /// <param name="dpiY"></param>
         /// <returns></returns>
-        private BitmapSource MakeBitmapSourceFromFile(string filePath, double dpiX = 96, double dpiY = 96)
+        private BitmapSource MakeBitmapSourceDpiFromFile(string filePath, double dpiX = 96, double dpiY = 96)
         {
             BitmapSource source = null;
             try
@@ -120,7 +121,7 @@ namespace _20210321_画像読み込み
         /// <param name="dpiX"></param>
         /// <param name="dpiY"></param>
         /// <returns></returns>
-        private BitmapSource MakeBitmapSourceFromFile(string filePath, PixelFormat format, double dpiX = 96, double dpiY = 96)
+        private BitmapSource MakeBitmapSourceFormatFromFile(string filePath, PixelFormat format, double dpiX = 96, double dpiY = 96)
         {
             BitmapSource source = null;
             try
