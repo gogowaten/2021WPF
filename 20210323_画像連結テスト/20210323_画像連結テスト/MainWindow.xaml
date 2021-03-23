@@ -7,29 +7,64 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         AllowDrop="True"
-        Drop="Window_Drop">
+        Drop="Window_Drop" ResizeMode="CanResizeWithGrip"
+        >
+  <Window.Resources>
+    <local:ConveterRectangleSize x:Key="RectangleSize"/>
+  </Window.Resources>
+
   <Grid UseLayoutRounding="True">
     <DockPanel>
-      
+
       <StatusBar DockPanel.Dock="Bottom">
         <StatusBarItem Name="MyStatusTest" Content="{Binding Path=Row}"/>
       </StatusBar>
-      
-      <Menu DockPanel.Dock="Top">
-        <TextBlock Text="{Binding ElementName=MySliderRow, Path=Value, StringFormat=行数0}"/>
-        <Slider x:Name="MySliderRow" Minimum="1" Maximum="10" TickFrequency="1.0" Width="100"
-                Value="{Binding Path=Row, Mode=TwoWay}"/>
-        <TextBlock Text="{Binding ElementName=MySliderCol, Path=Value, StringFormat=列数0}"/>
+
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Name="MyPanel" Margin="10">
+        <TextBlock Text="{Binding ElementName=MySliderCol, Path=Value, StringFormat=列数00}"/>
         <Slider x:Name="MySliderCol" Minimum="1" Maximum="10" TickFrequency="1.0" Width="100"
-                Value="{Binding Path=Col, Mode=TwoWay}"/>
-        
+                Value="{Binding Path=Col, Mode=TwoWay}"
+                ValueChanged="MySliderCol_ValueChanged"/>
+        <TextBlock Text="{Binding ElementName=MySliderSize, Path=Value, StringFormat=表示サイズ0}"/>
+        <Slider x:Name="MySliderSize" Minimum="80" Maximum="960" TickFrequency="80" Width="100"
+                IsSnapToTickEnabled="True"
+                Value="{Binding Path=Size, Mode=TwoWay}"
+                ValueChanged="MySliderSize_ValueChanged"/>
+
         <Button x:Name="MyButtonTest" Content="test" Click="MyButtonTest_Click"/>
-      </Menu>
-      
+        <Button x:Name="MyButtonSave" Content="Save" Click="MyButtonSave_Click"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Height="{Binding ElementName=MyPanel, Path=ActualHeight}" Margin="10">
+        <StackPanel.LayoutTransform>
+          <RotateTransform Angle="90"/>
+        </StackPanel.LayoutTransform>
+        <TextBlock Text="{Binding ElementName=MySliderRow, Path=Value, StringFormat=行数00}"/>
+        <Slider x:Name="MySliderRow" Minimum="1" Maximum="10" TickFrequency="1.0" Width="100"
+                Value="{Binding Path=Row, Mode=TwoWay}"
+                ValueChanged="MySliderRow_ValueChanged"/>
+
+      </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <Canvas x:Name="MyCanvas"/>
+
+        <Canvas x:Name="MyCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+          <Rectangle x:Name="MyRectangle" Stroke="Red" StrokeThickness="1">
+            <Rectangle.Width>
+              <MultiBinding Converter="{StaticResource RectangleSize}">
+                <Binding ElementName="MySliderCol" Path="Value"/>
+                <Binding ElementName="MySliderSize" Path="Value"/>
+              </MultiBinding>
+            </Rectangle.Width>
+            <Rectangle.Height>
+              <MultiBinding Converter="{StaticResource RectangleSize}">
+                <Binding ElementName="MySliderRow" Path="Value"/>
+                <Binding ElementName="MySliderSize" Path="Value"/>
+              </MultiBinding>
+            </Rectangle.Height>
+          </Rectangle>
+
+        </Canvas>
       </ScrollViewer>
-      
+
     </DockPanel>
   </Grid>
 </Window>
