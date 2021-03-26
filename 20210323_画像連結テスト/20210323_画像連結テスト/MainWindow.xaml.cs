@@ -85,37 +85,59 @@ namespace _20210323_画像連結テスト
 
             for (int i = 0; i < paths.Count; i++)
             {
-                BitmapSource source = MakeBitmapSourceBgra32FromFile(paths[i]);
-                Image img = new() { Source = source, StretchDirection = StretchDirection.DownOnly };
-                img.Width = MyData.Size;
-                img.Height = MyData.Size;
-
-                int x = i % MyData.Col * MyData.Size;
-                int y = (int)((double)i / MyData.Col) * MyData.Size;
-                MyLocate.Add(new Point(x, y));
-                ImageThumb thumb = new(img, 0, 0, x, y);
-                thumb.DragStarted += (s, e) =>
-                {
-                    thumb.Opacity = 0.5;
-                    Panel.SetZIndex(thumb, MyThumbs.Count);
-                };
-                thumb.DragDelta += Thumb_DragDelta;
-                thumb.DragCompleted += (s, e) =>
-                {
-                    thumb.Opacity = 1.0;
-                    int index = MyThumbs.IndexOf(thumb);
-                    Panel.SetZIndex(thumb, index);
-                    thumb.SetLocateTopLeft(MyLocate[index]);
-                };
-                thumb.Width = MyData.Size;
-                thumb.Height = MyData.Size;
-                Panel.SetZIndex(thumb, i);
-                MyCanvas.Children.Add(thumb);
-                MyThumbs.Add(thumb);
+                AddImage(MakeBitmapSourceBgra32FromFile(paths[i]));               
             }
             Panel.SetZIndex(MyRectangle, MyThumbs.Count + 1);
             SetMyCanvasSize();
         }
+
+        private void AddImage(BitmapSource source)
+        {
+            if (source == null) return;
+            
+            Image img = new() { Source = source, StretchDirection = StretchDirection.DownOnly };
+            img.Width = MyData.Size;
+            img.Height = MyData.Size;
+
+            int i = MyThumbs.Count;
+            int x = i % MyData.Col * MyData.Size;
+            int y = (int)((double)i / MyData.Col) * MyData.Size;
+            MyLocate.Add(new Point(x, y));
+            ImageThumb thumb = new(img, 0, 0, x, y);
+            MyCanvas.Children.Add(thumb);
+            Panel.SetZIndex(thumb, i);
+            MyThumbs.Add(thumb);
+            thumb.Width = MyData.Size;
+            thumb.Height = MyData.Size;
+
+            //マウスドラッグ移動
+            //開始時
+            thumb.DragStarted += (s, e) =>
+            {
+            //最上面表示、インデックス取得
+                thumb.Opacity = 0.5;
+                Panel.SetZIndex(thumb, MyThumbs.Count);
+                int selectedId = MyThumbs.IndexOf(thumb);
+                MyStatusTest.Content = selectedId;
+            };
+            //移動中
+            thumb.DragDelta += Thumb_DragDelta;
+            //終了後
+            thumb.DragCompleted += (s, e) =>
+            {
+                //インデックス取得、インデックスに合わせたZオーダー
+                thumb.Opacity = 1.0;
+                int index = MyThumbs.IndexOf(thumb);
+                Panel.SetZIndex(thumb, index);
+                thumb.SetLocateTopLeft(MyLocate[index]);
+                MyStatusTest.Content = index;
+            };
+
+            
+        }
+
+
+
 
         #region 保存
         private void SaveFile()
