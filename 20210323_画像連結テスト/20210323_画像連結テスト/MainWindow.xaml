@@ -33,6 +33,7 @@
 
         <Button x:Name="MyButtonTest" Content="test" Click="MyButtonTest_Click"/>
         <Button x:Name="MyButtonSave" Content="Save" Click="MyButtonSave_Click"/>
+        <Button x:Name="MyButtonDelete" Content="delete" Click="MyButtonRemove_Click"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Height="{Binding ElementName=MyPanel, Path=ActualHeight}" Margin="10">
         <StackPanel.LayoutTransform>

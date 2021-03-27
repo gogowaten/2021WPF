@@ -27,6 +27,21 @@ namespace _20210323_画像連結テスト
         private Data MyData;
         private ObservableCollection<ImageThumb> MyThumbs = new();
         private List<Point> MyLocate = new();
+        private ImageThumb _ActiveThumb;
+
+        public ImageThumb ActiveThumb
+        {
+            get => _ActiveThumb;
+            set
+            {
+                if(value != null)
+                {
+                    MyStatusTest.Content = MyThumbs.IndexOf(value);
+                    value.MyVisibleStroke = true;
+                }                
+                _ActiveThumb = value;
+            }
+        }
 
         public MainWindow()
         {
@@ -85,16 +100,21 @@ namespace _20210323_画像連結テスト
 
             for (int i = 0; i < paths.Count; i++)
             {
-                AddImage(MakeBitmapSourceBgra32FromFile(paths[i]));               
+                AddImage(MakeBitmapSourceBgra32FromFile(paths[i]));
             }
             Panel.SetZIndex(MyRectangle, MyThumbs.Count + 1);
             SetMyCanvasSize();
+
+            if(ActiveThumb == null)
+            {
+                ActiveThumb = MyThumbs[MyThumbs.Count-1];
+            }
         }
 
         private void AddImage(BitmapSource source)
         {
             if (source == null) return;
-            
+
             Image img = new() { Source = source, StretchDirection = StretchDirection.DownOnly };
             img.Width = MyData.Size;
             img.Height = MyData.Size;
@@ -114,11 +134,14 @@ namespace _20210323_画像連結テスト
             //開始時
             thumb.DragStarted += (s, e) =>
             {
-            //最上面表示、インデックス取得
                 thumb.Opacity = 0.5;
+                ActiveThumb.MyVisibleStroke = false;
+
+                //最上面表示、インデックス取得
                 Panel.SetZIndex(thumb, MyThumbs.Count);
-                int selectedId = MyThumbs.IndexOf(thumb);
-                MyStatusTest.Content = selectedId;
+                
+                ActiveThumb = thumb;
+                
             };
             //移動中
             thumb.DragDelta += Thumb_DragDelta;
@@ -130,10 +153,38 @@ namespace _20210323_画像連結テスト
                 int index = MyThumbs.IndexOf(thumb);
                 Panel.SetZIndex(thumb, index);
                 thumb.SetLocateTopLeft(MyLocate[index]);
-                MyStatusTest.Content = index;
+                ActiveThumb = thumb;
+                
             };
+            //ActiveThumb = thumb;
+        }
 
-            
+        //削除時
+        private void RemoveThumb(ImageThumb t)
+        {
+            if (MyThumbs.Count == 0) return;
+
+            int i = MyThumbs.IndexOf(t);
+
+            ActiveThumb = MyThumbs[i];
+            MyThumbs.Remove(t);
+            MyCanvas.Children.Remove(t);
+            MyLocate.RemoveAt(MyLocate.Count - 1);
+            SetLocate();//再配置
+            SetMyCanvasSize();
+
+            if (MyThumbs.Count == 0)
+            {
+                ActiveThumb = null;
+            }
+            else if (i >= MyThumbs.Count)
+            {
+                ActiveThumb = MyThumbs[i - 1];
+            }
+            else
+            {
+                ActiveThumb = MyThumbs[i];
+            }
         }
 
 
@@ -330,7 +381,7 @@ namespace _20210323_画像連結テスト
         /// <summary>
         /// すべてのThumbを再配置、移動中のThumbは変更しない
         /// </summary>
-        /// <param name="avoidIndex">位置変更したくないThumbのIndex</param>
+        /// <param name="avoidIndex">位置変更したくない移動中ThumbのIndex</param>
         private void SetLocate(int avoidIndex = -1)
         {
             for (int i = 0; i < avoidIndex; i++)
@@ -376,7 +427,9 @@ namespace _20210323_画像連結テスト
             MyData.Row = 3;
             var neko = MyRectangle.Width;
             var t = MyThumbs[0];
-
+            ActiveThumb.Focus();
+            var aa = ActiveThumb.IsFocused;
+            var act = ActiveThumb.IsFocused;
         }
 
         private void MySliderSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -404,6 +457,11 @@ namespace _20210323_画像連結テスト
         {
             SaveFile();
         }
+
+        private void MyButtonRemove_Click(object sender, RoutedEventArgs e)
+        {
+            RemoveThumb(ActiveThumb);
+        }
     }
 
 
@@ -412,6 +470,22 @@ namespace _20210323_画像連結テスト
     {
         private Canvas MyPanel;
         public Image MyImage;
+
+        //枠表示
+        private bool myVisibleStroke;
+        private Rectangle MyStrokeRectangle;
+        public bool MyVisibleStroke
+        {
+            get => myVisibleStroke; set
+            {
+                if (value)
+                {
+                    MyStrokeRectangle.Visibility = Visibility.Visible;
+                }
+                else MyStrokeRectangle.Visibility = Visibility.Hidden;
+                myVisibleStroke = value;
+            }
+        }
 
         public ImageThumb(Image img, int eX = 0, int eY = 0, int x = 0, int y = 0) : this()
         {
@@ -423,6 +497,24 @@ namespace _20210323_画像連結テスト
 
             SetLocateTopLeft(new Point(x, y));
 
+            //枠表示設定
+            MyStrokeRectangle = new();
+            MyPanel.Children.Add(MyStrokeRectangle);
+            Binding b = new();
+            b.Source = img;
+            b.Path = new PropertyPath(Image.WidthProperty);
+            b.Mode = BindingMode.OneWay;
+            MyStrokeRectangle.SetBinding(Rectangle.WidthProperty, b);
+            MyStrokeRectangle.Stroke = Brushes.Black;
+            MyStrokeRectangle.StrokeThickness = 1;
+
+            b = new();
+            b.Source = img;
+            b.Path = new PropertyPath(Image.HeightProperty);
+            b.Mode = BindingMode.OneWay;
+            MyStrokeRectangle.SetBinding(Rectangle.HeightProperty, b);
+
+            MyVisibleStroke = false;
         }
         public ImageThumb()
         {
@@ -431,14 +523,14 @@ namespace _20210323_画像連結テスト
             this.Template = template;
             this.ApplyTemplate();
             MyPanel = (Canvas)template.FindName("panel", this);
-            MyPanel.Background = Brushes.Aqua;
+            MyPanel.Background = Brushes.Transparent;
             SetLocateTopLeft(new Point(0, 0));
+            
         }
         public void SetLocateTopLeft(Point p)
         {
             Canvas.SetLeft(this, p.X);
             Canvas.SetTop(this, p.Y);
-
         }
 
     }
