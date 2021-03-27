@@ -506,7 +506,7 @@ namespace _20210323_画像連結テスト
             b.Mode = BindingMode.OneWay;
             MyStrokeRectangle.SetBinding(Rectangle.WidthProperty, b);
             MyStrokeRectangle.Stroke = Brushes.Black;
-            MyStrokeRectangle.StrokeThickness = 1;
+            MyStrokeRectangle.StrokeThickness = 2;
 
             b = new();
             b.Source = img;
