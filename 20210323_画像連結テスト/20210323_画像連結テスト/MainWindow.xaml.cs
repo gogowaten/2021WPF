@@ -156,7 +156,7 @@ namespace _20210323_画像連結テスト
                 ActiveThumb = thumb;
                 
             };
-            //ActiveThumb = thumb;
+            
         }
 
         //削除時
