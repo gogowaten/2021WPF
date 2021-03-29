@@ -556,7 +556,7 @@ namespace _20210323_画像連結テスト
     public class Data
     {
         public int Row { get; set; } = 2;
-        public int Col { get; set; } = 2;
+        public int Col { get; set; } = 3;
         public int Size { get; set; } = 80;
 
     }

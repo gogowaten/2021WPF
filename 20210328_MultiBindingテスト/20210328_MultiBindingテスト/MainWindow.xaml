@@ -8,10 +8,11 @@
         Title="MainWindow" Height="450" Width="800">
   <Window.Resources>
     <local:ConveterRectangleSize x:Key="RectangleSize"/>
+    <local:ConveterRectangleSizeInt x:Key="RectangleSizeInt"/>
   </Window.Resources>
-  <!--<Window.DataContext>
+  <Window.DataContext>
     <local:Data/>
-  </Window.DataContext>-->
+  </Window.DataContext>
   <Grid UseLayoutRounding="True">
     <DockPanel>
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
@@ -22,28 +23,40 @@
         <Slider x:Name="MySliderCol" Minimum="1" Maximum="10" TickFrequency="1.0" Width="100"
               Value="{Binding Path=Col}"/>
         <TextBlock Text="{Binding ElementName=MySliderSize, Path=Value, StringFormat=サイズ000}" Margin="10,0,0,0"/>
-        <Slider x:Name="MySliderSize" Minimum="40" Maximum="400" TickFrequency="40" Width="100" SmallChange="40" LargeChange="40" IsSnapToTickEnabled="True"
+        <Slider x:Name="MySliderSize" Minimum="40" Maximum="160" TickFrequency="40" Width="100" SmallChange="40" LargeChange="40" IsSnapToTickEnabled="True"
               Value="{Binding Path=Size}"/>
         <Button x:Name="MyButton1" Content="button" Click="MyButton1_Click"/>
       </StackPanel>
       <Grid>
         <Rectangle x:Name="MyRectangle" Stroke="Red" StrokeThickness="2">
+
           <Rectangle.Width>
             <MultiBinding Converter="{StaticResource RectangleSize}">
               <Binding ElementName="MySliderCol" Path="Value"/>
               <Binding ElementName="MySliderSize" Path="Value"/>
-              <!--<Binding Path="Col"/>
-              <Binding Path="Size"/>-->
             </MultiBinding>
           </Rectangle.Width>
           <Rectangle.Height>
             <MultiBinding Converter="{StaticResource RectangleSize}">
               <Binding ElementName="MySliderRow" Path="Value"/>
               <Binding ElementName="MySliderSize" Path="Value"/>
-              <!--<Binding Path="Row"/>
-              <Binding Path="Size"/>-->
             </MultiBinding>
           </Rectangle.Height>
+          
+          <!--以下だと動かない-->
+          <!--<Rectangle.Width>
+            <MultiBinding Converter="{StaticResource RectangleSizeInt}">
+              <Binding Path="Col"/>
+              <Binding Path="Size"/>
+            </MultiBinding>
+          </Rectangle.Width>
+          <Rectangle.Height>
+            <MultiBinding Converter="{StaticResource RectangleSizeInt}">
+              <Binding Path="Row"/>
+              <Binding Path="Size"/>
+            </MultiBinding>
+          </Rectangle.Height>-->
+
         </Rectangle>
       </Grid>
     </DockPanel>

@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         AllowDrop="True"
-        Drop="Window_Drop" ResizeMode="CanResizeWithGrip"
-        >
+        Drop="Window_Drop" ResizeMode="CanResizeWithGrip">
+  <Window.DataContext>
+    <local:Data/>
+  </Window.DataContext>
   <Window.Resources>
     <local:ConveterRectangleSize x:Key="RectangleSize"/>
   </Window.Resources>
