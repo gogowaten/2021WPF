@@ -7,14 +7,32 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="614"
         AllowDrop="True"
-        Drop="Window_Drop">
+        Drop="Window_Drop"
+        >
+
   <Grid UseLayoutRounding="True">
     <DockPanel>
       <StackPanel DockPanel.Dock="Right">
         <Button x:Name="MyButton1" Content="test1" Click="MyButton1_Click"/>
+        <Button x:Name="MyButtonCopy" Content="copy" Click="MyButtonCopy_Click"/>
       </StackPanel>
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-      <Image x:Name="MyImage" Stretch="None"/>
+      <Slider DockPanel.Dock="top" x:Name="MySliderScale" Value="1" Width="100"
+              Minimum="1" Maximum="32" TickFrequency="8" IsSnapToTickEnabled="True"
+              IsMoveToPointEnabled="True"/>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="MyGrid" PreviewMouseDown="MyGrid_PreviewMouseDown" PreviewMouseUp="MyGrid_PreviewMouseUp"
+              HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+          <Image x:Name="MyImage" Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor" Visibility="Hidden">
+            <Image.RenderTransform>
+              <ScaleTransform ScaleX="{Binding ElementName=MySliderScale, Path=Value}" ScaleY="{Binding ElementName=MySliderScale, Path=Value}"/>
+            </Image.RenderTransform>
+          </Image>
+          <Image x:Name="MyScaledImage" Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor">
+            <Image.RenderTransform>
+              <ScaleTransform ScaleX="{Binding ElementName=MySliderScale, Path=Value}" ScaleY="{Binding ElementName=MySliderScale, Path=Value}"/>
+            </Image.RenderTransform>
+          </Image>
+        </Grid>
       </ScrollViewer>
     </DockPanel>
   </Grid>
