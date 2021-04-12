@@ -15,10 +15,17 @@
       <StackPanel DockPanel.Dock="Right">
         <Button x:Name="MyButton1" Content="test1" Click="MyButton1_Click"/>
         <Button x:Name="MyButtonCopy" Content="copy" Click="MyButtonCopy_Click"/>
+        <Button x:Name="MyButton2" Content="1/2" Click="MyButton2_Click"/>
+        <Button x:Name="MyButton3" Content="1/3" Click="MyButton3_Click"/>
+        <Button x:Name="MyButton2bai" Content="2倍" Click="MyButton2bai_Click"/>
+        <Button x:Name="MyButton3bai" Content="3倍" Click="MyButton3bai_Click"/>
       </StackPanel>
-      <Slider DockPanel.Dock="top" x:Name="MySliderScale" Value="1" Width="100"
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+        <TextBlock Text="確認用"/>
+        <Slider x:Name="MySliderScale" Value="1" Width="100"
               Minimum="1" Maximum="32" TickFrequency="8" IsSnapToTickEnabled="True"
               IsMoveToPointEnabled="True"/>
+      </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Grid x:Name="MyGrid" PreviewMouseDown="MyGrid_PreviewMouseDown" PreviewMouseUp="MyGrid_PreviewMouseUp"
               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
