@@ -39,138 +39,7 @@ namespace _20210410_画像縮小Bilinear
             //RenderOptions.SetBitmapScalingMode(MyImage, BitmapScalingMode.NearestNeighbor);
         }
 
-        //縦1ピクセルの画像専用
-        private BitmapSource Bilinear(BitmapSource source, int yoko, int tate)
-        {
-            int sourceWidth = source.PixelWidth;
-            int sourceHeight = source.PixelHeight;
-            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
-            byte[] pixels = new byte[sourceHeight * stride];
-            source.CopyPixels(pixels, stride, 0);
-
-            double scaleW = (double)sourceWidth / yoko;
-            double scaleH = (double)sourceHeight / tate;
-            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
-            byte[] resultPixels = new byte[tate * scaledStride];
-            for (int y = 0; y < tate; y++)
-            {
-                int yPoint = y * scaledStride;
-                for (int x = 0; x < yoko; x++)
-                {
-                    double referenceX = (x + 0.5) * scaleW;//参照座標
-                    int leftPoint = (int)(referenceX - 0.5);//参照座標の左ピクセル座標
-                    double leftRatio = referenceX - (int)referenceX;//左ピクセルの割合
-                    //参照先の左右ピクセルの値にそれぞれの割合をかけて足し算で完成
-                    int lp = leftPoint + stride * y;
-                    double left = pixels[lp] * leftRatio;
-                    double right = pixels[lp + 1] * (1 - leftRatio);
-                    double resultHorizontal = left + right;
-
-                    double referenceY = (y + 0.5) * scaleH;//参照座標
-                    int topPoint = (int)(referenceY - 0.5);//参照座標の上ピクセル座標
-                    double topRatio = referenceY - (int)referenceY;//上ピクセルの割合
-                    //参照先の上下ピクセルの値にそれぞれの割合をかけて足し算で完成
-                    int tp = topPoint * stride + x;
-                    double top = pixels[tp] * topRatio;
-                    double bottom = pixels[tp + stride] * (1 - topRatio);
-                    double resultVertical = top + bottom;
-                    //縦横合計して半分にして四捨五入
-                    byte result = (byte)(((resultHorizontal + resultVertical) / 2) + 0.5);
-                    resultPixels[yPoint + x] = result;
-
-                }
-            }
-            BitmapSource rBitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
-
-            return rBitmap;
-        }
-
-        //縮小専用
-        private BitmapSource Bilinear2冗長(BitmapSource source, int yoko, int tate)
-        {
-            //元画像の画素値の配列作成
-            int sourceWidth = source.PixelWidth;
-            int sourceHeight = source.PixelHeight;
-            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
-            byte[] pixels = new byte[sourceHeight * stride];
-            source.CopyPixels(pixels, stride, 0);
-
-            //縮小後の画像の画素値の配列用
-            double yokoScale = (double)sourceWidth / yoko;//横倍率
-            double tateScale = (double)sourceHeight / tate;
-            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
-            byte[] resultPixels = new byte[tate * scaledStride];
-
-            for (int y = 0; y < tate; y++)
-            {
-                for (int x = 0; x < yoko; x++)
-                {
-                    double rX = (x + 0.5) * yokoScale;//参照x
-                    double rY = (y + 0.5) * tateScale;
-
-                    //ピクセルの境目、四捨五入
-                    int p1X = (int)(rX + 0.5);
-                    int p1Y = (int)(rY + 0.5);
-
-                    //参照範囲の四隅
-                    double p2X = rX - 0.5;
-                    double p2Y = rY - 0.5;
-                    double p3X = rX + 0.5;
-                    double p3Y = rY - 0.5;
-                    double p4X = rX - 0.5;
-                    double p4Y = rY + 0.5;
-                    double p5X = rX + 0.5;
-                    double p5Y = rY + 0.5;
-
-                    //4区の辺の長さ
-                    double aW = p1X - p2X;
-                    double aH = p1Y - p2Y;
-                    double bW = p3X - p1X;
-                    double bH = p1Y - p3Y;
-                    double cW = p1X - p4X;
-                    double cH = p4Y - p1Y;
-                    double dW = p5X - p1X;
-                    double dH = p5Y - p1Y;
-
-                    //4区の面積
-                    double aArea = aW * aH;
-                    double bArea = bW * bH;
-                    double cArea = cW * cH;
-                    double dArea = dW * dH;
-
-                    //4区が属するピクセル座標
-                    int aX = (int)p2X;
-                    int aY = (int)p2Y;
-                    int bX = (int)p3X;
-                    int bY = (int)p3Y;
-                    int cX = (int)p4X;
-                    int cY = (int)p4Y;
-                    int dX = (int)p5X;
-                    int dY = (int)p5Y;
-
-                    //4区のピクセルの値
-                    byte a = pixels[aY * stride + aX];
-                    byte b = pixels[bY * stride + bX];
-                    byte c = pixels[cY * stride + cX];
-                    byte d = pixels[dY * stride + dX];
-
-                    //値(色)*面積(割合)
-                    double aR = a * aArea;
-                    double bR = b * bArea;
-                    double cR = c * cArea;
-                    double dR = d * dArea;
-
-                    //4区を合計して四捨五入で完成
-                    double ABCD = aR + bR + cR + dR;
-                    byte result = (byte)(ABCD + 0.5);
-                    resultPixels[y * scaledStride + x] = result;
-
-                }
-            }
-            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
-            return bitmap;
-        }
-
+  
         //縮小拡大対応完成版
         /// <summary>
         /// バイリニア法で画像の拡大縮小、グレースケール専用(PixelFormats.Gray8専用)
@@ -625,6 +494,137 @@ namespace _20210410_画像縮小Bilinear
             }
         }
 
+        //縦1ピクセルの画像専用
+        private BitmapSource Bilinear(BitmapSource source, int yoko, int tate)
+        {
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            double scaleW = (double)sourceWidth / yoko;
+            double scaleH = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+            for (int y = 0; y < tate; y++)
+            {
+                int yPoint = y * scaledStride;
+                for (int x = 0; x < yoko; x++)
+                {
+                    double referenceX = (x + 0.5) * scaleW;//参照座標
+                    int leftPoint = (int)(referenceX - 0.5);//参照座標の左ピクセル座標
+                    double leftRatio = referenceX - (int)referenceX;//左ピクセルの割合
+                    //参照先の左右ピクセルの値にそれぞれの割合をかけて足し算で完成
+                    int lp = leftPoint + stride * y;
+                    double left = pixels[lp] * leftRatio;
+                    double right = pixels[lp + 1] * (1 - leftRatio);
+                    double resultHorizontal = left + right;
+
+                    double referenceY = (y + 0.5) * scaleH;//参照座標
+                    int topPoint = (int)(referenceY - 0.5);//参照座標の上ピクセル座標
+                    double topRatio = referenceY - (int)referenceY;//上ピクセルの割合
+                    //参照先の上下ピクセルの値にそれぞれの割合をかけて足し算で完成
+                    int tp = topPoint * stride + x;
+                    double top = pixels[tp] * topRatio;
+                    double bottom = pixels[tp + stride] * (1 - topRatio);
+                    double resultVertical = top + bottom;
+                    //縦横合計して半分にして四捨五入
+                    byte result = (byte)(((resultHorizontal + resultVertical) / 2) + 0.5);
+                    resultPixels[yPoint + x] = result;
+
+                }
+            }
+            BitmapSource rBitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+
+            return rBitmap;
+        }
+
+        //縮小専用
+        private BitmapSource Bilinear2冗長失敗(BitmapSource source, int yoko, int tate)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            //縮小後の画像の画素値の配列用
+            double yokoScale = (double)sourceWidth / yoko;//横倍率
+            double tateScale = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+
+            for (int y = 0; y < tate; y++)
+            {
+                for (int x = 0; x < yoko; x++)
+                {
+                    double rX = (x + 0.5) * yokoScale;//参照x
+                    double rY = (y + 0.5) * tateScale;
+
+                    //ピクセルの境目、四捨五入
+                    int p1X = (int)(rX + 0.5);
+                    int p1Y = (int)(rY + 0.5);
+
+                    //参照範囲の四隅
+                    double p2X = rX - 0.5;
+                    double p2Y = rY - 0.5;
+                    double p3X = rX + 0.5;
+                    double p3Y = rY - 0.5;
+                    double p4X = rX - 0.5;
+                    double p4Y = rY + 0.5;
+                    double p5X = rX + 0.5;
+                    double p5Y = rY + 0.5;
+
+                    //4区の辺の長さ
+                    double aW = p1X - p2X;
+                    double aH = p1Y - p2Y;
+                    double bW = p3X - p1X;
+                    double bH = p1Y - p3Y;
+                    double cW = p1X - p4X;
+                    double cH = p4Y - p1Y;
+                    double dW = p5X - p1X;
+                    double dH = p5Y - p1Y;
+
+                    //4区の面積
+                    double aArea = aW * aH;
+                    double bArea = bW * bH;
+                    double cArea = cW * cH;
+                    double dArea = dW * dH;
+
+                    //4区が属するピクセル座標
+                    int aX = (int)p2X;
+                    int aY = (int)p2Y;
+                    int bX = (int)p3X;
+                    int bY = (int)p3Y;
+                    int cX = (int)p4X;
+                    int cY = (int)p4Y;
+                    int dX = (int)p5X;
+                    int dY = (int)p5Y;
+
+                    //4区のピクセルの値
+                    byte a = pixels[aY * stride + aX];
+                    byte b = pixels[bY * stride + bX];
+                    byte c = pixels[cY * stride + cX];
+                    byte d = pixels[dY * stride + dX];
+
+                    //値(色)*面積(割合)
+                    double aR = a * aArea;
+                    double bR = b * bArea;
+                    double cR = c * cArea;
+                    double dR = d * dArea;
+
+                    //4区を合計して四捨五入で完成
+                    double ABCD = aR + bR + cR + dR;
+                    byte result = (byte)(ABCD + 0.5);
+                    resultPixels[y * scaledStride + x] = result;
+
+                }
+            }
+            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+            return bitmap;
+        }
 
 
         //縦1ピクセルの画像専用
@@ -752,11 +752,12 @@ namespace _20210410_画像縮小Bilinear
 
         private void MyButton1_Click(object sender, RoutedEventArgs e)
         {
-            BitmapSource source = Bilinear2(MyBitmapSource, 2, 2);
+            //BitmapSource source = Bilinear2(MyBitmapSource, 2, 2);
             //BitmapSource source = Bilinear2冗長(MyBitmapSource, 2, 2);
             //BitmapSource source = Bilinear(MyBitmapSource, 2, 2);
             //BitmapSource source = BilinearTestOnlyHeightOne(MyBitmapSource, 3, 1);
-            ChangeBitmapSource(source);
+            //ChangeBitmapSource(source);
+            var neko = MyScaledImage.ActualHeight;
         }
 
         private void MyGrid_PreviewMouseDown(object sender, MouseButtonEventArgs e)
