@@ -171,7 +171,103 @@ namespace _20210410_画像縮小Bilinear
             return bitmap;
         }
 
-        //縮小専用
+        //縮小拡大対応完成版
+        /// <summary>
+        /// バイリニア法で画像の拡大縮小、グレースケール専用(PixelFormats.Gray8専用)
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="yoko">変換後の横ピクセル数</param>
+        /// <param name="tate">変換後の縦ピクセル数</param>
+        /// <returns></returns>
+        private BitmapSource BilinearTest拡大対応(BitmapSource source, int yoko, int tate)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            //縮小後の画像の画素値の配列用
+            double yokoScale = (double)sourceWidth / yoko;//横倍率
+            double tateScale = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+
+            for (int y = 0; y < tate; y++)
+            {
+                for (int x = 0; x < yoko; x++)
+                {
+                    //参照点r
+                    double rx = (x + 0.5) * yokoScale;
+                    double ry = (y + 0.5) * tateScale;
+
+                    //参照範囲の左上座標bp
+                    double bpX = rx - 0.5;
+                    //画像範囲内チェック、参照範囲が画像から外れていたら修正(収める)
+                    if (bpX < 0) { bpX = 0; }
+                    if (bpX > sourceWidth - 1) { bpX = sourceWidth - 1; }
+
+                    double bpY = ry - 0.5;
+                    if (bpY < 0) { bpY = 0; }
+                    if (bpY > sourceHeight - 1) { bpY = sourceHeight - 1; }
+
+                    //小数部分s
+                    double sx = bpX % 1;
+                    double sy = bpY % 1;
+
+                    //面積
+                    double d = sx * sy;
+                    double c = (1 - sx) * sy;
+                    double b = sx * (1 - sy);
+                    double a = 1 - (d + c + b);// (1 - sx) * (1 - sy)
+
+                    //左上ピクセルの座標は
+                    //参照範囲の左上座標の小数部分を切り捨て(整数部分)
+                    //左上ピクセルのIndex
+                    int ia = ((int)bpY * stride) + (int)bpX;
+
+                    //値*面積
+                    double aa = pixels[ia] * a;
+                    double bb = 0, cc = 0, dd = 0;
+                    //B以降は面積が0より大きいときだけ計算
+                    if (b != 0)
+                    {
+                        //Aの右ピクセル*Bの面積
+                        bb = pixels[ia + 1] * b;
+                    }
+                    if (c != 0)
+                    {
+                        cc = pixels[ia + stride] * c;
+                    }
+                    if (d != 0)
+                    {
+                        //Aの右下ピクセル、仮にAが画像右下ピクセルだったとしても
+                        //そのときは面積が0のはずだからここは計算されない
+                        dd = pixels[ia + stride + 1] * d;
+                    }
+
+
+                    //4区を合計して四捨五入で完成
+                    double add = aa + bb + cc + dd;
+                    resultPixels[y * scaledStride + x] = (byte)(add + 0.5);
+
+                }
+            }
+            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+            return bitmap;
+        }
+
+
+        //E:\オレ\エクセル\画像処理.xlsm_バイリニア法_$A$599
+        //縮小専用完成版
+        /// <summary>
+        /// バイリニア法で画像の縮小、グレースケール専用(PixelFormats.Gray8専用)
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="yoko">変換後の横ピクセル数</param>
+        /// <param name="tate">変換後の縦ピクセル数</param>
+        /// <returns></returns>
         private BitmapSource BilinearTest(BitmapSource source, int yoko, int tate)
         {
             //元画像の画素値の配列作成
@@ -191,30 +287,29 @@ namespace _20210410_画像縮小Bilinear
             {
                 for (int x = 0; x < yoko; x++)
                 {
-                    //参照点
-                    double fx = (x + 0.5) * yokoScale;
-                    double fy = (y + 0.5) * tateScale;
+                    //参照点r
+                    double rx = (x + 0.5) * yokoScale;
+                    double ry = (y + 0.5) * tateScale;
 
-                    //小数部分
-                    double bx = fx % 1;
-                    double by = fy % 1;
+                    //参照範囲の左上座標bp
+                    double bpX = rx - 0.5;
+                    double bpY = ry - 0.5;
 
-                    //面積
-                    if (bx == 0.5) bx = 1;
-                    if (by == 0.5) by = 1;
-                    double a = bx * by;
-                    double b = (1 - bx) * by;
-                    double c = bx * (1 - by);
-                    double d = (1 - bx) * (1 - by);//1-(a+b+c);
+                    //小数部分s
+                    double sx = bpX % 1;
+                    double sy = bpY % 1;
 
-                    //参照範囲の左上座標
-                    double p1x = fx - 0.5;
-                    double p1y = fy - 0.5;
+                    ////面積
+                    double d = sx * sy;
+                    double c = (1 - sx) * sy;
+                    double b = sx * (1 - sy);
+                    double a = 1 - (d + c + b);// (1 - sx) * (1 - sy)
+
 
                     //左上ピクセルの座標は
                     //参照範囲の左上座標の小数部分を切り捨て(整数部分)
                     //左上ピクセルのIndex
-                    int i = (int)((p1y - (p1y % 1)) * stride + (p1x - (p1x % 1)));
+                    int i = ((int)bpY * stride) + (int)bpX;
 
                     //値*面積
                     double aa = pixels[i] * a;
@@ -223,16 +318,17 @@ namespace _20210410_画像縮小Bilinear
                     double dd = pixels[i + stride + 1] * d;
 
                     //4区を合計して四捨五入で完成
-                    resultPixels[y * scaledStride + x] = (byte)(aa + bb + cc + dd + 0.5);
+                    double add = aa + bb + cc + dd;
+                    resultPixels[y * scaledStride + x] = (byte)(add + 0.5);
 
                 }
             }
             BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
             return bitmap;
         }
-        
+
         //縮小専用
-        private BitmapSource BilinearType1(BitmapSource source, int yoko, int tate)
+        private BitmapSource Bilinear失敗2(BitmapSource source, int yoko, int tate)
         {
             //元画像の画素値の配列作成
             int sourceWidth = source.PixelWidth;
@@ -253,14 +349,14 @@ namespace _20210410_画像縮小Bilinear
                 {
                     //参照Point
                     Point rP = new((x + 0.5) * yokoScale, (y + 0.5) * tateScale);
-                    
+
                     //小数部分
                     double bx = rP.X % 1;
                     double by = rP.Y % 1;
 
                     //参照範囲の左上座標
                     Point p1 = new(rP.X - 0.5, rP.Y - 0.5);
-                    
+
                     //左上ピクセルの座標は
                     //参照範囲の左上座標の小数部分を切り捨て(整数部分)
                     Point topLeftPixel = new(p1.X - (p1.X % 1), p1.Y - (p1.Y % 1));
@@ -701,14 +797,16 @@ namespace _20210410_画像縮小Bilinear
         {
             int yoko = MyBitmapSource.PixelWidth * 2;
             int tate = MyBitmapSource.PixelHeight * 2;
-            ChangeBitmapSource(Bilinear3(MyBitmapSource, yoko, tate));
+            ChangeBitmapSource(BilinearTest拡大対応(MyBitmapSource, yoko, tate));
+            //ChangeBitmapSource(Bilinear3(MyBitmapSource, yoko, tate));
         }
 
         private void MyButton3bai_Click(object sender, RoutedEventArgs e)
         {
             int yoko = MyBitmapSource.PixelWidth * 3;
             int tate = MyBitmapSource.PixelHeight * 3;
-            ChangeBitmapSource(Bilinear3(MyBitmapSource, yoko, tate));
+            //ChangeBitmapSource(Bilinear3(MyBitmapSource, yoko, tate));
+            ChangeBitmapSource(BilinearTest拡大対応(MyBitmapSource, yoko, tate));
         }
     }
 }
