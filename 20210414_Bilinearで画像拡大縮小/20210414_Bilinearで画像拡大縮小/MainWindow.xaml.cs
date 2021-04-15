@@ -26,7 +26,7 @@ namespace _20210414_Bilinearで画像拡大縮小
 
         //縮小拡大対応完成版
         /// <summary>
-        /// バイリニア法で画像の拡大縮小、グレースケール専用(PixelFormats.Gray8専用)
+        /// 画像の拡大縮小、バイリニア法で補完、グレースケール専用(PixelFormats.Gray8専用)
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="yoko">横ピクセル数を指定</param>
@@ -115,7 +115,7 @@ namespace _20210414_Bilinearで画像拡大縮小
         //E:\オレ\エクセル\画像処理.xlsm_バイリニア法_$A$599
         //縮小専用完成版
         /// <summary>
-        /// バイリニア法で画像の縮小、グレースケール専用(PixelFormats.Gray8専用)
+        /// 画像の縮小、バイリニア法で補完、グレースケール専用(PixelFormats.Gray8専用)
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="yoko">変換後の横ピクセル数を指定</param>
@@ -130,7 +130,7 @@ namespace _20210414_Bilinearで画像拡大縮小
             byte[] pixels = new byte[sourceHeight * stride];
             source.CopyPixels(pixels, stride, 0);
 
-            //縮小後の画像の画素値の配列用
+            //変換後の画像の画素値の配列用
             double yokoScale = (double)sourceWidth / yoko;//横倍率
             double tateScale = (double)sourceHeight / tate;
             int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
