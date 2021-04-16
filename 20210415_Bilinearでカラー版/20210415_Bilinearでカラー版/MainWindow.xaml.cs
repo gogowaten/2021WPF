@@ -184,36 +184,52 @@ namespace _20210415_Bilinearでカラー版
                       //左上ピクセルの座標は
                       //参照範囲の左上座標の小数部分を切り捨て(整数部分)
                       //左上ピクセルのIndex
-                      int i = ((int)bpY * stride) + ((int)bpX * pByte);
+                      int ia = ((int)bpY * stride) + ((int)bpX * pByte);
+                      int ib = ia + 1;
+                      int ic = ((int)bpY * stride + stride) + ((int)bpX * pByte);
+                      int id = ((int)bpY * stride + stride) + ((int)bpX * pByte) + 1;
+
+                      //4区のAlphaが0の個数をカウント
+                      byte aa = pixels[ia + 3];
+                      byte ba = pixels[ia + pByte + 3];
+                      byte ca = pixels[ia + stride + 3];
+                      byte da = pixels[ia + stride + pByte + 3];
+
+                      int aCount = 0;
+                      if (aa == 0) aCount++;
+                      if (ba == 0) aCount++;
+                      if (ca == 0) aCount++;
+                      if (da == 0) aCount++;
+
 
                       //各区の値*面積の合計を四捨五入して完成
                       //Blue
                       resultPixels[y * scaledStride + x * pByte] =
-                            (byte)(pixels[i] * a
-                            + pixels[i + pByte] * b
-                            + pixels[i + stride] * c
-                            + pixels[i + stride + pByte] * d
+                            (byte)(pixels[ia] * a
+                            + pixels[ia + pByte] * b
+                            + pixels[ia + stride] * c
+                            + pixels[ia + stride + pByte] * d
                             + 0.5);
                       //Green
                       resultPixels[y * scaledStride + x * pByte + 1] =
-                            (byte)(pixels[i + 1] * a
-                            + pixels[i + pByte + 1] * b
-                            + pixels[i + stride + 1] * c
-                            + pixels[i + stride + pByte + 1] * d
+                            (byte)(pixels[ia + 1] * a
+                            + pixels[ia + pByte + 1] * b
+                            + pixels[ia + stride + 1] * c
+                            + pixels[ia + stride + pByte + 1] * d
                             + 0.5);
                       //Red
                       resultPixels[y * scaledStride + x * pByte + 2] =
-                            (byte)(pixels[i + 2] * a
-                            + pixels[i + pByte + 2] * b
-                            + pixels[i + stride + 2] * c
-                            + pixels[i + stride + pByte + 2] * d
+                            (byte)(pixels[ia + 2] * a
+                            + pixels[ia + pByte + 2] * b
+                            + pixels[ia + stride + 2] * c
+                            + pixels[ia + stride + pByte + 2] * d
                             + 0.5);
                       //Alpha
                       resultPixels[y * scaledStride + x * pByte + 3] =
-                            (byte)(pixels[i + 3] * a
-                            + pixels[i + pByte + 3] * b
-                            + pixels[i + stride + 3] * c
-                            + pixels[i + stride + pByte + 3] * d
+                            (byte)(pixels[ia + 3] * a
+                            + pixels[ia + pByte + 3] * b
+                            + pixels[ia + stride + 3] * c
+                            + pixels[ia + stride + pByte + 3] * d
                             + 0.5);
                   }
               });
@@ -222,6 +238,92 @@ namespace _20210415_Bilinearでカラー版
             BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
             return bitmap;
         }
+
+
+        ////E:\オレ\エクセル\画像処理.xlsm_バイリニア法_$A$599
+        ////縮小専用
+        ///// <summary>
+        ///// 画像の縮小、バイリニア法で補完、PixelFormats.Bgra32専用)
+        ///// </summary>
+        ///// <param name="source">PixelFormats.Bgra32のBitmap</param>
+        ///// <param name="yoko">変換後の横ピクセル数を指定</param>
+        ///// <param name="tate">変換後の縦ピクセル数を指定</param>
+        ///// <returns></returns>
+        //private BitmapSource BilinearBgra32縮小専用(BitmapSource source, int yoko, int tate)
+        //{
+        //    //元画像の画素値の配列作成
+        //    int sourceWidth = source.PixelWidth;
+        //    int sourceHeight = source.PixelHeight;
+        //    int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+        //    byte[] pixels = new byte[sourceHeight * stride];
+        //    source.CopyPixels(pixels, stride, 0);
+
+        //    //変換後の画像の画素値の配列用
+        //    double yokoScale = (double)sourceWidth / yoko;//横倍率
+        //    double tateScale = (double)sourceHeight / tate;
+        //    int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+        //    byte[] resultPixels = new byte[tate * scaledStride];
+        //    int pByte = (source.Format.BitsPerPixel + 7) / 8;//1ピクセルあたりのバイト数、Byte / Pixel
+
+        //    _ = Parallel.For(0, tate, y =>
+        //      {
+        //          for (int x = 0; x < yoko; x++)
+        //          {
+        //              //参照範囲の左上座標bp
+        //              double bpX = ((x + 0.5) * yokoScale) - 0.5;
+        //              double bpY = ((y + 0.5) * tateScale) - 0.5;
+
+        //              //小数部分s
+        //              double sx = bpX % 1;
+        //              double sy = bpY % 1;
+
+        //              //面積
+        //              double d = sx * sy;
+        //              double c = (1 - sx) * sy;
+        //              double b = sx * (1 - sy);
+        //              double a = 1 - (d + c + b);// (1 - sx) * (1 - sy)
+
+        //              //左上ピクセルの座標は
+        //              //参照範囲の左上座標の小数部分を切り捨て(整数部分)
+        //              //左上ピクセルのIndex
+        //              int i = ((int)bpY * stride) + ((int)bpX * pByte);
+
+        //              //各区の値*面積の合計を四捨五入して完成
+        //              //Blue
+        //              resultPixels[y * scaledStride + x * pByte] =
+        //                    (byte)(pixels[i] * a
+        //                    + pixels[i + pByte] * b
+        //                    + pixels[i + stride] * c
+        //                    + pixels[i + stride + pByte] * d
+        //                    + 0.5);
+        //              //Green
+        //              resultPixels[y * scaledStride + x * pByte + 1] =
+        //                    (byte)(pixels[i + 1] * a
+        //                    + pixels[i + pByte + 1] * b
+        //                    + pixels[i + stride + 1] * c
+        //                    + pixels[i + stride + pByte + 1] * d
+        //                    + 0.5);
+        //              //Red
+        //              resultPixels[y * scaledStride + x * pByte + 2] =
+        //                    (byte)(pixels[i + 2] * a
+        //                    + pixels[i + pByte + 2] * b
+        //                    + pixels[i + stride + 2] * c
+        //                    + pixels[i + stride + pByte + 2] * d
+        //                    + 0.5);
+        //              //Alpha
+        //              resultPixels[y * scaledStride + x * pByte + 3] =
+        //                    (byte)(pixels[i + 3] * a
+        //                    + pixels[i + pByte + 3] * b
+        //                    + pixels[i + stride + 3] * c
+        //                    + pixels[i + stride + pByte + 3] * d
+        //                    + 0.5);
+        //          }
+        //      });
+
+
+        //    BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+        //    return bitmap;
+        //}
 
 
 
