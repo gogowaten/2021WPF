@@ -5,6 +5,9 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
+//C#、WPF、バイリニア法での画像の拡大縮小変換、24bitカラー対応とマルチスレッド対応版 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/16/201514
+
 namespace _20210416_Bilinear_24bitカラー専用
 {
 
