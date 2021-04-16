@@ -8,6 +8,11 @@ using System.Windows.Media.Imaging;
 //グレースケール専用(PixelFormats.Gray8専用)
 //カラー画像をドロップした場合はグレースケール画像に変換する
 //倍率は1/2、1/3、2、3
+
+
+//C#、WPF、バイリニア法での画像の拡大縮小変換に再挑戦した結果、グレースケール専用 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/15/175627
+
 namespace _20210414_Bilinearで画像拡大縮小
 {
     public partial class MainWindow : Window
