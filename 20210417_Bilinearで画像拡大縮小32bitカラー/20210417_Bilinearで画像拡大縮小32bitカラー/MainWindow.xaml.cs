@@ -5,6 +5,10 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
+//C#、WPF、バイリニア法での画像の拡大縮小変換、半透明画像(32bit画像)対応版 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/17/151803
+
+
 namespace _20210417_Bilinearで画像拡大縮小32bitカラー
 {
     public partial class MainWindow : Window
