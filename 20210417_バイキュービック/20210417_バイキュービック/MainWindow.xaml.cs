@@ -38,147 +38,8 @@ namespace _20210417_バイキュービック
         }
 
 
-        ////縮小拡大対応完成版
-        ///// <summary>
-        ///// 画像の拡大縮小、バイリニア法で補完(PixelFormats.Bgra32専用)
-        ///// </summary>
-        ///// <param name="source">PixelFormats.Bgra32のBitmap</param>
-        ///// <param name="yoko">横ピクセル数を指定</param>
-        ///// <param name="tate">縦ピクセル数を指定</param>
-        ///// <returns></returns>
-        //private BitmapSource BilinearBgra32専用(BitmapSource source, int yoko, int tate)
-        //{
-        //    //元画像の画素値の配列作成
-        //    int sourceWidth = source.PixelWidth;
-        //    int sourceHeight = source.PixelHeight;
-        //    int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
-        //    byte[] pixels = new byte[sourceHeight * stride];
-        //    source.CopyPixels(pixels, stride, 0);
-
-        //    //縮小後の画像の画素値の配列用
-        //    double yokoScale = (double)sourceWidth / yoko;//横倍率
-        //    double tateScale = (double)sourceHeight / tate;
-        //    //1ピクセルあたりのバイト数、Byte / Pixel
-        //    int pByte = (source.Format.BitsPerPixel + 7) / 8;
-
-        //    int scaledStride = yoko * pByte;
-        //    byte[] resultPixels = new byte[tate * scaledStride];
-        //    Parallel.For(0, tate, y =>
-        //    {
-        //        for (int x = 0; x < yoko; x++)
-        //        {
-        //            //参照範囲の左上座標bp
-        //            double bpX = ((x + 0.5) * yokoScale) - 0.5;
-        //            //画像範囲内チェック、参照範囲が画像から外れていたら修正(収める)
-        //            if (bpX < 0) { bpX = 0; }
-        //            if (bpX > sourceWidth - 1) { bpX = sourceWidth - 1; }
-
-        //            double bpY = (y + 0.5) * tateScale - 0.5;
-        //            if (bpY < 0) { bpY = 0; }
-        //            if (bpY > sourceHeight - 1) { bpY = sourceHeight - 1; }
-
-        //            //小数部分s
-        //            double sx = bpX % 1;
-        //            double sy = bpY % 1;
-
-        //            //面積
-        //            double d = sx * sy;
-        //            double c = (1 - sx) * sy;
-        //            double b = sx * (1 - sy);
-        //            double a = 1 - (d + c + b);// (1 - sx) * (1 - sy)
-
-        //            //左上ピクセルの座標は
-        //            //参照範囲の左上座標の小数部分を切り捨て(整数部分)
-        //            //左上ピクセルのIndex
-        //            int i = ((int)bpY * stride) + ((int)bpX * pByte);
 
 
-        //            //値*面積
-        //            double aBlue = pixels[i] * a;
-        //            double aGreen = pixels[i + 1] * a;
-        //            double aRed = pixels[i + 2] * a;
-        //            double aAlpha = pixels[i + 3] * a;
-
-        //            //Alphaが0の区画のRGB値は無視したいので初期値1.0から面積を引き算して
-        //            //有効面積率を計算
-        //            double effectiveAreaRatio = 1.0;
-        //            if (pixels[i + 3] == 0) effectiveAreaRatio -= a;
-
-        //            double bB = 0;
-        //            double bG = 0;
-        //            double bR = 0;
-        //            double bA = 0;
-
-        //            double cB = 0;
-        //            double cG = 0;
-        //            double cR = 0;
-        //            double cA = 0;
-
-        //            double dB = 0;
-        //            double dG = 0;
-        //            double dR = 0;
-        //            double dA = 0;
-
-        //            int pp;
-        //            //B区以降は面積が0より大きいときだけ計算
-        //            if (b != 0)
-        //            {
-        //                //Aの右ピクセル*Bの面積
-        //                pp = i + pByte;
-        //                bB = pixels[pp] * b;
-        //                bG = pixels[pp + 1] * b;
-        //                bR = pixels[pp + 2] * b;
-        //                bA = pixels[pp + 3] * b;
-        //                if (pixels[pp + 3] == 0) effectiveAreaRatio -= b;
-        //            }
-        //            if (c != 0)
-        //            {
-        //                //下側ピクセル
-        //                pp = i + stride;
-        //                cB = pixels[pp] * c;
-        //                cG = pixels[pp + 1] * c;
-        //                cR = pixels[pp + 2] * c;
-        //                cA = pixels[pp + 3] * c;
-        //                if (pixels[pp + 3] == 0) effectiveAreaRatio -= c;
-        //            }
-        //            if (d != 0)
-        //            {
-        //                //Aの右下ピクセル、仮にAが画像右下ピクセルだったとしても
-        //                //そのときは面積が0のはずだからここは計算されない
-        //                pp = i + stride + pByte;
-        //                dB = pixels[pp] * d;
-        //                dG = pixels[pp + 1] * d;
-        //                dR = pixels[pp + 2] * d;
-        //                dA = pixels[pp + 3] * d;
-        //                if (pixels[pp + 3] == 0) effectiveAreaRatio -= d;
-        //            }
-
-        //            //Alpha0の面積によって倍率変更
-        //            //有効面積率はRGBそれぞれに掛け算
-        //            effectiveAreaRatio = 1 / effectiveAreaRatio;
-
-        //            //4区を合計して四捨五入で完成
-        //            resultPixels[(y * scaledStride) + (x * pByte)] = (byte)(((aBlue + bB + cB + dB) * effectiveAreaRatio) + 0.5);
-        //            resultPixels[(y * scaledStride) + (x * pByte) + 1] = (byte)(((aGreen + bG + cG + dG) * effectiveAreaRatio) + 0.5);
-        //            resultPixels[(y * scaledStride) + (x * pByte) + 2] = (byte)(((aRed + bR + cR + dR) * effectiveAreaRatio) + 0.5);
-        //            resultPixels[(y * scaledStride) + (x * pByte) + 3] = (byte)(aAlpha + bA + cA + dA + 0.5);
-        //        }
-        //    });
-
-        //    BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
-        //    return bitmap;
-        //}
-
-
-
-        private void TTT(byte[] values, double sx, double sy)
-        {
-
-            for (int i = 0; i < 16; i++)
-            {
-
-            }
-        }
         private static double Cubic(double d)
         {
             return d switch
@@ -216,12 +77,12 @@ namespace _20210417_バイキュービック
             {
                 for (int x = 0; x < yoko; x++)
                 {
-                    
+
                     //参照点
                     double rx = (x + 0.5) * yokoScale;
                     double ry = (y + 0.5) * tateScale;
                     //基準左上
-                    int kLeft = (int)(rx - 0.5)-1;
+                    int kLeft = (int)(rx - 0.5) - 1;
                     int kTop = (int)(ry - 0.5) - 1;
                     //右下限界
                     int migi = sourceWidth - 1;
@@ -242,7 +103,7 @@ namespace _20210417_バイキュービック
                     //参照範囲の左上ピクセル座標
                     int ixc = (int)bpX - 1;
                     int iyc = (int)bpY - 1;
-                    
+
 
                     double[] xw = new double[4]
                     {
@@ -253,8 +114,8 @@ namespace _20210417_バイキュービック
                         Cubic(sy+1),Cubic(sy),Cubic(1-sy),Cubic(2-sy)
                     };
 
-                    int p = (int)(ry-0.5)* stride + (int)(rx-0.5);
-                    
+                    int p = (int)(ry - 0.5) * stride + (int)(rx - 0.5);
+
                     double RV = 0.0;
                     RV += pixels[p - stride - pByte] * (xw[0] * yw[0]);
                     RV += pixels[p - stride] * (xw[1] * yw[0]);
@@ -275,6 +136,65 @@ namespace _20210417_バイキュービック
                     RV += pixels[p + stride + stride] * (xw[1] * yw[3]);
                     RV += pixels[p + stride + stride + pByte] * (xw[2] * yw[3]);
                     RV += pixels[p + stride + stride + pByte + pByte] * (xw[3] * yw[3]);
+
+
+
+                    RV = RV > 255 ? 255 : RV < 0 ? 0 : RV;
+                    resultPixels[y * scaledStride + x] = (byte)(RV + 0.5);
+                }
+            };
+
+
+            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+            return bitmap;
+        }
+
+        /// <summary>
+        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="yoko">変換後の横ピクセル数を指定</param>
+        /// <param name="tate">変換後の縦ピクセル数を指定</param>
+        /// <returns></returns>
+        private BitmapSource BicubicGray8_2(BitmapSource source, int yoko, int tate)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            //変換後の画像の画素値の配列用
+            double yokoScale = (double)sourceWidth / yoko;//横倍率
+            double tateScale = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+            int pByte = (source.Format.BitsPerPixel + 7) / 8;//1ピクセルあたりのバイト数、Byte / Pixel
+
+            for (int y = 0; y < tate; y++)
+            {
+                for (int x = 0; x < yoko; x++)
+                {
+                    //参照点
+                    double rx = (x + 0.5) * yokoScale;
+                    double ry = (y + 0.5) * tateScale;
+                    //基準左上
+                    int kLeft = (int)(rx - 0.5) - 1;
+                    int kTop = (int)(ry - 0.5) - 1;
+
+                    //参照点の-0.5，-0.5
+                    double bpX = rx - 0.5;
+                    double bpY = ry - 0.5;
+                    //小数部分s
+                    double sx = bpX % 1;
+                    double sy = bpY % 1;
+                    //参照範囲の左上ピクセル座標
+                    int ixc = (int)bpX - 1;
+                    int iyc = (int)bpY - 1;
+
+
+                    int p = (int)(ry - 0.5) * stride + (int)(rx - 0.5);
 
 
 
