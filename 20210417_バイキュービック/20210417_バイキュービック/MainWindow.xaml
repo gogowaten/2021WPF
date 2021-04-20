@@ -9,11 +9,14 @@
         AllowDrop="True" Drop="Window_Drop">
   <Grid>
     <DockPanel UseLayoutRounding="True">
-      <StackPanel DockPanel.Dock="Right">
+      <StackPanel DockPanel.Dock="Right" Background="White">
         <Button x:Name="MyButton1" Content="1/2倍" Click="MyButton1_Click"/>
         <Button x:Name="MyButton2" Content="1/3倍" Click="MyButton2_Click"/>
         <Button x:Name="MyButton3" Content="2倍" Click="MyButton3_Click"/>
         <Button x:Name="MyButton4" Content="3倍" Click="MyButton4_Click"/>
+        <Slider x:Name="MySlider" Minimum="-3.0" Maximum="3.0" SmallChange="0.1" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                Value="-1.0"/>
+        <TextBlock Text="{Binding ElementName=MySlider, Path=Value, StringFormat=a \= 0.0}"/>
         <Button x:Name="MyButtonCopy" Content="コピー" Click="MyButtonCopy_Click" Margin="10"/>
         <Button x:Name="MyButtonPaste" Content="ペースト" Click="MyButtonPaste_Click" Margin="10"/>
       </StackPanel>
