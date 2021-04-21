@@ -202,6 +202,24 @@ namespace _20210417_バイキュービック
 
                     double vv = 0;
                     //参照範囲は基準から左へ2、右へ1の範囲
+                    double[] yw = new double[4];
+                    double sx = rx % 1;
+                    double dx = (sx < 0.5) ? 0.5 - sx : 0.5 - sx + 1;
+
+                    yw[0] = GetWeightCubic(2 - dx, a);
+                    yw[1] = GetWeightCubic(1 - dx, a);
+                    yw[2] = GetWeightCubic(dx, a);
+                    yw[3] = GetWeightCubic(1 + dx, a);
+                    double sy = ry % 1;
+                    double dy = (sy < 0.5) ? 0.5 - sy : 0.5 - sy + 1;
+
+                    double[] yw = new double[] {
+                                    GetWeightCubic(2 - dy, a),
+                                    GetWeightCubic(1 - dy, a),
+                                    GetWeightCubic(dy, a),
+                                    GetWeightCubic(1 + dy, a) };
+
+                    
                     for (int yy = -2; yy <= 1; yy++)//
                     {
                         //+0.5しているのは中心座標で計算するため
@@ -210,16 +228,21 @@ namespace _20210417_バイキュービック
                         int yc = yKijun + yy;
                         //マイナス座標や画像サイズを超えていたら、収まるように修正
                         yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
-                        for (int xx = -2; xx <= 1; xx++)
-                        {
-                            double dx = Math.Abs(rx - (xx + xKijun + 0.5));
-                            double xw = GetWeightCubic(dx, a);
-                            int xc = xKijun + xx;
-                            xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
-                            byte value = pixels[yc * stride + xc];
-                            vv += value * yw * xw;
-                        }
+                    
                     }
+
+                    for (int xx = -2; xx <= 1; xx++)
+                    {
+                        double dx = Math.Abs(rx - (xx + xKijun + 0.5));
+                        double xw = GetWeightCubic(dx, a);
+                        int xc = xKijun + xx;
+                        xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                        
+                    }
+
+                    byte value = pixels[yc * stride + xc];
+                    vv += value * yw * xw;
+
                     //0～255の範囲を超えることがあるので、修正
                     vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
                     resultPixels[y * scaledStride + x] = (byte)(vv + 0.5);
