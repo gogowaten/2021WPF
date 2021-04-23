@@ -5,8 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210422_バイキュービックとグレースケール画像拡縮"
         mc:Ignorable="d"
-      Title="MainWindow" Height="450" Width="614"
+        Title="MainWindow" Height="472" Width="634"
         AllowDrop="True" Drop="Window_Drop">
+  <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Margin" Value="2,10,2,0"/>
+    </Style>
+  </Window.Resources>
   <Grid>
     <DockPanel UseLayoutRounding="True">
       <StackPanel DockPanel.Dock="Right" Background="White">
@@ -14,7 +19,7 @@
         <Button x:Name="MyButton2" Content="1/3倍" Click="MyButton2_Click"/>
         <Button x:Name="MyButton3" Content="2倍" Click="MyButton3_Click"/>
         <Button x:Name="MyButton4" Content="3倍" Click="MyButton4_Click"/>
-        
+
         <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
         <Slider x:Name="MySlider" Minimum="-3.0" Maximum="3.0" SmallChange="0.05" TickFrequency="0.1" IsSnapToTickEnabled="True"
                 Value="-1.0" Width="100" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
@@ -22,7 +27,8 @@
             <RotateTransform Angle="270"/>
           </Slider.LayoutTransform>
         </Slider>
-        <TextBlock Text="{Binding ElementName=MySlider, Path=Value, StringFormat=0.00}"/>
+        <TextBlock Text="{Binding ElementName=MySlider, Path=Value, StringFormat=0.00}"
+                   HorizontalAlignment="Center"/>
         <Button x:Name="MyButtonCopy" Content="コピー" Click="MyButtonCopy_Click" Margin="10"/>
         <Button x:Name="MyButtonPaste" Content="ペースト" Click="MyButtonPaste_Click" Margin="10"/>
       </StackPanel>
