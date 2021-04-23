@@ -14,6 +14,10 @@ using System.Windows.Media.Imaging;
 //画像リサイズ処理のうんちく - Qiita
 //https://qiita.com/yoya/items/95c37e02762431b1abf0#%E3%82%BB%E3%83%91%E3%83%A9%E3%83%96%E3%83%AB%E3%83%95%E3%82%A3%E3%83%AB%E3%82%BF
 
+
+//C#、WPF、バイキュービック補完法での画像の拡大縮小変換に再挑戦した結果、グレースケール専用 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/23/185354
+//E:\オレ\エクセル\画像処理.xlsm_バイキュービック法_$A$266
 namespace _20210422_バイキュービックとグレースケール画像拡縮
 {
     /// <summary>
