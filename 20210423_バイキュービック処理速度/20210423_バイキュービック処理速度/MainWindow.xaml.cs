@@ -29,6 +29,9 @@ using System.Diagnostics;
 //https://qiita.com/yoya/items/95c37e02762431b1abf0#%E3%82%BB%E3%83%91%E3%83%A9%E3%83%96%E3%83%AB%E3%83%95%E3%82%A3%E3%83%AB%E3%82%BF
 
 
+//WPF、画像の拡大処理を高速化してみた、Parallel.Forとセパラブルで最大22倍速、バイキュービック、グレースケール専用 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/24/214638
+
 
 namespace _20210423_バイキュービック処理速度
 {
@@ -45,7 +48,11 @@ namespace _20210423_バイキュービック処理速度
             this.Top = 0;
             this.Left = 0;
 #endif
-
+            //List<double> vs = new();
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    vs.Add(i / 10.0);
+            //}
         }
 
 
@@ -80,10 +87,440 @@ namespace _20210423_バイキュービック処理速度
 
 
 
-
-        //a指定版、重みをまとめて別計算＋仮想範囲
         /// <summary>
         /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// セパラブル+Parallel+テーブル
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="yoko">変換後の横ピクセル数を指定</param>
+        /// <param name="tate">変換後の縦ピクセル数を指定</param>
+        /// <param name="a">-0.5～-1.0くらいを指定する、基準は-1.0、小さくするとシャープ、大きくするとぼかし</param>
+        /// <returns></returns>
+        private BitmapSource BicubicGray8Test9(BitmapSource source, int yoko, int tate, double a = -1.0)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            //変換後の画像の画素値の配列用
+            double yokoScale = (double)sourceWidth / yoko;//横倍率
+            double tateScale = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+            double[] xResult = new double[sourceHeight * scaledStride];
+
+            //重みのテーブル取得
+            Dictionary<int, double[]> table = GetWeightTable(a);
+
+            //横方だけを処理
+            _ = Parallel.For(0, sourceHeight, y =>
+              {
+                  for (int x = 0; x < yoko; x++)
+                  {
+                      //参照点
+                      double rx = (x + 0.5) * yokoScale;
+                      //参照点四捨五入で基準
+                      int xKijun = (int)(rx + 0.5);
+                      //テーブルのkey作成、基準の距離を10倍して四捨五入
+                      double xDis = Math.Abs(rx - (xKijun + 0.5));
+                      var xKey = (int)((xDis * 10.0) + 0.5);
+
+                      double vv = 0;
+                      //参照範囲は基準から左へ2、右へ1の範囲
+                      for (int xx = -2; xx <= 1; xx++)
+                      {
+                          int xc = xKijun + xx;
+                          xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                          byte value = pixels[y * stride + xc];
+                          vv += value * table[xKey][xx + 2];
+                      }
+                      xResult[y * scaledStride + x] = vv;
+                  }
+              });
+
+            //縦方向も処理
+            _ = Parallel.For(0, tate, y =>
+              {
+                  for (int x = 0; x < yoko; x++)
+                  {
+                      //参照点
+                      double ry = (y + 0.5) * tateScale;
+                      //参照点四捨五入で基準
+                      int yKijun = (int)(ry + 0.5);
+                      //テーブルのkey作成、基準の距離を10倍して四捨五入
+                      double yDis = Math.Abs(ry - (yKijun + 0.5));
+                      var yKey = (int)((yDis * 10.0) + 0.5);
+
+                      double vv = 0;
+                      //参照範囲は基準から左へ2、右へ1の範囲
+                      for (int yy = -2; yy <= 1; yy++)
+                      {
+                          int yc = yKijun + yy;
+                          //マイナス座標や画像サイズを超えていたら、収まるように修正
+                          yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+                          double value = xResult[yc * scaledStride + x];
+                          vv += value * table[yKey][yy + 2];
+                      }
+                      //0～255の範囲を超えることがあるので、修正
+                      vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+                      resultPixels[y * scaledStride + x] = (byte)(vv + 0.5);
+                  }
+              });
+
+            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+            return bitmap;
+
+            //重みのテーブル作成、0.1刻み           
+            Dictionary<int, double[]> GetWeightTable(double a)
+            {
+                Dictionary<int, double[]> table = new();
+                for (int i = 0; i < 11; i++)
+                {
+                    double d = i / 10.0;
+                    table.Add(i, new double[] {
+                    GetWeightCubic(2 - d, a),
+                    GetWeightCubic(1 - d, a),
+                    GetWeightCubic(d, a),
+                    GetWeightCubic(1 + d, a) });
+                }
+                return table;
+            }
+        }
+
+
+
+        /// <summary>
+        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// セパラブル+Parallel
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="yoko">変換後の横ピクセル数を指定</param>
+        /// <param name="tate">変換後の縦ピクセル数を指定</param>
+        /// <param name="a">-0.5～-1.0くらいを指定する、基準は-1.0、小さくするとシャープ、大きくするとぼかし</param>
+        /// <returns></returns>
+        private BitmapSource BicubicGray8Test8(BitmapSource source, int yoko, int tate, double a = -1.0)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            //変換後の画像の画素値の配列用
+            double yokoScale = (double)sourceWidth / yoko;//横倍率
+            double tateScale = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+            double[] xResult = new double[sourceHeight * scaledStride];
+
+            //横方だけを処理
+            Parallel.For(0, sourceHeight, y =>
+            {
+                for (int x = 0; x < yoko; x++)
+                {
+                    //参照点
+                    double rx = (x + 0.5) * yokoScale;
+                    //参照点四捨五入で基準
+                    int xKijun = (int)(rx + 0.5);
+
+                    double vv = 0;
+                    //参照範囲は基準から左へ2、右へ1の範囲
+                    for (int xx = -2; xx <= 1; xx++)
+                    {
+                        //+0.5しているのは中心座標で計算するため
+                        double dx = Math.Abs(rx - (xx + xKijun + 0.5));//距離
+                        double xw = GetWeightCubic(dx, a);//重み
+                        int xc = xKijun + xx;
+                        xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                        byte value = pixels[y * stride + xc];
+                        vv += value * xw;
+                    }
+                    xResult[y * scaledStride + x] = vv;
+                }
+            });
+
+            //縦方向も処理
+            Parallel.For(0, tate, y =>
+            {
+                for (int x = 0; x < yoko; x++)
+                {
+                    //参照点
+                    double ry = (y + 0.5) * tateScale;
+                    //参照点四捨五入で基準
+                    int yKijun = (int)(ry + 0.5);
+
+                    double vv = 0;
+                    //参照範囲は基準から左へ2、右へ1の範囲
+                    for (int yy = -2; yy <= 1; yy++)
+                    {
+                        double dy = Math.Abs(ry - (yy + yKijun + 0.5));
+                        double yw = GetWeightCubic(dy, a);
+                        int yc = yKijun + yy;
+                        //マイナス座標や画像サイズを超えていたら、収まるように修正
+                        yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+                        double value = xResult[yc * scaledStride + x];
+                        vv += value * yw;
+                    }
+                    //0～255の範囲を超えることがあるので、修正
+                    vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+                    resultPixels[y * scaledStride + x] = (byte)(vv + 0.5);
+                }
+            });
+
+            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+            return bitmap;
+        }
+
+
+
+
+
+        /// <summary>
+        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// 拡張範囲+テーブル
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="yoko">変換後の横ピクセル数を指定</param>
+        /// <param name="tate">変換後の縦ピクセル数を指定</param>
+        /// <param name="a">-0.5～-1.0くらいを指定する、小さくするとシャープ、大きくするとぼかし</param>
+        /// <returns></returns>
+        private BitmapSource BicubicGray8Test7(BitmapSource source, int yoko, int tate, double a = -1.0)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int stride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[sourceHeight * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            //変換後の画像の画素値の配列用
+            double yokoScale = (double)sourceWidth / yoko;//横倍率
+            double tateScale = (double)sourceHeight / tate;
+            int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
+            byte[] resultPixels = new byte[tate * scaledStride];
+
+            //拡張範囲、元のサイズから左右上下に2ピクセル拡張
+            byte[] exPixels = new byte[(sourceHeight + 4) * (stride + 4)];
+            int exStride = stride + 4;
+            int exWidth = sourceWidth + 4;
+            int exHeight = sourceHeight + 4;
+
+            //中段
+            int count = 0;
+            for (int i = exWidth + exWidth + 2; i < exPixels.Length - exStride - exStride; i += exWidth)
+            {
+                exPixels[i - 2] = pixels[count];//左端
+                exPixels[i - 1] = pixels[count];//左端の1個右
+                for (int j = 0; j < sourceWidth; j++)
+                {
+                    exPixels[i + j] = pixels[count];//中間
+                    count++;
+                }
+                exPixels[i + sourceWidth] = pixels[count - 1];//右端1個左
+                exPixels[i + sourceWidth + 1] = pixels[count - 1];//右端
+            }
+            //最上段とその1段下と最下段とその1段上の行
+            int endRow = (exStride * exHeight) - exStride;
+            for (int i = 0; i < exStride; i++)
+            {
+                exPixels[i] = exPixels[i + exStride + exStride];//最上段
+                exPixels[i + exStride] = exPixels[i + exStride + exStride];//最上段の1段下
+                exPixels[endRow + i - exStride] = exPixels[i + endRow - exStride - exStride];
+                exPixels[endRow + i] = exPixels[i + endRow - exStride - exStride];//最下段
+            }
+
+            //重みのテーブル取得
+            double[,][,] table = GetWeightTable(a);
+
+            for (int y = 0; y < tate; y++)
+            {
+                for (int x = 0; x < yoko; x++)
+                {
+                    //参照点
+                    double rx = (x + 0.5) * yokoScale;
+                    double ry = (y + 0.5) * tateScale;
+                    //参照点四捨五入で基準
+                    int xKijun = (int)(rx + 0.5);
+                    int yKijun = (int)(ry + 0.5);
+
+                    //テーブルのkey作成、基準の距離を10倍して四捨五入
+                    double xDis = Math.Abs(rx - (xKijun + 0.5));
+                    var xKey = (int)((xDis * 10.0) + 0.5);
+                    double yDis = Math.Abs(ry - (yKijun + 0.5));
+                    var yKey = (int)((yDis * 10.0) + 0.5);
+
+                    double vv = 0;
+                    //参照範囲は基準から左へ2、右へ1の範囲
+                    for (int yy = -2; yy <= 1; yy++)//
+                    {
+                        int yFix = ((yKijun + yy) * exStride) + exStride + exStride + 2;
+                        for (int xx = -2; xx <= 1; xx++)
+                        {
+                            byte value = exPixels[yFix + xKijun + xx];
+                            vv += value * table[xKey, yKey][xx + 2, yy + 2];
+                        }
+                    }
+                    //0～255の範囲を超えることがあるので、修正
+                    vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+                    resultPixels[y * scaledStride + x] = (byte)(vv + 0.5);
+                }
+            };
+
+            BitmapSource bitmap = BitmapSource.Create(yoko, tate, 96, 96, source.Format, null, resultPixels, scaledStride);
+            return bitmap;
+
+
+            //重みのテーブル作成、0.1刻み           
+            double[,][,] GetWeightTable(double a)
+            {
+                Dictionary<int, double[]> tt = new();
+                for (int i = 0; i < 11; i++)
+                {
+                    double d = i / 10.0;
+                    tt.Add(i, new double[] {
+                    GetWeightCubic(2 - d, a),
+                    GetWeightCubic(1 - d, a),
+                    GetWeightCubic(d, a),
+                    GetWeightCubic(1 + d, a) });
+                }
+
+                double[,][,] table = new double[11, 11][,];
+                for (int y = 0; y < 11; y++)
+                {
+                    for (int x = 0; x < 11; x++)
+                    {
+                        double[,] tableB = new double[4, 4];
+                        for (int iy = 0; iy < 4; iy++)
+                        {
+                            for (int ix = 0; ix < 4; ix++)
+                            {
+                                tableB[ix, iy] = tt[y][iy] * tt[x][ix];
+                            }
+                        }
+                        table[x, y] = tableB;
+                    }
+                }
+                return table;
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// 重みのテーブル作成して使用
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="width">変換後の横ピクセル数を指定</param>
+        /// <param name="height">変換後の縦ピクセル数を指定</param>
+        /// <param name="a">-0.5～-1.0くらいを指定するのがいい、小さくするとシャープ、大きくするとぼかし</param>
+        /// <returns></returns>
+        private BitmapSource BicubicGray8Test6(BitmapSource source, int width, int height, double a = -1.0)
+        {
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int sourceStride = (sourceWidth * source.Format.BitsPerPixel + 7) / 8;
+            byte[] sourcePixels = new byte[sourceHeight * sourceStride];
+            source.CopyPixels(sourcePixels, sourceStride, 0);
+
+            //変換後の画像の画素値の配列用
+            double widthScale = (double)sourceWidth / width;//横倍率
+            double heightScale = (double)sourceHeight / height;
+            int stride = (width * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[height * stride];
+
+            //重みのテーブル取得
+            double[,][,] table = GetWeightTable(a);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //参照点
+                    double rx = (x + 0.5) * widthScale;
+                    double ry = (y + 0.5) * heightScale;
+                    //参照点四捨五入で基準
+                    int xKijun = (int)(rx + 0.5);
+                    int yKijun = (int)(ry + 0.5);
+                    //テーブルのkey作成、基準の距離を10倍して四捨五入
+                    double xDis = Math.Abs(rx - (xKijun + 0.5));
+                    var xKey = (int)((xDis * 10.0) + 0.5);
+                    double yDis = Math.Abs(ry - (yKijun + 0.5));
+                    var yKey = (int)((yDis * 10.0) + 0.5);
+
+                    double vv = 0;
+                    //参照範囲は基準から左へ2、右へ1の範囲
+                    for (int yy = -2; yy <= 1; yy++)//
+                    {
+                        int yc = yKijun + yy;
+                        //マイナス座標や画像サイズを超えていたら、収まるように修正
+                        yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+                        for (int xx = -2; xx <= 1; xx++)
+                        {
+                            int xc = xKijun + xx;
+                            xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                            byte value = sourcePixels[yc * sourceStride + xc];
+                            vv += value * table[xKey, yKey][xx + 2, yy + 2];
+                        }
+                    }
+                    //0～255の範囲を超えることがあるので、修正
+                    vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+                    pixels[y * stride + x] = (byte)(vv + 0.5);
+                }
+            };
+
+            BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
+            return bitmap;
+
+            //重みのテーブル作成、0.1刻み           
+            double[,][,] GetWeightTable(double a)
+            {
+                Dictionary<int, double[]> tt = new();
+                for (int i = 0; i < 11; i++)
+                {
+                    double d = i / 10.0;
+                    tt.Add(i, new double[] {
+                    GetWeightCubic(2 - d, a),
+                    GetWeightCubic(1 - d, a),
+                    GetWeightCubic(d, a),
+                    GetWeightCubic(1 + d, a) });
+                }
+
+                double[,][,] table = new double[11, 11][,];
+                for (int y = 0; y < 11; y++)
+                {
+                    for (int x = 0; x < 11; x++)
+                    {
+                        double[,] tableB = new double[4, 4];
+                        for (int iy = 0; iy < 4; iy++)
+                        {
+                            for (int ix = 0; ix < 4; ix++)
+                            {
+                                tableB[ix, iy] = tt[y][iy] * tt[x][ix];
+                            }
+                        }
+                        table[x, y] = tableB;
+                    }
+                }
+                return table;
+            }
+
+        }
+
+
+
+
+        //
+        /// <summary>
+        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// 4x4の重みまとめて計算＋拡張範囲
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="yoko">変換後の横ピクセル数を指定</param>
@@ -105,34 +542,34 @@ namespace _20210423_バイキュービック処理速度
             int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
             byte[] resultPixels = new byte[tate * scaledStride];
 
-            //仮想範囲もとのサイズから左右上下に2ピクセル拡張
-            byte[] vrPixels = new byte[(sourceHeight + 4) * (stride + 4)];
-            int vrStride = stride + 4;
-            int vrWidth = sourceWidth + 4;
-            int vrHeight = sourceHeight + 4;
+            //拡張範囲、もとのサイズから左右上下に2ピクセル拡張
+            byte[] exPixels = new byte[(sourceHeight + 4) * (stride + 4)];
+            int exStride = stride + 4;
+            int exWidth = sourceWidth + 4;
+            int exHeight = sourceHeight + 4;
 
             //中段
             int count = 0;
-            for (int i = vrWidth + vrWidth + 2; i < vrPixels.Length - vrStride - vrStride; i += vrWidth)
+            for (int i = exWidth + exWidth + 2; i < exPixels.Length - exStride - exStride; i += exWidth)
             {
-                vrPixels[i - 2] = pixels[count];//左端
-                vrPixels[i - 1] = pixels[count];//左端の1個右
+                exPixels[i - 2] = pixels[count];//左端
+                exPixels[i - 1] = pixels[count];//左端の1個右
                 for (int j = 0; j < sourceWidth; j++)
                 {
-                    vrPixels[i + j] = pixels[count];//中間
+                    exPixels[i + j] = pixels[count];//中間
                     count++;
                 }
-                vrPixels[i + sourceWidth] = pixels[count - 1];//右端1個左
-                vrPixels[i + sourceWidth + 1] = pixels[count - 1];//右端
+                exPixels[i + sourceWidth] = pixels[count - 1];//右端1個左
+                exPixels[i + sourceWidth + 1] = pixels[count - 1];//右端
             }
             //最上段とその1段下と最下段とその1段上の行
-            int endRow = (vrStride * vrHeight) - vrStride;
-            for (int i = 0; i < vrStride; i++)
+            int endRow = (exStride * exHeight) - exStride;
+            for (int i = 0; i < exStride; i++)
             {
-                vrPixels[i] = vrPixels[i + vrStride + vrStride];//最上段
-                vrPixels[i + vrStride] = vrPixels[i + vrStride + vrStride];//最上段の1段下
-                vrPixels[endRow + i - vrStride] = vrPixels[i + endRow - vrStride - vrStride];
-                vrPixels[endRow + i] = vrPixels[i + endRow - vrStride - vrStride];//最下段
+                exPixels[i] = exPixels[i + exStride + exStride];//最上段
+                exPixels[i + exStride] = exPixels[i + exStride + exStride];//最上段の1段下
+                exPixels[endRow + i - exStride] = exPixels[i + endRow - exStride - exStride];
+                exPixels[endRow + i] = exPixels[i + endRow - exStride - exStride];//最下段
             }
 
             for (int y = 0; y < tate; y++)
@@ -149,26 +586,26 @@ namespace _20210423_バイキュービック処理速度
                     double[,] ws = Get4x4Weight(rx, ry);
                     double vv = 0;
                     //参照範囲は基準から左へ2、右へ1の範囲
-                    int topLeft = ((yKijun - 2) * vrStride) + vrStride + vrStride + 2 + xKijun - 2;
-                    vv += vrPixels[topLeft] * ws[0, 0];
-                    vv += vrPixels[topLeft + 1] * ws[1, 0];
-                    vv += vrPixels[topLeft + 2] * ws[2, 0];
-                    vv += vrPixels[topLeft + 3] * ws[3, 0];
-                    topLeft += vrStride;//改行
-                    vv += vrPixels[topLeft] * ws[0, 1];
-                    vv += vrPixels[topLeft + 1] * ws[1, 1];
-                    vv += vrPixels[topLeft + 2] * ws[2, 1];
-                    vv += vrPixels[topLeft + 3] * ws[3, 1];
-                    topLeft += vrStride;
-                    vv += vrPixels[topLeft] * ws[0, 2];
-                    vv += vrPixels[topLeft + 1] * ws[1, 2];
-                    vv += vrPixels[topLeft + 2] * ws[2, 2];
-                    vv += vrPixels[topLeft + 3] * ws[3, 2];
-                    topLeft += vrStride;
-                    vv += vrPixels[topLeft] * ws[0, 3];
-                    vv += vrPixels[topLeft + 1] * ws[1, 3];
-                    vv += vrPixels[topLeft + 2] * ws[2, 3];
-                    vv += vrPixels[topLeft + 3] * ws[3, 3];
+                    int topLeft = ((yKijun - 2) * exStride) + exStride + exStride + 2 + xKijun - 2;
+                    vv += exPixels[topLeft] * ws[0, 0];
+                    vv += exPixels[topLeft + 1] * ws[1, 0];
+                    vv += exPixels[topLeft + 2] * ws[2, 0];
+                    vv += exPixels[topLeft + 3] * ws[3, 0];
+                    topLeft += exStride;//改行
+                    vv += exPixels[topLeft] * ws[0, 1];
+                    vv += exPixels[topLeft + 1] * ws[1, 1];
+                    vv += exPixels[topLeft + 2] * ws[2, 1];
+                    vv += exPixels[topLeft + 3] * ws[3, 1];
+                    topLeft += exStride;
+                    vv += exPixels[topLeft] * ws[0, 2];
+                    vv += exPixels[topLeft + 1] * ws[1, 2];
+                    vv += exPixels[topLeft + 2] * ws[2, 2];
+                    vv += exPixels[topLeft + 3] * ws[3, 2];
+                    topLeft += exStride;
+                    vv += exPixels[topLeft] * ws[0, 3];
+                    vv += exPixels[topLeft + 1] * ws[1, 3];
+                    vv += exPixels[topLeft + 2] * ws[2, 3];
+                    vv += exPixels[topLeft + 3] * ws[3, 3];
 
                     //0～255の範囲を超えることがあるので、修正
                     vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
@@ -216,7 +653,7 @@ namespace _20210423_バイキュービック処理速度
 
         /// <summary>
         /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
-        /// a指定版+セパラブル
+        /// セパラブル
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="yoko">変換後の横ピクセル数を指定</param>
@@ -299,9 +736,9 @@ namespace _20210423_バイキュービック処理速度
 
 
 
-        //a指定版、仮想範囲で高速化
         /// <summary>
         /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
+        /// 拡張範囲
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="yoko">変換後の横ピクセル数を指定</param>
@@ -323,34 +760,34 @@ namespace _20210423_バイキュービック処理速度
             int scaledStride = (yoko * source.Format.BitsPerPixel + 7) / 8;
             byte[] resultPixels = new byte[tate * scaledStride];
 
-            //仮想範囲もとのサイズから左右上下に2ピクセル拡張
-            byte[] vrPixels = new byte[(sourceHeight + 4) * (stride + 4)];
-            int vrStride = stride + 4;
-            int vrWidth = sourceWidth + 4;
-            int vrHeight = sourceHeight + 4;
+            //拡張範囲、元のサイズから左右上下に2ピクセル拡張
+            byte[] exPixels = new byte[(sourceHeight + 4) * (stride + 4)];
+            int exStride = stride + 4;
+            int exWidth = sourceWidth + 4;
+            int exHeight = sourceHeight + 4;
 
             //中段
             int count = 0;
-            for (int i = vrWidth + vrWidth + 2; i < vrPixels.Length - vrStride - vrStride; i += vrWidth)
+            for (int i = exWidth + exWidth + 2; i < exPixels.Length - exStride - exStride; i += exWidth)
             {
-                vrPixels[i - 2] = pixels[count];//左端
-                vrPixels[i - 1] = pixels[count];//左端の1個右
+                exPixels[i - 2] = pixels[count];//左端
+                exPixels[i - 1] = pixels[count];//左端の1個右
                 for (int j = 0; j < sourceWidth; j++)
                 {
-                    vrPixels[i + j] = pixels[count];//中間
+                    exPixels[i + j] = pixels[count];//中間
                     count++;
                 }
-                vrPixels[i + sourceWidth] = pixels[count - 1];//右端1個左
-                vrPixels[i + sourceWidth + 1] = pixels[count - 1];//右端
+                exPixels[i + sourceWidth] = pixels[count - 1];//右端1個左
+                exPixels[i + sourceWidth + 1] = pixels[count - 1];//右端
             }
             //最上段とその1段下と最下段とその1段上の行
-            int endRow = (vrStride * vrHeight) - vrStride;
-            for (int i = 0; i < vrStride; i++)
+            int endRow = (exStride * exHeight) - exStride;
+            for (int i = 0; i < exStride; i++)
             {
-                vrPixels[i] = vrPixels[i + vrStride + vrStride];//最上段
-                vrPixels[i + vrStride] = vrPixels[i + vrStride + vrStride];//最上段の1段下
-                vrPixels[endRow + i - vrStride] = vrPixels[i + endRow - vrStride - vrStride];
-                vrPixels[endRow + i] = vrPixels[i + endRow - vrStride - vrStride];//最下段
+                exPixels[i] = exPixels[i + exStride + exStride];//最上段
+                exPixels[i + exStride] = exPixels[i + exStride + exStride];//最上段の1段下
+                exPixels[endRow + i - exStride] = exPixels[i + endRow - exStride - exStride];
+                exPixels[endRow + i] = exPixels[i + endRow - exStride - exStride];//最下段
             }
 
             for (int y = 0; y < tate; y++)
@@ -368,7 +805,7 @@ namespace _20210423_バイキュービック処理速度
                     //参照範囲は基準から左へ2、右へ1の範囲
                     for (int yy = -2; yy <= 1; yy++)//
                     {
-                        int vrFix = ((yKijun + yy) * vrStride) + vrStride + vrStride + 2;
+                        int yFix = ((yKijun + yy) * exStride) + exStride + exStride + 2;
                         //+0.5しているのは中心座標で計算するため
                         double dy = Math.Abs(ry - (yy + yKijun + 0.5));//距離
                         double yw = GetWeightCubic(dy, a);//重み
@@ -376,7 +813,7 @@ namespace _20210423_バイキュービック処理速度
                         {
                             double dx = Math.Abs(rx - (xx + xKijun + 0.5));
                             double xw = GetWeightCubic(dx, a);
-                            byte value = vrPixels[vrFix + xKijun + xx];
+                            byte value = exPixels[yFix + xKijun + xx];
                             vv += value * yw * xw;
                         }
                     }
@@ -394,7 +831,7 @@ namespace _20210423_バイキュービック処理速度
 
         /// <summary>
         /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
-        /// a指定版、参照範囲の重み計算を別にして高速化
+        /// 4x4の重みまとめて計算
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="yoko">変換後の横ピクセル数を指定</param>
@@ -491,7 +928,7 @@ namespace _20210423_バイキュービック処理速度
 
         /// <summary>
         /// 画像の縮小、バイキュービック法で補完、PixelFormats.Gray8専用)
-        /// a指定版
+        /// parallel.for
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="width">変換後の横ピクセル数を指定</param>
@@ -801,6 +1238,34 @@ namespace _20210423_バイキュービック処理速度
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
             MyExe(BicubicGray8Test5, MyBitmapOrigin, yoko, tate, MySlider.Value);
+        }
+
+        private void MyButton6_Click(object sender, RoutedEventArgs e)
+        {
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
+            MyExe(BicubicGray8Test6, MyBitmapOrigin, yoko, tate, MySlider.Value);
+        }
+
+        private void MyButton7_Click(object sender, RoutedEventArgs e)
+        {
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
+            MyExe(BicubicGray8Test7, MyBitmapOrigin, yoko, tate, MySlider.Value);
+        }
+
+        private void MyButton8_Click(object sender, RoutedEventArgs e)
+        {
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
+            MyExe(BicubicGray8Test8, MyBitmapOrigin, yoko, tate, MySlider.Value);
+        }
+
+        private void MyButton9_Click(object sender, RoutedEventArgs e)
+        {
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
+            MyExe(BicubicGray8Test9, MyBitmapOrigin, yoko, tate, MySlider.Value);
         }
     }
 }
