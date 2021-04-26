@@ -7,6 +7,10 @@ using System.Windows.Media.Imaging;
 
 using System.Diagnostics;
 
+//C#、WPF、バイキュービック補完法での画像の拡大縮小変換、24bit(普通のカラー)と32bit(半透明画像)対応版 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/26/113507
+
+
 namespace _20210425_バイキュービックカラー版
 {
     public partial class MainWindow : Window
@@ -35,6 +39,8 @@ namespace _20210425_バイキュービックカラー版
             MyImage.Source = bitmap;
         }
 
+
+
         /// <summary>
         /// バイキュービックで重み計算
         /// </summary>
@@ -56,7 +62,7 @@ namespace _20210425_バイキュービックカラー版
 
 
         /// <summary>
-        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Bgra32専用)
+        /// 画像の拡大縮小、バイキュービック法で補完、PixelFormats.Bgra32専用)
         /// セパラブルとParallelによる高速化
         /// </summary>
         /// <param name="source">PixelFormats.Bgra32のBitmap</param>
@@ -64,7 +70,7 @@ namespace _20210425_バイキュービックカラー版
         /// <param name="height">変換後の縦ピクセル数を指定</param>
         /// <param name="a">-0.5～-1.0くらいを指定する、小さくするとシャープ、大きくするとぼかし</param>
         /// <returns></returns>
-        private BitmapSource BicubicBgra32(BitmapSource source, int width, int height, double a = -1.0)
+        private BitmapSource BicubicBgra32Kai(BitmapSource source, int width, int height, double a = -1.0)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -202,7 +208,7 @@ namespace _20210425_バイキュービックカラー版
 
         //未使用
         /// <summary>
-        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Bgra32専用)
+        /// 画像の拡大縮小、バイキュービック法で補完、PixelFormats.Bgra32専用)
         /// 通常版
         /// </summary>
         /// <param name="source">PixelFormats.Bgra32のBitmap</param>
@@ -210,7 +216,7 @@ namespace _20210425_バイキュービックカラー版
         /// <param name="height">変換後の縦ピクセル数を指定</param>
         /// <param name="a">-0.5～-1.0くらいを指定する、小さくするとシャープ、大きくするとぼかし</param>
         /// <returns></returns>
-        private BitmapSource BicubicBgra32Old(BitmapSource source, int width, int height, double a = -1.0)
+        private BitmapSource BicubicBgra32(BitmapSource source, int width, int height, double a = -1.0)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -306,7 +312,7 @@ namespace _20210425_バイキュービックカラー版
 
 
         /// <summary>
-        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Bgr24専用)
+        /// 画像の拡大縮小、バイキュービック法で補完、PixelFormats.Bgr24専用)
         /// セパラブルとParallelで高速化
         /// </summary>
         /// <param name="source">PixelFormats.Bgr24のBitmap</param>
@@ -314,7 +320,7 @@ namespace _20210425_バイキュービックカラー版
         /// <param name="height">変換後の縦ピクセル数を指定</param>
         /// <param name="a">-0.5～-1.0くらいを指定する、小さくするとシャープ、大きくするとぼかし</param>
         /// <returns></returns>
-        private BitmapSource BicubicBgr24(BitmapSource source, int width, int height, double a = -1.0)
+        private BitmapSource BicubicBgr24Kai(BitmapSource source, int width, int height, double a = -1.0)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -409,7 +415,7 @@ namespace _20210425_バイキュービックカラー版
 
         //未使用
         /// <summary>
-        /// 画像の縮小、バイキュービック法で補完、PixelFormats.Bgr24専用)
+        /// 画像の拡大縮小、バイキュービック法で補完、PixelFormats.Bgr24専用)
         /// 通常版
         /// </summary>
         /// <param name="source">PixelFormats.Bgr24のBitmap</param>
@@ -417,7 +423,7 @@ namespace _20210425_バイキュービックカラー版
         /// <param name="height">変換後の縦ピクセル数を指定</param>
         /// <param name="a">-0.5～-1.0くらいを指定する、小さくするとシャープ、大きくするとぼかし</param>
         /// <returns></returns>
-        private BitmapSource BicubicBgr24Old(BitmapSource source, int width, int height, double a = -1.0)
+        private BitmapSource BicubicBgr24(BitmapSource source, int width, int height, double a = -1.0)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -690,8 +696,8 @@ namespace _20210425_バイキュービックカラー版
         private void MyButton1_Click(object sender, RoutedEventArgs e)
         {
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
-            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);            
-            MyExe(BicubicBgr24, MyBitmapOrigin, yoko, tate, MySlider.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe(BicubicBgr24Kai, MyBitmapOrigin, yoko, tate, MySlider.Value);
         }
 
 
@@ -699,21 +705,21 @@ namespace _20210425_バイキュービックカラー版
         {
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(BicubicBgr24, MyBitmapOrigin, yoko, tate, MySlider.Value);
+            MyExe(BicubicBgr24Kai, MyBitmapOrigin, yoko, tate, MySlider.Value);
         }
 
         private void MyButton3_Click(object sender, RoutedEventArgs e)
         {
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            MyExe(BicubicBgra32, MyBitmapOrigin32bit, yoko, tate, MySlider.Value);
+            MyExe(BicubicBgra32Kai, MyBitmapOrigin32bit, yoko, tate, MySlider.Value);
         }
 
         private void MyButton4_Click(object sender, RoutedEventArgs e)
         {
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(BicubicBgra32, MyBitmapOrigin32bit, yoko, tate, MySlider.Value);
+            MyExe(BicubicBgra32Kai, MyBitmapOrigin32bit, yoko, tate, MySlider.Value);
         }
 
         //画像をクリップボードにコピー
@@ -738,8 +744,9 @@ namespace _20210425_バイキュービックカラー版
 
         private void MySlider_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
-            if (e.Delta > 0) MySlider.Value += MySlider.SmallChange;
-            else MySlider.Value -= MySlider.SmallChange;
+            System.Windows.Controls.Slider slider = sender as System.Windows.Controls.Slider;
+            if (e.Delta > 0) slider.Value += slider.SmallChange;
+            else slider.Value -= slider.SmallChange;
         }
 
 

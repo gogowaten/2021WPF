@@ -21,7 +21,7 @@
         <StackPanel>
           <Slider x:Name="MySliderScale" Minimum="1" Maximum="10" Value="2" Width="80"
                   HorizontalAlignment="Center" TickFrequency="1" IsSnapToTickEnabled="True"
-                  MouseWheel="MySlider_MouseWheel">
+                  MouseWheel="MySlider_MouseWheel" SmallChange="1" LargeChange="1">
             <Slider.LayoutTransform>
               <RotateTransform Angle="270"/>
             </Slider.LayoutTransform>
