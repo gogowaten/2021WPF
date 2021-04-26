@@ -738,6 +738,7 @@ namespace _20210425_バイキュービックカラー版
                 FormatConvertedBitmap bitmap = new(img, PixelFormats.Bgr24, null, 0);
                 MyBitmapOrigin = bitmap;
                 FormatConvertedBitmap bitmap32 = new(img, PixelFormats.Bgra32, null, 0);
+                MyBitmapOrigin32bit = bitmap32;
                 MyImage.Source = bitmap32;
             }
         }

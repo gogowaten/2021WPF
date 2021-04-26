@@ -3,11 +3,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
-    <RootNamespace>_20210425_バイキュービックカラー版</RootNamespace>
+    <RootNamespace>_20210426_Lanczosで拡大縮小</RootNamespace>
     <UseWPF>true</UseWPF>
-    <Version>1.0.1</Version>
-    <Authors>gogowaten</Authors>
-    <Company>gogowaten</Company>
   </PropertyGroup>
 
 </Project>
