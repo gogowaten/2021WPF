@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using System.Diagnostics;
 
+//C#、WPF、ランチョス補完法での画像リサイズ処理に再挑戦、グレースケール専用 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/27/160633
+//E:\オレ\エクセル\画像処理.xlsm_ランチョス_$B$10
 
 namespace _20210426_Lanczosで拡大縮小
 {
@@ -44,11 +41,11 @@ namespace _20210426_Lanczosで拡大縮小
             MyImage.Source = bitmap;
         }
 
+
+        //窓関数
         private double Sinc(double d)
         {
-            //double pix = Math.PI * d;
-            //return Math.Sin(pix) / pix;
-            return (Math.Sin(Math.PI * d)) / (Math.PI * d);
+            return Math.Sin(Math.PI * d) / (Math.PI * d);
         }
         /// <summary>
         /// ランチョス補完法での重み計算
@@ -67,14 +64,14 @@ namespace _20210426_Lanczosで拡大縮小
 
         /// <summary>
         /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Gray8専用)
-        /// セパラブルとParallelで高速化
+        /// 修正版、セパラブルとParallelで高速化
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="width">変換後の横ピクセル数を指定</param>
         /// <param name="height">変換後の縦ピクセル数を指定</param>
         /// <param name="n">最大参照距離、3か4がいい</param>
         /// <returns></returns>
-        private BitmapSource LanczosGray8Kai(BitmapSource source, int width, int height, int n)
+        private BitmapSource LanczosGray8KaiEx(BitmapSource source, int width, int height, int n)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -104,24 +101,21 @@ namespace _20210426_Lanczosで拡大縮小
                       double rx = (x + 0.5) * widthScale;
                       //参照点四捨五入で基準
                       int xKijun = (int)(rx + 0.5);
+                      //修正した重み取得
+                      double[] ws = GetFixWeihgts(rx, n);
 
-                      double vv = 0;
+                      double sum = 0;
                       int pp;
                       for (int xx = -n; xx < n; xx++)
-                      //for (int xx = -2; xx <= 1; xx++)
                       {
                           int xc = xKijun + xx;
                           //マイナス座標や画像サイズを超えていたら、収まるように修正
                           xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
-                          //距離計算、+0.5しているのは中心座標で計算するため
-                          double dx = Math.Abs(rx - (xx + xKijun + 0.5));
-                          //重み取得してrgb各値と掛け算して加算
-                          double weight = GetLanczosWeight(dx, n);
                           pp = (y * sourceStride) + (xc * pByte);
-                          vv += sourcePixels[pp] * weight;
+                          sum += sourcePixels[pp] * ws[xx + n];
                       }
                       pp = y * stride + x * pByte;
-                      xResult[pp] = vv;
+                      xResult[pp] = sum;
                   }
               });
 
@@ -133,43 +127,161 @@ namespace _20210426_Lanczosで拡大縮小
                       double ry = (y + 0.5) * heightScale;
                       int yKijun = (int)(ry + 0.5);
 
-                      double vv = 0;
+                      double[] ws = GetFixWeihgts(ry, n);
+                      double sum = 0;
                       int pp;
                       for (int yy = -n; yy < n; yy++)
-                      //for (int yy = -2; yy <= 1; yy++)
                       {
-                          double dy = Math.Abs(ry - (yy + yKijun + 0.5));//距離
-                          double weight = GetLanczosWeight(dy, n);//重み
                           int yc = yKijun + yy;
                           yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
                           pp = (yc * stride) + (x * pByte);
-                          vv += xResult[pp] * weight;
+                          sum += xResult[pp] * ws[yy + n];
                       }
                       //0～255の範囲を超えることがあるので、修正
-                      vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+                      sum = sum < 0 ? 0 : sum > 255 ? 255 : sum;
                       int ap = (y * stride) + (x * pByte);
-                      pixels[ap] = (byte)(vv + 0.5);
+                      pixels[ap] = (byte)(sum + 0.5);
                   }
               });
 
 
             BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
             return bitmap;
+
+            //修正した重み取得
+            double[] GetFixWeihgts(double r, int n)
+            {
+                int nn = n * 2;//全体の参照距離
+                //基準距離
+                double s = r - (int)r;
+                double d = (s < 0.5) ? 0.5 - s : 0.5 - s + 1;
+
+                //各重みと重み合計
+                double[] ws = new double[nn];
+                double sum = 0;
+                for (int i = -n; i < n; i++)
+                {
+                    double w = GetLanczosWeight(Math.Abs(d + i), n);
+                    sum += w;
+                    ws[i + n] = w;
+                }
+
+                //重み合計で割り算して修正、全体で100%(1.0)にする
+                for (int i = 0; i < nn; i++)
+                {
+                    ws[i] /= sum;
+                }
+                return ws;
+            }
         }
 
 
 
-        //未使用
         /// <summary>
         /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Gray8専用)
-        /// 通常版
+        /// 不具合版をセパラブルとParallelで高速化
         /// </summary>
         /// <param name="source">PixelFormats.Gray8のBitmap</param>
         /// <param name="width">変換後の横ピクセル数を指定</param>
         /// <param name="height">変換後の縦ピクセル数を指定</param>
         /// <param name="n">最大参照距離、3か4がいい</param>
         /// <returns></returns>
-        private BitmapSource LanczosGray8(BitmapSource source, int width, int height, int n)
+        //private BitmapSource LanczosGray8Kai(BitmapSource source, int width, int height, int n)
+        //{
+        //    //1ピクセルあたりのバイト数、Byte / Pixel
+        //    int pByte = (source.Format.BitsPerPixel + 7) / 8;
+
+        //    //元画像の画素値の配列作成
+        //    int sourceWidth = source.PixelWidth;
+        //    int sourceHeight = source.PixelHeight;
+        //    int sourceStride = sourceWidth * pByte;//1行あたりのbyte数
+        //    byte[] sourcePixels = new byte[sourceHeight * sourceStride];
+        //    source.CopyPixels(sourcePixels, sourceStride, 0);
+
+        //    //変換後の画像の画素値の配列用
+        //    double widthScale = (double)sourceWidth / width;//横倍率
+        //    double heightScale = (double)sourceHeight / height;
+        //    int stride = width * pByte;
+        //    byte[] pixels = new byte[height * stride];
+
+        //    //横処理用配列
+        //    double[] xResult = new double[sourceHeight * stride];
+
+        //    //横処理
+        //    _ = Parallel.For(0, sourceHeight, y =>
+        //      {
+        //          for (int x = 0; x < width; x++)
+        //          {
+        //              //参照点
+        //              double rx = (x + 0.5) * widthScale;
+        //              //参照点四捨五入で基準
+        //              int xKijun = (int)(rx + 0.5);
+
+        //              double vv = 0;
+        //              int pp;
+        //              for (int xx = -n; xx < n; xx++)
+        //              //for (int xx = -2; xx <= 1; xx++)
+        //              {
+        //                  int xc = xKijun + xx;
+        //                  //マイナス座標や画像サイズを超えていたら、収まるように修正
+        //                  xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+        //                  //距離計算、+0.5しているのは中心座標で計算するため
+        //                  double dx = Math.Abs(rx - (xx + xKijun + 0.5));
+        //                  //重み取得してrgb各値と掛け算して加算
+        //                  double weight = GetLanczosWeight(dx, n);
+        //                  pp = (y * sourceStride) + (xc * pByte);
+        //                  vv += sourcePixels[pp] * weight;
+        //              }
+        //              pp = y * stride + x * pByte;
+        //              xResult[pp] = vv;
+        //          }
+        //      });
+
+        //    //縦処理
+        //    _ = Parallel.For(0, height, y =>
+        //      {
+        //          for (int x = 0; x < width; x++)
+        //          {
+        //              double ry = (y + 0.5) * heightScale;
+        //              int yKijun = (int)(ry + 0.5);
+
+        //              double vv = 0;
+        //              int pp;
+        //              for (int yy = -n; yy < n; yy++)
+        //              //for (int yy = -2; yy <= 1; yy++)
+        //              {
+        //                  double dy = Math.Abs(ry - (yy + yKijun + 0.5));//距離
+        //                  double weight = GetLanczosWeight(dy, n);//重み
+        //                  int yc = yKijun + yy;
+        //                  yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+        //                  pp = (yc * stride) + (x * pByte);
+        //                  vv += xResult[pp] * weight;
+        //              }
+        //              //0～255の範囲を超えることがあるので、修正
+        //              vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+        //              int ap = (y * stride) + (x * pByte);
+        //              pixels[ap] = (byte)(vv + 0.5);
+        //          }
+        //      });
+
+
+        //    BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
+        //    return bitmap;
+        //}
+
+
+
+        
+        /// <summary>
+        /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Gray8専用)
+        /// 不具合修正版
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="width">変換後の横ピクセル数を指定</param>
+        /// <param name="height">変換後の縦ピクセル数を指定</param>
+        /// <param name="n">最大参照距離、3か4がいい</param>
+        /// <returns></returns>
+        private BitmapSource LanczosGray8Ex(BitmapSource source, int width, int height, int n)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -197,49 +309,45 @@ namespace _20210426_Lanczosで拡大縮小
                     //参照点四捨五入で基準
                     int xKijun = (int)(rx + 0.5);
                     int yKijun = (int)(ry + 0.5);
+                    //修正した重み取得
+                    var ws = GetFixWeights(rx, ry, n);
 
-                    var ws = GetWS(rx, ry,n);
-                    double vv = 0;
-                    //参照範囲は基準から左へ2、右へ1の範囲
+                    double sum = 0;
+                    //参照範囲は基準から上(xは左)へn、下(xは右)へn-1の範囲
                     for (int yy = -n; yy < n; yy++)
-                    //for (int yy = -2; yy <= 1; yy++)
                     {
-                        //+0.5しているのは中心座標で計算するため
-                        //double dy = Math.Abs(ry - (yy + yKijun + 0.5));//距離
-                        //double yw = GetLanczosWeight(dy, n);//重み
                         int yc = yKijun + yy;
                         //マイナス座標や画像サイズを超えていたら、収まるように修正
                         yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
                         for (int xx = -n; xx < n; xx++)
-                        //for (int xx = -2; xx <= 1; xx++)
                         {
-                            //double dx = Math.Abs(rx - (xx + xKijun + 0.5));
-                            //double xw = GetLanczosWeight(dx, n);
                             int xc = xKijun + xx;
                             xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
-                            //double weight = yw * xw;
                             int pp = (yc * sourceStride) + (xc * pByte);
-                            vv += sourcePixels[pp] * ws[xx+n,yy+n];
-                            //vv += sourcePixels[pp] * weight;
+                            sum += sourcePixels[pp] * ws[xx + n, yy + n];
                         }
                     }
                     //0～255の範囲を超えることがあるので、修正
-                    vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+                    sum = sum < 0 ? 0 : sum > 255 ? 255 : sum;
                     int ap = (y * stride) + (x * pByte);
-                    pixels[ap] = (byte)(vv + 0.5);
+                    pixels[ap] = (byte)(sum + 0.5);
                 }
             };
 
             BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
             return bitmap;
 
-            double[,] GetWS(double rx, double ry, int n)
+            //修正した重み取得
+            double[,] GetFixWeights(double rx, double ry, int n)
             {
+                int nn = n * 2;//全体の参照距離
+                //基準になる距離計算
                 double sx = rx - (int)rx;
                 double sy = ry - (int)ry;
                 double dx = (sx < 0.5) ? 0.5 - sx : 0.5 - sx + 1;
                 double dy = (sy < 0.5) ? 0.5 - sy : 0.5 - sy + 1;
-                int nn = n * 2;
+
+                //各ピクセルの重みと、重み合計を計算
                 double[] xw = new double[nn];
                 double[] yw = new double[nn];
                 double xSum = 0, ySum = 0;
@@ -252,11 +360,15 @@ namespace _20210426_Lanczosで拡大縮小
                     ySum += y;
                     yw[i + n] = y;
                 }
+
+                //重み合計で割り算して修正、全体で100%(1.0)にする
                 for (int i = 0; i < nn; i++)
                 {
                     xw[i] /= xSum;
                     yw[i] /= ySum;
                 }
+
+                // x * y
                 double[,] ws = new double[nn, nn];
                 for (int y = 0; y < nn; y++)
                 {
@@ -267,92 +379,86 @@ namespace _20210426_Lanczosで拡大縮小
                 }
                 return ws;
             }
-
-            ////未使用
-            ///// <summary>
-            ///// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Gray8専用)
-            ///// 通常版
-            ///// </summary>
-            ///// <param name="source">PixelFormats.Gray8のBitmap</param>
-            ///// <param name="width">変換後の横ピクセル数を指定</param>
-            ///// <param name="height">変換後の縦ピクセル数を指定</param>
-            ///// <param name="n">最大参照距離、3か4がいい</param>
-            ///// <returns></returns>
-            //private BitmapSource LanczosGray8(BitmapSource source, int width, int height, int n)
-            //{
-            //    //1ピクセルあたりのバイト数、Byte / Pixel
-            //    int pByte = (source.Format.BitsPerPixel + 7) / 8;
-
-            //    //元画像の画素値の配列作成
-            //    int sourceWidth = source.PixelWidth;
-            //    int sourceHeight = source.PixelHeight;
-            //    int sourceStride = sourceWidth * pByte;//1行あたりのbyte数
-            //    byte[] sourcePixels = new byte[sourceHeight * sourceStride];
-            //    source.CopyPixels(sourcePixels, sourceStride, 0);
-
-            //    //変換後の画像の画素値の配列用
-            //    double widthScale = (double)sourceWidth / width;//横倍率
-            //    double heightScale = (double)sourceHeight / height;
-            //    int stride = width * pByte;
-            //    byte[] pixels = new byte[height * stride];
-
-            //    for (int y = 0; y < height; y++)
-            //    {
-            //        for (int x = 0; x < width; x++)
-            //        {
-            //            //参照点
-            //            double rx = (x + 0.5) * widthScale;
-            //            double ry = (y + 0.5) * heightScale;
-            //            //参照点四捨五入で基準
-            //            int xKijun = (int)(rx + 0.5);
-            //            int yKijun = (int)(ry + 0.5);
-
-            //            double vv = 0;
-            //            //参照範囲は基準から左へ2、右へ1の範囲
-            //            for (int yy = -n; yy < n; yy++)
-            //            //for (int yy = -2; yy <= 1; yy++)
-            //            {
-            //                //+0.5しているのは中心座標で計算するため
-            //                double dy = Math.Abs(ry - (yy + yKijun + 0.5));//距離
-            //                double yw = GetLanczosWeight(dy, n);//重み
-            //                int yc = yKijun + yy;
-            //                //マイナス座標や画像サイズを超えていたら、収まるように修正
-            //                yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;                        
-            //                for (int xx = -n; xx < n; xx++)                        
-            //                //for (int xx = -2; xx <= 1; xx++)
-            //                {
-            //                    double dx = Math.Abs(rx - (xx + xKijun + 0.5));
-            //                    double xw = GetLanczosWeight(dx, n);
-            //                    int xc = xKijun + xx;
-            //                    xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
-            //                    double weight = yw * xw;
-            //                    int pp = (yc * sourceStride) + (xc * pByte);
-            //                    vv += sourcePixels[pp] * weight;
-            //                }
-            //            }
-            //            //0～255の範囲を超えることがあるので、修正
-            //            vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
-            //            int ap = (y * stride) + (x * pByte);
-            //            pixels[ap] = (byte)(vv + 0.5);
-            //        }
-            //    };
-
-            //    BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
-            //    return bitmap;
-
-            //    //double[] GetWS(double rx,double ry,int n)
-            //    //{
-            //    //    double sx = rx - (int)rx;
-            //    //    double sy = ry - (int)ry;
-            //    //    double dx = (sx < 0.5) ? 0.5 - sx : 0.5 - sx + 1;
-            //    //    double dy = (sy < 0.5) ? 0.5 - sy : 0.5 - sy + 1;
-            //    //    double[] xw = new double[n];
-            //    //    for (int x = -n; x < n; x++)
-            //    //    {
-            //    //        xw[x]=()
-            //    //    }
-            //}
         }
+
+
+
+
+        //未使用
+        /// <summary>
+        /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Gray8専用)
+        /// 不具合版
+        /// </summary>
+        /// <param name="source">PixelFormats.Gray8のBitmap</param>
+        /// <param name="width">変換後の横ピクセル数を指定</param>
+        /// <param name="height">変換後の縦ピクセル数を指定</param>
+        /// <param name="n">最大参照距離、3か4がいい</param>
+        /// <returns></returns>
+        //private BitmapSource LanczosGray8(BitmapSource source, int width, int height, int n)
+        //{
+        //    {
+        //        //1ピクセルあたりのバイト数、Byte / Pixel
+        //        int pByte = (source.Format.BitsPerPixel + 7) / 8;
+
+        //        //元画像の画素値の配列作成
+        //        int sourceWidth = source.PixelWidth;
+        //        int sourceHeight = source.PixelHeight;
+        //        int sourceStride = sourceWidth * pByte;//1行あたりのbyte数
+        //        byte[] sourcePixels = new byte[sourceHeight * sourceStride];
+        //        source.CopyPixels(sourcePixels, sourceStride, 0);
+
+        //        //変換後の画像の画素値の配列用
+        //        double widthScale = (double)sourceWidth / width;//横倍率
+        //        double heightScale = (double)sourceHeight / height;
+        //        int stride = width * pByte;
+        //        byte[] pixels = new byte[height * stride];
+
+        //        for (int y = 0; y < height; y++)
+        //        {
+        //            for (int x = 0; x < width; x++)
+        //            {
+        //                //参照点
+        //                double rx = (x + 0.5) * widthScale;
+        //                double ry = (y + 0.5) * heightScale;
+        //                //参照点四捨五入で基準
+        //                int xKijun = (int)(rx + 0.5);
+        //                int yKijun = (int)(ry + 0.5);
+
+        //                double vv = 0;
+        //                //参照範囲は基準から左へn、右へn-1の範囲
+        //                for (int yy = -n; yy < n; yy++)
+        //                //for (int yy = -2; yy <= 1; yy++)
+        //                {
+        //                    //+0.5しているのは中心座標で計算するため
+        //                    double dy = Math.Abs(ry - (yy + yKijun + 0.5));//距離
+        //                    double yw = GetLanczosWeight(dy, n);//重み
+        //                    int yc = yKijun + yy;
+        //                    //マイナス座標や画像サイズを超えていたら、収まるように修正
+        //                    yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+        //                    for (int xx = -n; xx < n; xx++)
+        //                    //for (int xx = -2; xx <= 1; xx++)
+        //                    {
+        //                        double dx = Math.Abs(rx - (xx + xKijun + 0.5));
+        //                        double xw = GetLanczosWeight(dx, n);
+        //                        int xc = xKijun + xx;
+        //                        xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+        //                        double weight = yw * xw;
+        //                        int pp = (yc * sourceStride) + (xc * pByte);
+        //                        vv += sourcePixels[pp] * weight;
+        //                    }
+        //                }
+        //                //0～255の範囲を超えることがあるので、修正
+        //                vv = vv < 0 ? 0 : vv > 255 ? 255 : vv;
+        //                int ap = (y * stride) + (x * pByte);
+        //                pixels[ap] = (byte)(vv + 0.5);
+        //            }
+        //        };
+
+        //        BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
+        //        return bitmap;
+        //    }
+        //}
+
 
         /// <summary>
         /// 画像ファイルパスからPixelFormats.Gray8のBitmapSource作成
@@ -528,36 +634,41 @@ namespace _20210426_Lanczosで拡大縮小
         //ボタンクリック
         private void MyButton1_Click(object sender, RoutedEventArgs e)
         {
+            if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
-            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            MyExe(LanczosGray8, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);            
+            MyExe(LanczosGray8Ex, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
         }
 
 
         private void MyButton2_Click(object sender, RoutedEventArgs e)
         {
+            if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(LanczosGray8, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
+            MyExe(LanczosGray8Ex, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
         }
 
         private void MyButton3_Click(object sender, RoutedEventArgs e)
         {
+            if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            MyExe(LanczosGray8Kai, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
+            MyExe(LanczosGray8KaiEx, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
         }
 
         private void MyButton4_Click(object sender, RoutedEventArgs e)
         {
+            if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(LanczosGray8Kai, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
+            MyExe(LanczosGray8KaiEx, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
         }
 
         //画像をクリップボードにコピー
         private void MyButtonCopy_Click(object sender, RoutedEventArgs e)
         {
+            if (MyBitmapOrigin == null) return;
             ClipboardSetImageWithPng((BitmapSource)MyImage.Source);
         }
 
