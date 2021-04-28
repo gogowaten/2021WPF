@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using System.Diagnostics;
+
+//C#、WPF、ランチョス補完法での画像のリサイズ、24bit(普通のカラー)と32bit(半透明画像)対応版 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/04/28/221953
+
 
 namespace _20210428_Lanczosで32bit画像リサイズ
 {
@@ -65,6 +63,21 @@ namespace _20210428_Lanczosで32bit画像リサイズ
             else return Sinc(d) * Sinc(d / n);
         }
 
+        ////ランチョス改変、ボカシが入る
+        //private double GetLanczosWeightA(double d, int n)
+        //{
+        //    if (d == 0) return 1.0;
+        //    else if (d > n) return 0.0;
+        //    else return Sinc(d / n);
+        //}
+        ////ランチョス改変、ボカシが入る
+        //private double GetLanczosWeightB(double d, int n)
+        //{
+        //    if (d == 0) return 1.0;
+        //    else if (d > n) return 0.0;
+        //    else return Sinc(d / n * 1.4);//n=1.0~1.5程度、1.0ソフト～1.5シャープ
+        //}
+
 
 
         /// <summary>
@@ -109,7 +122,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
                     //修正した重み取得
                     double[] ws = GetFixWeihgts(rx, n);
 
-                    double bSum = 0, gSum = 0, rSum = 0,aSum=0;
+                    double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
                     int pp;
                     for (int xx = -n; xx < n; xx++)
@@ -160,7 +173,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
                     int yKijun = (int)(ry + 0.5);
 
                     double[] ws = GetFixWeihgts(ry, n);
-                    double bSum = 0, gSum = 0, rSum = 0,aSum = 0;
+                    double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
                     int pp;
                     for (int yy = -n; yy < n; yy++)
@@ -232,7 +245,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
             }
         }
 
-        
+
         /// <summary>
         /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Bgr24専用)
         /// 通常版をセパラブルとParallelで高速化
@@ -361,7 +374,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
 
 
 
-
+        //未使用
         /// <summary>
         /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Bgra32専用)
         /// 通常版
@@ -402,7 +415,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
                     //修正した重み取得
                     var ws = GetFixWeights(rx, ry, n);
 
-                    double bSum = 0, gSum = 0, rSum = 0,aSum=0;
+                    double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
                     //参照範囲は基準から上(xは左)へn、下(xは右)へn-1の範囲
                     for (int yy = -n; yy < n; yy++)
@@ -446,7 +459,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
                     gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
                     rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
                     aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
-                    
+
                     int ap = (y * stride) + (x * pByte);
                     pixels[ap] = (byte)(bSum + 0.5);
                     pixels[ap + 1] = (byte)(gSum + 0.5);
@@ -502,7 +515,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
             }
         }
 
-        
+        //未使用
         /// <summary>
         /// 画像の拡大縮小、ランチョス法で補完、PixelFormats.Bgr24専用)
         /// 通常版
@@ -830,6 +843,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            //MyExe(LanczosBgr24, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
             MyExe(LanczosBgr24Ex, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
         }
 
@@ -880,6 +894,7 @@ namespace _20210428_Lanczosで32bit画像リサイズ
                 MyBitmapOrigin = bitmap;
                 FormatConvertedBitmap bitmap32 = new(img, PixelFormats.Bgra32, null, 0);
                 MyImage.Source = bitmap32;
+                MyBitmapOrigin32bit = bitmap32;
             }
         }
 
