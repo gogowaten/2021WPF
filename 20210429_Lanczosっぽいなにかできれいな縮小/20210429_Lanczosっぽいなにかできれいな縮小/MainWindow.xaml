@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210429_Lanczosっぽいなにかできれいな縮小"
         mc:Ignorable="d"
-        Title="MainWindow" Height="687" Width="634"
+        Title="MainWindow" Height="787" Width="634"
         AllowDrop="True" Drop="Window_Drop">
   <Window.Resources>
     <Style TargetType="Button">
@@ -32,14 +32,18 @@
           </StackPanel>
         </StackPanel>
         <Button x:Name="MyButton1" Content="縮小Type0" Click="MyButton1_Click"/>
-        <Button x:Name="MyButton2" Content="縮小Type1" Click="MyButton2_Click"/>
-        <Button x:Name="MyButton3" Content="縮小Type2" Click="MyButton3_Click"/>
-        <Button x:Name="MyButton4" Content="縮小Type3" Click="MyButton4_Click"/>
-        <Button x:Name="MyButton5" Content="縮小Type4" Click="MyButton5_Click"/>
-        <Button x:Name="MyButton6" Content="縮小Type5" Click="MyButton6_Click"/>
-        <Button x:Name="MyButton7" Content="縮小Type6" Click="MyButton7_Click"/>
-        <Button x:Name="MyButton8" Content="縮小Type7" Click="MyButton8_Click"/>
-        <Button x:Name="MyButton9" Content="縮小Type8" Click="MyButton9_Click"/>
+        <Button x:Name="MyButton2" Content="縮小TypeA" Click="MyButton2_Click"/>
+        <Button x:Name="MyButton3" Content="縮小TypeB" Click="MyButton3_Click"/>
+        <Button x:Name="MyButton4" Content="縮小TypeC" Click="MyButton4_Click"/>
+        <Button x:Name="MyButton5" Content="縮小TypeD" Click="MyButton5_Click"/>
+        <Button x:Name="MyButton6" Content="縮小TypeE" Click="MyButton6_Click"/>
+        <Button x:Name="MyButton7" Content="縮小TypeF" Click="MyButton7_Click"/>
+        <Button x:Name="MyButton8" Content="縮小TypeG" Click="MyButton8_Click"/>
+        <Button x:Name="MyButton9" Content="縮小TypeH" Click="MyButton9_Click"/>
+        <Button x:Name="MyButton10" Content="縮小TypeI" Click="MyButton10_Click"/>
+        <Button x:Name="MyButton11" Content="縮小TypeJ" Click="MyButton11_Click"/>
+        <Button x:Name="MyButton12" Content="縮小TypeK" Click="MyButton12_Click"/>
+        <Button x:Name="MyButton13" Content="縮小TypeL" Click="MyButton13_Click"/>
 
         <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
         <Slider x:Name="MySlider" Minimum="2" Maximum="6" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
@@ -52,6 +56,7 @@
                    HorizontalAlignment="Center"/>
         <Button x:Name="MyButtonCopy" Content="コピ" Click="MyButtonCopy_Click"/>
         <Button x:Name="MyButtonPaste" Content="ペ" Click="MyButtonPaste_Click"/>
+        <Button x:Name="MyButtonItimatu模様" Content="市松模様" Click="MyButtonItimatu模様_Click"/>
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Image x:Name="MyImage" Stretch="None"/>

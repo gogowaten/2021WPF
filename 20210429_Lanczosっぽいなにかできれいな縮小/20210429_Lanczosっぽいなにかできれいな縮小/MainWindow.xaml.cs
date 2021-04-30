@@ -25,6 +25,7 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
     {
         private BitmapSource MyBitmapOrigin;
         private BitmapSource MyBitmapOrigin32bit;
+        private ImageBrush MyImageBrush;
         public MainWindow()
         {
             InitializeComponent();
@@ -32,7 +33,8 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             this.Top = 0;
             this.Left = 0;
 #endif
-            this.Background = MakeTileBrush(MakeCheckeredPattern(16, Colors.WhiteSmoke, Colors.LightGray));
+            MyImageBrush = MakeTileBrush(MakeCheckeredPattern(16, Colors.WhiteSmoke, Colors.LightGray));
+            //this.Background = MakeTileBrush(MakeCheckeredPattern(16, Colors.WhiteSmoke, Colors.LightGray));
         }
 
         ////処理時間計測
@@ -161,7 +163,7 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
 
         //
         private double SincA(double x)
-        {            
+        {
             return Math.Exp(-x) * Math.Cos(Math.PI * x);
         }
         private double GetLanczosWeightH(double d, int n)
@@ -169,8 +171,44 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             if (d == 0) return 1.0;
             else if (d > n) return 0.0;
             else
-            {                
-                return SincA(d/(n*2.0));
+            {
+                return SincA(d / (n * 2.0));
+            }
+        }
+        private double GetLanczosWeightI(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / n) * Sinc(d / (n * 2));
+            }
+        }
+        private double GetLanczosWeightJ(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / n) * Sinc(d / (n * 1.5));
+            }
+        }
+        private double GetLanczosWeightK(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / 1.5) * Sinc(d / n);
+            }
+        }
+        private double GetLanczosWeightL(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / 2.0) * Sinc(d / n);
             }
         }
 
@@ -1201,6 +1239,50 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
             MyExe2(LanczosBgra32, GetLanczosWeightH, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton10_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightI, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton11_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightJ, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton12_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightK, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton13_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightL, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButtonItimatu模様_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.Background == MyImageBrush)
+            {
+                this.Background = Brushes.White;
+            }
+            else
+            {
+                this.Background = MyImageBrush;
+            }
         }
     }
 }
