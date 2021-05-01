@@ -9,7 +9,7 @@
         AllowDrop="True" Drop="Window_Drop">
   <Window.Resources>
     <Style TargetType="Button">
-      <Setter Property="Margin" Value="2,10,2,0"/>
+      <Setter Property="Margin" Value="2,8,2,0"/>
     </Style>
   </Window.Resources>
   <Grid>
@@ -17,18 +17,38 @@
       <StatusBar DockPanel.Dock="Bottom">
         <StatusBarItem x:Name="MyStatusItem" Content="time"/>
       </StatusBar>
+      <Menu DockPanel.Dock="Top">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="{Binding ElementName=MySliderViewScale, Path=Value, StringFormat=表示倍率\=x0}"/>
+          <Slider x:Name="MySliderViewScale" Width="100" Minimum="1" Maximum="4"
+                  Value="1" SmallChange="1" LargeChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
+                  MouseWheel="MySlider_MouseWheel"/>
+        </StackPanel>
+      </Menu>
       <StackPanel DockPanel.Dock="Right" Background="White">
-        <StackPanel>
-          <Slider x:Name="MySliderScale" Minimum="1" Maximum="10" Value="2" Width="80"
+        <StackPanel Orientation="Horizontal">
+          <StackPanel>
+            <Slider x:Name="MySliderScale" Minimum="1" Maximum="10" Value="2" Width="80"
                   HorizontalAlignment="Center" TickFrequency="1" IsSnapToTickEnabled="True"
                   MouseWheel="MySlider_MouseWheel" SmallChange="1" LargeChange="1">
-            <Slider.LayoutTransform>
-              <RotateTransform Angle="270"/>
-            </Slider.LayoutTransform>
-          </Slider>
-          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <TextBlock Text="倍率="/>
-            <TextBlock Text="{Binding ElementName=MySliderScale, Path=Value}"/>
+              <Slider.LayoutTransform>
+                <RotateTransform Angle="270"/>
+              </Slider.LayoutTransform>
+            </Slider>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+              <TextBlock Text="倍率="/>
+              <TextBlock Text="{Binding ElementName=MySliderScale, Path=Value}"/>
+            </StackPanel>
+          </StackPanel>
+          <StackPanel Margin="8,0,4,0">
+            <Slider x:Name="MySlider" Minimum="2" Maximum="6" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
+                Value="3" Width="80" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
+              <Slider.LayoutTransform>
+                <RotateTransform Angle="270"/>
+              </Slider.LayoutTransform>
+            </Slider>
+            <TextBlock Text="{Binding ElementName=MySlider, Path=Value, StringFormat=n\=0}"
+                   HorizontalAlignment="Center"/>
           </StackPanel>
         </StackPanel>
         <Button x:Name="MyButton1" Content="縮小Type0" Click="MyButton1_Click"/>
@@ -44,22 +64,25 @@
         <Button x:Name="MyButton11" Content="縮小TypeJ" Click="MyButton11_Click"/>
         <Button x:Name="MyButton12" Content="縮小TypeK" Click="MyButton12_Click"/>
         <Button x:Name="MyButton13" Content="縮小TypeL" Click="MyButton13_Click"/>
+        <Button x:Name="MyButton14" Content="縮小TypeM" Click="MyButton14_Click" />
+        <Button x:Name="MyButton15" Content="縮小TypeN" Click="MyButton15_Click"/>
+        <Button x:Name="MyButton16" Content="縮小TypeO" Click="MyButton16_Click"/>
+        <Button x:Name="MyButton17" Content="縮小TypeP" Click="MyButton17_Click"/>
+        <Button x:Name="MyButton18" Content="縮小TypeQ" Click="MyButton18_Click"/>
 
         <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
-        <Slider x:Name="MySlider" Minimum="2" Maximum="6" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
-                Value="3" Width="100" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
-          <Slider.LayoutTransform>
-            <RotateTransform Angle="270"/>
-          </Slider.LayoutTransform>
-        </Slider>
-        <TextBlock Text="{Binding ElementName=MySlider, Path=Value, StringFormat=n\=0}"
-                   HorizontalAlignment="Center"/>
         <Button x:Name="MyButtonCopy" Content="コピ" Click="MyButtonCopy_Click"/>
         <Button x:Name="MyButtonPaste" Content="ペ" Click="MyButtonPaste_Click"/>
+        <Button x:Name="MyButtonPasteBmp" Content="ペBmp優先" Click="MyButtonPasteBmp_Click"/>
         <Button x:Name="MyButtonItimatu模様" Content="市松模様" Click="MyButtonItimatu模様_Click"/>
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <Image x:Name="MyImage" Stretch="None"/>
+        <Image x:Name="MyImage" Stretch="None">
+          <Image.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding ElementName=MySliderViewScale, Path=Value}"
+                            ScaleY="{Binding ElementName=MySliderViewScale, Path=Value}"/>
+          </Image.LayoutTransform>
+        </Image>
       </ScrollViewer>
     </DockPanel>
   </Grid>

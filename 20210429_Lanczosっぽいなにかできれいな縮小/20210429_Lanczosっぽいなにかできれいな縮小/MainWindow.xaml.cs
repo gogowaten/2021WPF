@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using System.Diagnostics;
+//using System.Drawing;
 
 
 namespace _20210429_Lanczosっぽいなにかできれいな縮小
@@ -35,7 +36,11 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
 #endif
             MyImageBrush = MakeTileBrush(MakeCheckeredPattern(16, Colors.WhiteSmoke, Colors.LightGray));
             //this.Background = MakeTileBrush(MakeCheckeredPattern(16, Colors.WhiteSmoke, Colors.LightGray));
+
+            RenderOptions.SetBitmapScalingMode(MyImage, BitmapScalingMode.NearestNeighbor);
         }
+
+
 
         ////処理時間計測
         //private void MyExe(
@@ -209,6 +214,51 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             else
             {
                 return Sinc(d / 2.0) * Sinc(d / n);
+            }
+        }
+        private double GetLanczosWeightM(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / 3.0) * Sinc(d / n);
+            }
+        }
+        private double GetLanczosWeightN(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / (n - 1)) * Sinc(d / n);
+            }
+        }
+        private double GetLanczosWeightO(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / (n - 1)) * Sinc(d / (n * 2));
+            }
+        }
+        private double GetLanczosWeightP(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / (n - 0.5)) * Sinc(d / (n * 2));
+            }
+        }
+        private double GetLanczosWeightQ(double d, int n)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / (n - 0.5)) * Sinc(d / n);
             }
         }
 
@@ -1037,10 +1087,39 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             }
             else if (Clipboard.ContainsImage())
             {
-                source = Clipboard.GetImage();
+                //そのままだとAlphaがおかしいのでBgr32にコンバート
+                source = new FormatConvertedBitmap(Clipboard.GetImage(), PixelFormats.Bgr32, null, 0);
             }
             return source;
         }
+
+        /// <summary>
+        /// クリップボードからBitmapSourceを取り出して返す、bmp優先、次にpng(アルファ値保持)形式に対応
+        /// </summary>
+        /// <returns></returns>
+        private BitmapSource GetImageFromClipboardBmpNextPNG()
+        {
+            BitmapSource source = null;
+            BitmapSource img = Clipboard.GetImage();
+            //BMP
+            if (img != null)
+            {
+                //そのままだとAlphaがおかしいのでBgr32にコンバート
+                source = new FormatConvertedBitmap(img, PixelFormats.Bgr32, null, 0);
+            }
+            //PNG
+            else
+            {
+                //クリップボードにPNG形式のデータがあったら、それを使ってBitmapFrame作成
+                using var ms = (System.IO.MemoryStream)Clipboard.GetData("PNG");
+                if (ms != null)
+                {
+                    source = BitmapFrame.Create(ms, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                }
+            }
+            return source;
+        }
+
 
 
         /// <summary>
@@ -1284,5 +1363,60 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
                 this.Background = MyImageBrush;
             }
         }
+
+        private void MyButton14_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightM, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton15_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightN, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton16_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightO, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton17_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightP, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButton18_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightQ, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+        }
+
+        private void MyButtonPasteBmp_Click(object sender, RoutedEventArgs e)
+        {
+            BitmapSource img = GetImageFromClipboardBmpNextPNG();
+            if (img != null)
+            {
+                FormatConvertedBitmap bitmap = new(img, PixelFormats.Bgr24, null, 0);
+                MyBitmapOrigin = bitmap;
+                FormatConvertedBitmap bitmap32 = new(img, PixelFormats.Bgra32, null, 0);
+                MyImage.Source = bitmap32;
+                MyBitmapOrigin32bit = bitmap32;
+            }
+        }
+
+     
     }
 }
