@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210429_Lanczosっぽいなにかできれいな縮小"
         mc:Ignorable="d"
-        Title="MainWindow" Height="787" Width="634"
+        Title="MainWindow" Height="987" Width="634"
         AllowDrop="True" Drop="Window_Drop">
   <Window.Resources>
     <Style TargetType="Button">
-      <Setter Property="Margin" Value="2,8,2,0"/>
+      <Setter Property="Margin" Value="2,4,2,4"/>
     </Style>
   </Window.Resources>
   <Grid>
@@ -17,12 +17,19 @@
       <StatusBar DockPanel.Dock="Bottom">
         <StatusBarItem x:Name="MyStatusItem" Content="time"/>
       </StatusBar>
-      <Menu DockPanel.Dock="Top">
+      <Menu DockPanel.Dock="Top" HorizontalAlignment="Right">
         <StackPanel Orientation="Horizontal">
-          <TextBlock Text="{Binding ElementName=MySliderViewScale, Path=Value, StringFormat=表示倍率\=x0}"/>
+          <Button x:Name="MyButtonItimatu模様" Content="市松模様" Click="MyButtonItimatu模様_Click"/>
+          <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
+          <TextBlock Text="{Binding ElementName=MySliderViewScale, Path=Value, StringFormat=表示倍率\=x0}"
+                     VerticalAlignment="Center"/>
           <Slider x:Name="MySliderViewScale" Width="100" Minimum="1" Maximum="4"
                   Value="1" SmallChange="1" LargeChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
-                  MouseWheel="MySlider_MouseWheel"/>
+                  MouseWheel="MySlider_MouseWheel" VerticalAlignment="Center"/>
+          <Button x:Name="MyButtonCopy" Content="コピー" Click="MyButtonCopy_Click"/>
+          <Button x:Name="MyButtonPaste" Content="貼り付け" Click="MyButtonPaste_Click"/>
+          <Button x:Name="MyButtonPasteBmp" Content="Bmp優先貼り" Click="MyButtonPasteBmp_Click"/>
+
         </StackPanel>
       </Menu>
       <StackPanel DockPanel.Dock="Right" Background="White">
@@ -41,7 +48,7 @@
             </StackPanel>
           </StackPanel>
           <StackPanel Margin="8,0,4,0">
-            <Slider x:Name="MySlider" Minimum="2" Maximum="6" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
+            <Slider x:Name="MySlider" Minimum="2" Maximum="10" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
                 Value="3" Width="80" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
               <Slider.LayoutTransform>
                 <RotateTransform Angle="270"/>
@@ -69,12 +76,17 @@
         <Button x:Name="MyButton16" Content="縮小TypeO" Click="MyButton16_Click"/>
         <Button x:Name="MyButton17" Content="縮小TypeP" Click="MyButton17_Click"/>
         <Button x:Name="MyButton18" Content="縮小TypeQ" Click="MyButton18_Click"/>
+        <Button x:Name="MyButton19" Content="縮小TypeR" Click="MyButton19_Click"/>
+        <Button x:Name="MyButton20" Content="縮小TypeS" Click="MyButton20_Click"/>
+        <Button x:Name="MyButton21" Content="縮小TypeT" Click="MyButton21_Click"/>
+        <Button x:Name="MyButton22" Content="縮小TypeU" Click="MyButton22_Click"/>
+        <Button x:Name="MyButton23" Content="縮小TypeV" Click="MyButton23_Click"/>
+        <Button x:Name="MyButton24" Content="縮小TypeW" Click="MyButton24_Click"/>
+        <Button x:Name="MyButton25" Content="縮小TypeX" Click="MyButton25_Click"/>
+        <Button x:Name="MyButton26" Content="縮小TypeY" Click="MyButton26_Click"/>
+        <Button x:Name="MyButton27" Content="縮小TypeZ" Click="MyButton27_Click"/>
+        <Button x:Name="MyButton28" Content="縮小TypeAA" Click="MyButton28_Click"/>
 
-        <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
-        <Button x:Name="MyButtonCopy" Content="コピ" Click="MyButtonCopy_Click"/>
-        <Button x:Name="MyButtonPaste" Content="ペ" Click="MyButtonPaste_Click"/>
-        <Button x:Name="MyButtonPasteBmp" Content="ペBmp優先" Click="MyButtonPasteBmp_Click"/>
-        <Button x:Name="MyButtonItimatu模様" Content="市松模様" Click="MyButtonItimatu模様_Click"/>
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Image x:Name="MyImage" Stretch="None">
