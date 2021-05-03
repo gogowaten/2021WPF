@@ -347,6 +347,7 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
                 return Sinc(d / (scale - 1)) * Sinc(d / (n * scale));
             }
         }
+        //Xの0.75版
         private double GetLanczosWeightZ(double d, int n, double scale)
         {
             if (d == 0) return 1.0;
@@ -363,7 +364,36 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             else
             {
                 //return Sinc(d / (scale * 0.75)) * Sinc(d / n);
+                //return Sinc(d / (scale * 0.75)) * Sinc(d / n / (scale * 0.75));
                 return Sinc(d / (scale * 0.75)) * Sinc(d / n * (scale * 0.75));
+            }
+        }
+        //Xの0.9版
+        private double GetLanczosWeightAB(double d, int n, double scale)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / (scale * 0.9)) * Sinc(d / (n * scale));
+            }
+        }
+        private double GetLanczosWeightAC(double d, int n, double scale)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / scale) * Sinc(d / (n * (scale * 0.5)));
+            }
+        }
+        private double GetLanczosWeightAD(double d, int n, double scale)
+        {
+            if (d == 0) return 1.0;
+            else if (d > n) return 0.0;
+            else
+            {
+                return Sinc(d / scale * 1);
             }
         }
 
@@ -1741,6 +1771,30 @@ namespace _20210429_Lanczosっぽいなにかできれいな縮小
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
             MyExe2(LanczosBgra32, GetLanczosWeightAA, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value, MySliderScale.Value);
+        }
+
+        private void MyButton29_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightAB, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value, MySliderScale.Value);
+        }
+
+        private void MyButton30_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightAC, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value, MySliderScale.Value);
+        }
+
+        private void MyButton31_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyBitmapOrigin == null) return;
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
+            MyExe2(LanczosBgra32, GetLanczosWeightAD, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value, MySliderScale.Value);
         }
     }
 }

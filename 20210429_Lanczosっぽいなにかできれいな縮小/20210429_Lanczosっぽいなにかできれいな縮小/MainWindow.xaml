@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210429_Lanczosっぽいなにかできれいな縮小"
         mc:Ignorable="d"
-        Title="MainWindow" Height="987" Width="634"
+        Title="MainWindow" Height="1087" Width="634"
         AllowDrop="True" Drop="Window_Drop">
   <Window.Resources>
     <Style TargetType="Button">
@@ -86,6 +86,9 @@
         <Button x:Name="MyButton26" Content="縮小TypeY" Click="MyButton26_Click"/>
         <Button x:Name="MyButton27" Content="縮小TypeZ" Click="MyButton27_Click"/>
         <Button x:Name="MyButton28" Content="縮小TypeAA" Click="MyButton28_Click"/>
+        <Button x:Name="MyButton29" Content="縮小TypeAB" Click="MyButton29_Click"/>
+        <Button x:Name="MyButton30" Content="縮小TypeAC" Click="MyButton30_Click"/>
+        <Button x:Name="MyButton31" Content="縮小TypeAD" Click="MyButton31_Click"/>
 
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
