@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20210505_Lanczosで縮小", "20210505_Lanczosで縮小\20210505_Lanczosで縮小.csproj", "{2F904993-9905-455D-9A63-85FDCC260DA1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F904993-9905-455D-9A63-85FDCC260DA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F904993-9905-455D-9A63-85FDCC260DA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F904993-9905-455D-9A63-85FDCC260DA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F904993-9905-455D-9A63-85FDCC260DA1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BE2329B1-52F2-4CF3-B416-5C5A41054082}
+	EndGlobalSection
+EndGlobal
