@@ -115,48 +115,6 @@ namespace _20210505_Lanczosで縮小
             else return Sinc(d * scale) * Sinc(d * scale / n);
         }
 
-        ////ランチョス改変、ボカシが入る
-        ////(距離/最大参照距離)の窓関数をそのまま重みにする
-        //private double GetLanczosWeightA(double d, int n)
-        //{
-        //    if (d == 0) return 1.0;
-        //    else if (d > n) return 0.0;
-        //    else return Sinc(d / n);
-        //}
-
-        //private double GetLanczosWeightB(double d, int n)
-        //{
-        //    if (d == 0) return 1.0;
-        //    else if (d > n) return 0.0;
-        //    else
-        //    {
-        //        double w = Sinc(d / n);
-        //        return w * w;
-        //    }
-        //}
-
-        //private double GetLanczosWeightC(double d, int n)
-        //{
-        //    if (d == 0) return 1.0;
-        //    else if (d > n) return 0.0;
-        //    else
-        //    {
-        //        double w = Sinc(d / n);
-        //        return Math.Pow(w, 1.0 / n);
-        //    }
-        //}
-
-        //private double GetLanczosWeightD(double d, int n)
-        //{
-        //    if (d == 0) return 1.0;
-        //    else if (d > n) return 0.0;
-        //    else
-        //    {
-        //        double w = Sinc(d / (3.0 / 4 * n));
-        //        return w * w;
-        //    }
-        //}
-
       
 
         //縮小専用
@@ -735,9 +693,6 @@ namespace _20210505_Lanczosで縮小
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            //MyExe(LanczosBgr24, MyBitmapOrigin, yoko, tate, (int)MySlider.Value);
-            //MyExe2(LanczosBgra32, GetLanczosWeight, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
-            //MyExe(LanczosBgra32, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
             MyExe(LanczosBgra32Ex, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
         }
 
