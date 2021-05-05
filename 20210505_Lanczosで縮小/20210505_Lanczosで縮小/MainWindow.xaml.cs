@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using System.Diagnostics;
+using System.Diagnostics;//処理時間計測用
 
 namespace _20210505_Lanczosで縮小
 {
@@ -54,19 +54,19 @@ namespace _20210505_Lanczosで縮小
         }
 
         //処理時間計測
-        private void MyExe2(
-            Func<BitmapSource, int, int, int, Func<double, int, double>, BitmapSource> func,
-            Func<double, int, double> weightFunc,
-            BitmapSource source, int width, int height, int n)
+        //private void MyExe2(
+        //    Func<BitmapSource, int, int, int, Func<double, int, double>, BitmapSource> func,
+        //    Func<double, int, double> weightFunc,
+        //    BitmapSource source, int width, int height, int n)
 
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            BitmapSource bitmap = func(source, width, height, n, weightFunc);
-            sw.Stop();
-            MyStatusItem.Content = $"処理時間：{sw.Elapsed.TotalSeconds:000.000}秒, {func.Method.Name}, {weightFunc.Method.Name}";
-            MyImage.Source = bitmap;
-        }
+        //{
+        //    var sw = new Stopwatch();
+        //    sw.Start();
+        //    BitmapSource bitmap = func(source, width, height, n, weightFunc);
+        //    sw.Stop();
+        //    MyStatusItem.Content = $"処理時間：{sw.Elapsed.TotalSeconds:000.000}秒, {func.Method.Name}, {weightFunc.Method.Name}";
+        //    MyImage.Source = bitmap;
+        //}
         ////処理時間計測
         //private void MyExe2(
         //    Func<BitmapSource, int, int, int, double, Func<double, int, double, double>, BitmapSource> func,
@@ -762,8 +762,7 @@ namespace _20210505_Lanczosで縮小
         }
 
 
-        #endregion コピペ
-
+       
         private void MyButton5_Click(object sender, RoutedEventArgs e)
         {
             if (MyBitmapOrigin == null) return;
@@ -794,6 +793,7 @@ namespace _20210505_Lanczosで縮小
                 MyBitmapOrigin32bit = bitmap32;
             }
         }
+        #endregion コピペ
 
     }
 }
