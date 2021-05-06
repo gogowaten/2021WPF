@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210505_Lanczosで縮小"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1087" Width="634"
+        Title="MainWindow" Height="587" Width="634"
         AllowDrop="True" Drop="Window_Drop">
   <Window.Resources>
     <Style TargetType="Button">
@@ -23,7 +23,7 @@
           <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
           <TextBlock Text="{Binding ElementName=MySliderViewScale, Path=Value, StringFormat=表示倍率\=x0}"
                      VerticalAlignment="Center"/>
-          <Slider x:Name="MySliderViewScale" Width="100" Minimum="1" Maximum="4"
+          <Slider x:Name="MySliderViewScale" Width="100" Minimum="1" Maximum="4" Focusable="False"
                   Value="1" SmallChange="1" LargeChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
                   MouseWheel="MySlider_MouseWheel" VerticalAlignment="Center"/>
           <Button x:Name="MyButtonCopy" Content="コピー" Click="MyButtonCopy_Click"/>
@@ -58,11 +58,11 @@
                    HorizontalAlignment="Center"/>
           </StackPanel>
         </StackPanel>
-        <Button x:Name="MyButton1" Content="縮小Type0" Click="MyButton1_Click"/>
-        <Button x:Name="MyButton2" Content="縮小TypeA" Click="MyButton2_Click"/>
-        <Button x:Name="MyButton3" Content="縮小TypeB" Click="MyButton3_Click"/>
-        <Button x:Name="MyButton4" Content="縮小TypeC" Click="MyButton4_Click"/>
-        <Button x:Name="MyButton5" Content="縮小TypeD" Click="MyButton5_Click"/>
+        <Button x:Name="MyButton1" Content="縮小セパ" Click="MyButton1_Click"/>
+        <Button x:Name="MyButton2" Content="拡大セパ" Click="MyButton2_Click"/>
+        <Button x:Name="MyButton3" Content="縮小" Click="MyButton3_Click"/>
+        <Button x:Name="MyButton4" Content="拡大" Click="MyButton4_Click"/>
+        <!--<Button x:Name="MyButton5" Content="縮小TypeD" Click="MyButton5_Click"/>-->
         
 
       </StackPanel>

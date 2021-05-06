@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using System.Diagnostics;//処理時間計測用
+
+//前回の画像縮小処理ではランチョスの使い方を間違っていたので書き直した - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/05/06/144640
+
 
 namespace _20210505_Lanczosで縮小
 {
@@ -102,7 +100,7 @@ namespace _20210505_Lanczosで縮小
         //}
 
         /// <summary>
-        /// 縮小専用重み計算、Lanczos
+        /// 重み計算、Lanczos
         /// </summary>
         /// <param name="d">距離</param>
         /// <param name="n">最大参照距離</param>
@@ -117,7 +115,8 @@ namespace _20210505_Lanczosで縮小
 
       
 
-        //縮小専用
+        //セパラブルといっても全く同一じゃない、少し誤差が出るみたい
+        //正確さを求めるなら使わないほうがいい
         /// <summary>
         /// 画像の縮小、ランチョス法で補完、PixelFormats.Bgra32専用)
         /// 通常版をセパラブルとParallelで高速化
@@ -149,9 +148,16 @@ namespace _20210505_Lanczosで縮小
             double[] xResult = new double[sourceHeight * stride];
             //倍率
             double scale = width / (double)sourceWidth;
-            //実際の参照距離、は指定距離*逆倍率の切り上げにしたけど、切り捨てでも見た目の変化なし
+            //実際の参照距離、は指定距離*逆倍率の切り上げ、切り捨てでも見た目の変化なし？
             //int actN = (int)(n * widthScale);
             int actN = (int)Math.Ceiling(n * widthScale);
+
+            //拡大時の調整(これがないと縮小専用)
+            if (1.0 < scale)
+            {
+                scale = 1.0;//重み計算に使うようで、拡大時は1固定
+                actN = n;//拡大時の実際の参照距離は指定距離と同じ
+            }
 
             //横処理
             _ = Parallel.For(0, sourceHeight, y =>
@@ -294,11 +300,9 @@ namespace _20210505_Lanczosで縮小
 
 
 
-        //縮小専用
-        //
         /// <summary>
-        /// 画像の縮小専用、ランチョス法で補完、PixelFormats.Bgra32専用)
-        /// 
+        /// 画像のリサイズ、ランチョス法で補完、PixelFormats.Bgra32専用)
+        /// セパラブルを使わずにParallelだけで高速化したもの
         /// </summary>
         /// <param name="source">PixelFormats.Bgra32のBitmap</param>
         /// <param name="width">変換後の横ピクセル数を指定</param>
@@ -329,11 +333,11 @@ namespace _20210505_Lanczosで縮小
             //int actN = (int)(n * widthScale);
             int actN = (int)Math.Ceiling(n * widthScale);
 
-            //拡大時
+            //拡大時の調整(これがないと縮小専用)
             if (1.0 < scale)
             {
-                scale = 1.0;
-                actN = n;
+                scale = 1.0;//重み計算に使うようで、拡大時は1固定
+                actN = n;//拡大時の実際の参照距離は指定距離と同じ
             }
 
 
@@ -702,7 +706,7 @@ namespace _20210505_Lanczosで縮小
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(LanczosBgra32, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+            MyExe(LanczosBgra32Ex, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
         }
 
         private void MyButton3_Click(object sender, RoutedEventArgs e)
@@ -716,9 +720,9 @@ namespace _20210505_Lanczosで縮小
         private void MyButton4_Click(object sender, RoutedEventArgs e)
         {
             if (MyBitmapOrigin == null) return;
-            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
-            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
+            MyExe(LanczosBgra32, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
         }
 
         //画像をクリップボードにコピー
