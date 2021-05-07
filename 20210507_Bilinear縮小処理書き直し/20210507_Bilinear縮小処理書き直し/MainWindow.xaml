@@ -47,21 +47,27 @@
               <TextBlock Text="{Binding ElementName=MySliderScale, Path=Value}"/>
             </StackPanel>
           </StackPanel>
-          <!--<StackPanel Margin="8,0,4,0">
-            <Slider x:Name="MySlider" Minimum="2" Maximum="10" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
-                Value="3" Width="80" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
+          <StackPanel Margin="8,0,4,0">
+            <Slider x:Name="MySliderCubic" Minimum="-3.0" Maximum="3.0" SmallChange="0.1" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                Value="-1" Width="80" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
               <Slider.LayoutTransform>
                 <RotateTransform Angle="270"/>
               </Slider.LayoutTransform>
             </Slider>
-            <TextBlock Text="{Binding ElementName=MySlider, Path=Value, StringFormat=n\=0}"
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="a="/>
+              <TextBlock Text="{Binding ElementName=MySliderCubic, Path=Value, StringFormat=0.0}"
                    HorizontalAlignment="Center"/>
-          </StackPanel>-->
+            </StackPanel>
+          </StackPanel>
         </StackPanel>
-        <Button x:Name="MyButton1" Content="縮小" Click="MyButton1_Click"/>
-        <Button x:Name="MyButton2" Content="拡大" Click="MyButton2_Click"/>
-        <Button x:Name="MyButton3" Content="縮小シャープ" Click="MyButton3_Click"/>
-        <!--<Button x:Name="MyButton4" Content="拡大専用" Click="MyButton4_Click"/>-->
+        <Button x:Name="MyButton1" Content="Bilinear縮小" Click="MyButton1_Click"/>
+        <Button x:Name="MyButton2" Content="Bilinear拡大" Click="MyButton2_Click"/>
+        <Button x:Name="MyButton3" Content="Bilinear縮小鋭" Click="MyButton3_Click"/>
+        <Button x:Name="MyButton4" Content="Bicubic縮小" Click="MyButton4_Click"/>
+        <Button x:Name="MyButton5" Content="Bicubic拡大" Click="MyButton5_Click"/>
+        <Button x:Name="MyButton6" Content="Bicubic縮小朧" Click="MyButton6_Click"/>
+        <Button x:Name="MyButton7" Content="Bicubic拡大Ex" Click="MyButton7_Click"/>
 
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
