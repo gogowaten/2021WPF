@@ -106,14 +106,14 @@ namespace _20210505_Lanczosで縮小
         /// <param name="n">最大参照距離</param>
         /// <param name="scale">倍率</param>
         /// <returns></returns>
-        private double GetLanczosWeight(double d, int n, double scale)
+        private double GetLanczosWeight(double d, int n, double limitD)
         {
             if (d == 0) return 1.0;
-            else if (d > n) return 0.0;
-            else return Sinc(d * scale) * Sinc(d * scale / n);
+            else if (d > limitD) return 0.0;
+            else return Sinc(d) * Sinc(d / n);
         }
 
-      
+
 
         //セパラブルといっても全く同一じゃない、少し誤差が出るみたい
         //正確さを求めるなら使わないほうがいい
@@ -148,15 +148,16 @@ namespace _20210505_Lanczosで縮小
             double[] xResult = new double[sourceHeight * stride];
             //倍率
             double scale = width / (double)sourceWidth;
-            //実際の参照距離、は指定距離*逆倍率の切り上げ、切り捨てでも見た目の変化なし？
-            //int actN = (int)(n * widthScale);
-            int actN = (int)Math.Ceiling(n * widthScale);
+            //最大参照距離 = 逆倍率 * n
+            double limitD = widthScale * n;
+            //実際の参照距離、は指定距離*逆倍率の切り上げにしたけど、切り捨てでも見た目の変化なし            
+            int actD = (int)Math.Ceiling(limitD);
 
             //拡大時の調整(これがないと縮小専用)
             if (1.0 < scale)
             {
                 scale = 1.0;//重み計算に使うようで、拡大時は1固定
-                actN = n;//拡大時の実際の参照距離は指定距離と同じ
+                actD = n;//拡大時の実際の参照距離は指定距離と同じ
             }
 
             //横処理
@@ -169,18 +170,18 @@ namespace _20210505_Lanczosで縮小
                     //参照点四捨五入で基準
                     int xKijun = (int)(rx + 0.5);
                     //修正した重み取得
-                    double[] ws = GetFixWeihgts(rx, n, actN, scale);
+                    double[] ws = GetFixWeihgts(rx, n, actD, scale, limitD);
 
                     double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
                     int pp;
-                    for (int xx = -actN; xx < actN; xx++)
+                    for (int xx = -actD; xx < actD; xx++)
                     {
                         int xc = xKijun + xx;
                         //マイナス座標や画像サイズを超えていたら、収まるように修正
                         xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
                         pp = (y * sourceStride) + (xc * pByte);
-                        double weight = ws[xx + actN];
+                        double weight = ws[xx + actD];
                         //完全透明ピクセル(a=0)だった場合はRGBは計算しないで
                         //重みだけ足し算して後で使う
                         if (sourcePixels[pp + 3] == 0)
@@ -221,16 +222,16 @@ namespace _20210505_Lanczosで縮小
                     double ry = (y + 0.5) * heightScale;
                     int yKijun = (int)(ry + 0.5);
 
-                    double[] ws = GetFixWeihgts(ry, n, actN, scale);
+                    double[] ws = GetFixWeihgts(ry, n, actD, scale, limitD);
                     double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
                     int pp;
-                    for (int yy = -actN; yy < actN; yy++)
+                    for (int yy = -actD; yy < actD; yy++)
                     {
                         int yc = yKijun + yy;
                         yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
                         pp = (yc * stride) + (x * pByte);
-                        double weight = ws[yy + actN];
+                        double weight = ws[yy + actD];
 
                         if (xResult[pp + 3] == 0)
                         {
@@ -268,9 +269,9 @@ namespace _20210505_Lanczosで縮小
             return bitmap;
 
             //修正した重み取得
-            double[] GetFixWeihgts(double r, int n, int actN, double scale)
+            double[] GetFixWeihgts(double r, int n, int actD, double scale, double limitD)
             {
-                int nn = actN * 2;//全体の参照距離
+                int nn = actD * 2;//全体の参照距離
                 //基準距離
                 double s = r - (int)r;
                 double d = (s < 0.5) ? 0.5 - s : 0.5 - s + 1;
@@ -278,11 +279,11 @@ namespace _20210505_Lanczosで縮小
                 //各重みと重み合計
                 double[] ws = new double[nn];
                 double sum = 0;
-                for (int i = -actN; i < actN; i++)
+                for (int i = -actD; i < actD; i++)
                 {
-                    double w = GetLanczosWeight(Math.Abs(d + i), n, scale);
+                    double w = GetLanczosWeight(Math.Abs(d + i) * scale, n, limitD);
                     sum += w;
-                    ws[i + actN] = w;
+                    ws[i + actD] = w;
                 }
 
                 //重み合計で割り算して修正、全体で100%(1.0)にする
@@ -329,92 +330,100 @@ namespace _20210505_Lanczosで縮小
 
             //倍率
             double scale = width / (double)sourceWidth;
-            //実際の参照距離、は指定距離*逆倍率の切り上げにしたけど、切り捨てでも見た目の変化なし
-            //int actN = (int)(n * widthScale);
-            int actN = (int)Math.Ceiling(n * widthScale);
+            //最大参照距離 = 逆倍率 * n
+            double limitD = widthScale * n;
+            //実際の参照距離、は指定距離*逆倍率の切り上げにしたけど、切り捨てでも見た目の変化なし            
+            int actD = (int)Math.Ceiling(limitD);
+            //int actD = (int)(limitD);
+
 
             //拡大時の調整(これがないと縮小専用)
             if (1.0 < scale)
             {
                 scale = 1.0;//重み計算に使うようで、拡大時は1固定
-                actN = n;//拡大時の実際の参照距離は指定距離と同じ
+                actD = n;//拡大時の実際の参照距離は指定距離と同じ
             }
 
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //参照点
+                    double rx = (x + 0.5) * widthScale;
+                    double ry = (y + 0.5) * heightScale;
+                    //参照点四捨五入で基準
+                    int xKijun = (int)(rx + 0.5);
+                    int yKijun = (int)(ry + 0.5);
+                    //修正した重み取得
+                    //double[,] ws = GetFixWeights(rx, ry, actN, scale*0.1, n);
+                    double[,] ws = GetFixWeights(rx, ry, actD, scale, n, limitD);
 
-            _ = Parallel.For(0, height, y =>
-              {
-                  for (int x = 0; x < width; x++)
-                  {
-                      //参照点
-                      double rx = (x + 0.5) * widthScale;
-                      double ry = (y + 0.5) * heightScale;
-                      //参照点四捨五入で基準
-                      int xKijun = (int)(rx + 0.5);
-                      int yKijun = (int)(ry + 0.5);
-                      //修正した重み取得
-                      //double[,] ws = GetFixWeights(rx, ry, actN, scale*0.1, n);
-                      double[,] ws = GetFixWeights(rx, ry, actN, scale, n);
+                    double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
+                    double alphaFix = 0;
+                    //参照範囲は基準から上(xは左)へnn、下(xは右)へnn-1の範囲
+                    for (int yy = -actD; yy < actD; yy++)
+                    {
+                        int yc = yKijun + yy;
+                        //マイナス座標や画像サイズを超えていたら、収まるように修正
+                        yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+                        for (int xx = -actD; xx < actD; xx++)
+                        {
+                            int xc = xKijun + xx;
+                            xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                            int pp = (yc * sourceStride) + (xc * pByte);
+                            double weight = ws[xx + actD, yy + actD];
+                            //完全透明ピクセル(a=0)だった場合はRGBは計算しないで
+                            //重みだけ足し算して後で使う
+                            if (sourcePixels[pp + 3] == 0)
+                            {
+                                alphaFix += weight;
+                                continue;
+                            }
+                            bSum += sourcePixels[pp] * weight;
+                            gSum += sourcePixels[pp + 1] * weight;
+                            rSum += sourcePixels[pp + 2] * weight;
+                            aSum += sourcePixels[pp + 3] * weight;
+                        }
+                    }
 
-                      double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
-                      double alphaFix = 0;
-                      //参照範囲は基準から上(xは左)へnn、下(xは右)へnn-1の範囲
-                      for (int yy = -actN; yy < actN; yy++)
-                      {
-                          int yc = yKijun + yy;
-                          //マイナス座標や画像サイズを超えていたら、収まるように修正
-                          yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
-                          for (int xx = -actN; xx < actN; xx++)
-                          {
-                              int xc = xKijun + xx;
-                              xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
-                              int pp = (yc * sourceStride) + (xc * pByte);
-                              double weight = ws[xx + actN, yy + actN];
-                              //完全透明ピクセル(a=0)だった場合はRGBは計算しないで
-                              //重みだけ足し算して後で使う
-                              if (sourcePixels[pp + 3] == 0)
-                              {
-                                  alphaFix += weight;
-                                  continue;
-                              }
-                              bSum += sourcePixels[pp] * weight;
-                              gSum += sourcePixels[pp + 1] * weight;
-                              rSum += sourcePixels[pp + 2] * weight;
-                              aSum += sourcePixels[pp + 3] * weight;
-                          }
-                      }
+                    //                    C#、WPF、バイリニア法での画像の拡大縮小変換、半透明画像(32bit画像)対応版 - 午後わてんのブログ
+                    //https://gogowaten.hatenablog.com/entry/2021/04/17/151803#32bit%E3%81%A824bit%E3%81%AF%E9%81%95%E3%81%A3%E3%81%9F
+                    //完全透明ピクセルによるRGB値の修正
+                    //参照範囲がすべて完全透明だった場合は0のままでいいので計算しない
+                    if (alphaFix == 1) continue;
+                    //完全透明ピクセルが混じっていた場合は、その分を差し引いてRGB修正する
+                    double rgbFix = 1 / (1 - alphaFix);
+                    bSum *= rgbFix;
+                    gSum *= rgbFix;
+                    rSum *= rgbFix;
 
-                      //                    C#、WPF、バイリニア法での画像の拡大縮小変換、半透明画像(32bit画像)対応版 - 午後わてんのブログ
-                      //https://gogowaten.hatenablog.com/entry/2021/04/17/151803#32bit%E3%81%A824bit%E3%81%AF%E9%81%95%E3%81%A3%E3%81%9F
-                      //完全透明ピクセルによるRGB値の修正
-                      //参照範囲がすべて完全透明だった場合は0のままでいいので計算しない
-                      if (alphaFix == 1) continue;
-                      //完全透明ピクセルが混じっていた場合は、その分を差し引いてRGB修正する
-                      double rgbFix = 1 / (1 - alphaFix);
-                      bSum *= rgbFix;
-                      gSum *= rgbFix;
-                      rSum *= rgbFix;
+                    //0～255の範囲を超えることがあるので、修正
+                    bSum = bSum < 0 ? 0 : bSum > 255 ? 255 : bSum;
+                    gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
+                    rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
+                    aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
 
-                      //0～255の範囲を超えることがあるので、修正
-                      bSum = bSum < 0 ? 0 : bSum > 255 ? 255 : bSum;
-                      gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
-                      rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
-                      aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
+                    int ap = (y * stride) + (x * pByte);
+                    pixels[ap] = (byte)(bSum + 0.5);
+                    pixels[ap + 1] = (byte)(gSum + 0.5);
+                    pixels[ap + 2] = (byte)(rSum + 0.5);
+                    pixels[ap + 3] = (byte)(aSum + 0.5);
+                }
+            }
 
-                      int ap = (y * stride) + (x * pByte);
-                      pixels[ap] = (byte)(bSum + 0.5);
-                      pixels[ap + 1] = (byte)(gSum + 0.5);
-                      pixels[ap + 2] = (byte)(rSum + 0.5);
-                      pixels[ap + 3] = (byte)(aSum + 0.5);
-                  }
-              });
+            //_ = Parallel.For(0, height, y =>
+            //  {
+
+            //  });
 
             BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
             return bitmap;
 
             //修正した重み取得
-            double[,] GetFixWeights(double rx, double ry, int actN, double scale, int n)
+            double[,] GetFixWeights(double rx, double ry, int actN, double scale, int n, double limitD)
             {
-                int nn = actN * 2;//全体の参照距離
+                //全体の参照距離
+                int nn = actN * 2;
                 //基準になる距離計算
                 double sx = rx - (int)rx;
                 double sy = ry - (int)ry;
@@ -427,10 +436,10 @@ namespace _20210505_Lanczosで縮小
                 double xSum = 0, ySum = 0;
                 for (int i = -actN; i < actN; i++)
                 {
-                    double x = GetLanczosWeight(Math.Abs(dx + i), n, scale);
+                    double x = GetLanczosWeight(Math.Abs(dx + i) * scale, n, limitD);
                     xSum += x;
                     xw[i + actN] = x;
-                    double y = GetLanczosWeight(Math.Abs(dy + i), n, scale);
+                    double y = GetLanczosWeight(Math.Abs(dy + i) * scale, n, limitD);
                     ySum += y;
                     yw[i + actN] = y;
                 }
@@ -766,13 +775,13 @@ namespace _20210505_Lanczosで縮小
         }
 
 
-       
+
         private void MyButton5_Click(object sender, RoutedEventArgs e)
         {
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            
+
         }
         private void MyButtonItimatu模様_Click(object sender, RoutedEventArgs e)
         {
