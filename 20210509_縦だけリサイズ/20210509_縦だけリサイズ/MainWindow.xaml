@@ -1,0 +1,80 @@
+﻿<Window x:Class="_20210509_縦だけリサイズ.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_20210509_縦だけリサイズ"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="587" Width="634"
+        AllowDrop="True" Drop="Window_Drop">
+  <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Margin" Value="2,4,2,4"/>
+    </Style>
+  </Window.Resources>
+  <Grid>
+    <DockPanel UseLayoutRounding="True">
+      <StatusBar DockPanel.Dock="Bottom">
+        <StatusBarItem x:Name="MyStatusItem" Content="time"/>
+      </StatusBar>
+      <Menu DockPanel.Dock="Top" HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal">
+          <Button x:Name="MyButtonItimatu模様" Content="市松模様" Click="MyButtonItimatu模様_Click"/>
+          <Button x:Name="MyButtonToOrigin" Content="戻す" Click="MyButtonToOrigin_Click"/>
+          <TextBlock Text="{Binding ElementName=MySliderViewScale, Path=Value, StringFormat=表示倍率\=x0}"
+                     VerticalAlignment="Center"/>
+          <Slider x:Name="MySliderViewScale" Width="100" Minimum="1" Maximum="4" Focusable="False"
+                  Value="1" SmallChange="1" LargeChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
+                  MouseWheel="MySlider_MouseWheel" VerticalAlignment="Center"/>
+          <Button x:Name="MyButtonCopy" Content="コピー" Click="MyButtonCopy_Click"/>
+          <Button x:Name="MyButtonPaste" Content="貼り付け" Click="MyButtonPaste_Click"/>
+          <Button x:Name="MyButtonPasteBmp" Content="Bmp優先貼り" Click="MyButtonPasteBmp_Click"/>
+
+        </StackPanel>
+      </Menu>
+      <StackPanel DockPanel.Dock="Right" Background="White">
+        <StackPanel Orientation="Horizontal">
+          <StackPanel>
+            <Slider x:Name="MySliderScale" Minimum="1" Maximum="10" Value="2" Width="80"
+                  HorizontalAlignment="Center" TickFrequency="1" IsSnapToTickEnabled="True"
+                  MouseWheel="MySlider_MouseWheel" SmallChange="1" LargeChange="1">
+              <Slider.LayoutTransform>
+                <RotateTransform Angle="270"/>
+              </Slider.LayoutTransform>
+            </Slider>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+              <TextBlock Text="倍率="/>
+              <TextBlock Text="{Binding ElementName=MySliderScale, Path=Value}"/>
+            </StackPanel>
+          </StackPanel>
+          <StackPanel Margin="8,0,4,0">
+            <Slider x:Name="MySliderCubic" Minimum="-3.0" Maximum="3.0" SmallChange="0.1" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                Value="-1" Width="80" HorizontalAlignment="Center" MouseWheel="MySlider_MouseWheel">
+              <Slider.LayoutTransform>
+                <RotateTransform Angle="270"/>
+              </Slider.LayoutTransform>
+            </Slider>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="a="/>
+              <TextBlock Text="{Binding ElementName=MySliderCubic, Path=Value, StringFormat=0.0}"
+                   HorizontalAlignment="Center"/>
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+        <Button x:Name="MyButton1" Content="縦2倍" Click="MyButton1_Click"/>
+        <Button x:Name="MyButton2" Content="button" Click="MyButton2_Click"/>
+        <Button x:Name="MyButton3" Content="button" Click="MyButton3_Click"/>
+        <Button x:Name="MyButton4" Content="button" Click="MyButton4_Click"/>
+
+      </StackPanel>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Image x:Name="MyImage" Stretch="None">
+          <Image.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding ElementName=MySliderViewScale, Path=Value}"
+                            ScaleY="{Binding ElementName=MySliderViewScale, Path=Value}"/>
+          </Image.LayoutTransform>
+        </Image>
+      </ScrollViewer>
+    </DockPanel>
+  </Grid>
+</Window>

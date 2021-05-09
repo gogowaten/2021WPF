@@ -3,9 +3,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
-    <RootNamespace>_20210505_Lanczosで縮小</RootNamespace>
+    <RootNamespace>_20210509_縦だけリサイズ</RootNamespace>
     <UseWPF>true</UseWPF>
-    <Version>1.0.1</Version>
   </PropertyGroup>
 
 </Project>

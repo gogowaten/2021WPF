@@ -1,19 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 
-using System.Diagnostics;//処理時間計測用
-
-//前回の画像縮小処理ではランチョスの使い方を間違っていたので書き直した - 午後わてんのブログ
-//https://gogowaten.hatenablog.com/entry/2021/05/06/144640
-
-
-namespace _20210505_Lanczosで縮小
+namespace _20210509_縦だけリサイズ
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -38,95 +38,58 @@ namespace _20210505_Lanczosで縮小
 
 
 
-        //処理時間計測
-        private void MyExe(
-            Func<BitmapSource, int, int, int, BitmapSource> func,
-            BitmapSource source, int width, int height, int n)
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            var bitmap = func(source, width, height, n);
-            sw.Stop();
-            MyStatusItem.Content = $"処理時間：{sw.Elapsed.TotalSeconds:000.000}秒, {func.Method.Name}";
-            MyImage.Source = bitmap;
-        }
 
-        //処理時間計測
-        //private void MyExe2(
-        //    Func<BitmapSource, int, int, int, Func<double, int, double>, BitmapSource> func,
-        //    Func<double, int, double> weightFunc,
-        //    BitmapSource source, int width, int height, int n)
-
-        //{
-        //    var sw = new Stopwatch();
-        //    sw.Start();
-        //    BitmapSource bitmap = func(source, width, height, n, weightFunc);
-        //    sw.Stop();
-        //    MyStatusItem.Content = $"処理時間：{sw.Elapsed.TotalSeconds:000.000}秒, {func.Method.Name}, {weightFunc.Method.Name}";
-        //    MyImage.Source = bitmap;
-        //}
-        ////処理時間計測
-        //private void MyExe2(
-        //    Func<BitmapSource, int, int, int, double, Func<double, int, double, double>, BitmapSource> func,
-        //    Func<double, int, double, double> weightFunc,
-        //    BitmapSource source, int width, int height, int n, double scale)
-
-        //{
-        //    var sw = new Stopwatch();
-        //    sw.Start();
-        //    BitmapSource bitmap = func(source, width, height, n, scale, weightFunc);
-        //    sw.Stop();
-        //    MyStatusItem.Content = $"処理時間：{sw.Elapsed.TotalSeconds:000.000}秒, {func.Method.Name}, {weightFunc.Method.Name}";
-        //    MyImage.Source = bitmap;
-        //}
-
-
-        //窓関数
-        private double Sinc(double d)
-        {
-            return Math.Sin(Math.PI * d) / (Math.PI * d);
-        }
         /// <summary>
-        /// ランチョス補完法での重み計算、拡大専用
+        /// バイキュービックで重み計算、縮小にも使えるけど画質がイマイチになるので拡大専用
         /// </summary>
         /// <param name="d">距離</param>
-        /// <param name="n">最大参照距離</param>
+        /// <param name="a">定数、-1.0 ～ -0.5 が丁度いい</param>
         /// <returns></returns>
-        //private double GetLanczosWeight(double d, int n)
-        //{
-        //    if (d == 0) return 1.0;
-        //    else if (d > n) return 0.0;
-        //    else return Sinc(d) * Sinc(d / n);
-        //}
+        private static double GetWeightCubic(double d, double a = -1.0)
+        {
+            return d switch
+            {
+                2 => 0,
+                <= 1 => ((a + 2) * (d * d * d)) - ((a + 3) * (d * d)) + 1,
+                < 2 => (a * (d * d * d)) - (5 * a * (d * d)) + (8 * a * d) - (4 * a),
+                _ => 0
+            };
+        }
+
 
         /// <summary>
-        /// 縮小拡大両対応重み計算、Lanczos
+        /// バイキュービックで重み計算、縮小対応版
         /// </summary>
         /// <param name="d">距離</param>
-        /// <param name="n">最大参照距離</param>
-        /// <param name="scale">倍率</param>
+        /// <param name="actN">参照最大距離、拡大時は2固定</param>
+        /// <param name="a">定数、-1.0 ～ -0.5 が丁度いい</param>
         /// <returns></returns>
-        private double GetLanczosWeight(double d, int n, double limitD)
+        private static double GetWeightCubic(double d, double a, double scale, double inScale)
         {
-            if (d == 0) return 1.0;
-            else if (d > limitD) return 0.0;
-            else return Sinc(d) * Sinc(d / n);
+            double dd = d * scale;
+
+            if (d == inScale * 2) return 0;
+            else if (d <= inScale) return ((a + 2) * (dd * dd * dd)) - ((a + 3) * (dd * dd)) + 1;
+            else if (d < inScale * 2) return (a * (dd * dd * dd)) - (5 * a * (dd * dd)) + (8 * a * dd) - (4 * a);
+            else return 0;
         }
 
 
 
-        //セパラブルといっても全く同一じゃない、少し誤差が出るみたい
-        //正確さを求めるなら使わないほうがいい
+
+
+
         /// <summary>
-        /// 画像の縮小、ランチョス法で補完、PixelFormats.Bgra32専用)
-        /// 通常版をセパラブルとParallelで高速化
+        /// 画像のリサイズ、バイキュービック法で補完、PixelFormats.Bgra32専用)
+        /// セパラブルなので縦横別々処理とParallelで高速化したもの
         /// </summary>
         /// <param name="source">PixelFormats.Bgra32のBitmap</param>
         /// <param name="width">変換後の横ピクセル数を指定</param>
         /// <param name="height">変換後の縦ピクセル数を指定</param>
-        /// <param name="n">最大参照距離、3か4がいい</param>
+        /// <param name="a">係数、-1.0～-0.5がいい</param>
+        /// <param name="soft">trueで縮小時に画質がソフトになる？</param>
         /// <returns></returns>
-        private BitmapSource LanczosBgra32Ex(BitmapSource source, int width, int height, int n)
+        private BitmapSource BicubicBgra32Ex(BitmapSource source, int width, int height, double a, bool soft = false)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -139,25 +102,28 @@ namespace _20210505_Lanczosで縮小
             source.CopyPixels(sourcePixels, sourceStride, 0);
 
             //変換後の画像の画素値の配列用
-            double widthScale = (double)sourceWidth / width;//横倍率
+            double widthScale = (double)sourceWidth / width;//横倍率(逆倍率)
             double heightScale = (double)sourceHeight / height;
             int stride = width * pByte;
             byte[] pixels = new byte[height * stride];
 
             //横処理用配列
             double[] xResult = new double[sourceHeight * stride];
+
             //倍率
             double scale = width / (double)sourceWidth;
-            //最大参照距離 = 逆倍率 * n
-            double limitD = widthScale * n;
-            //ピクセルでの最大参照距離、は指定距離*逆倍率の切り上げにした
-            int actD = (int)Math.Ceiling(limitD);
+            double inScale = 1.0 / scale;//逆倍率
+            //実際の参照距離、縮小時だけに関係する、倍率*2の切り上げが正しいはず
+            //切り捨てするとぼやけるソフト画質になる
+            int actD = (int)Math.Ceiling(widthScale * 2);
+            if (soft == true) actD = ((int)widthScale) * 2;//切り捨て
 
             //拡大時の調整(これがないと縮小専用)
             if (1.0 < scale)
             {
-                scale = 1.0;//重み計算に使うようで、拡大時は1固定
-                actD = n;//拡大時の実際の参照距離は指定距離と同じ
+                scale = 1.0;//重み計算に使う、拡大時は1固定
+                inScale = 1.0;//逆倍率、拡大時は1固定
+                actD = 2;//拡大時のバイキュービックの参照距離は2で固定
             }
 
             //横処理
@@ -170,10 +136,10 @@ namespace _20210505_Lanczosで縮小
                     //参照点四捨五入で基準
                     int xKijun = (int)(rx + 0.5);
                     //修正した重み取得
-                    double[] ws = GetFixWeihgts(rx, n, actD, scale, limitD);
-
+                    double[] ws = GetFixWeights(rx, actD, a, scale, inScale);
                     double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
+
                     int pp;
                     for (int xx = -actD; xx < actD; xx++)
                     {
@@ -213,7 +179,6 @@ namespace _20210505_Lanczosで縮小
                     xResult[pp + 3] = aSum;
                 }
             });
-
             //縦処理
             _ = Parallel.For(0, height, y =>
             {
@@ -221,8 +186,8 @@ namespace _20210505_Lanczosで縮小
                 {
                     double ry = (y + 0.5) * heightScale;
                     int yKijun = (int)(ry + 0.5);
+                    double[] ws = GetFixWeights(ry, actD, a, scale, inScale);
 
-                    double[] ws = GetFixWeihgts(ry, n, actD, scale, limitD);
                     double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
                     int pp;
@@ -243,7 +208,6 @@ namespace _20210505_Lanczosで縮小
                         rSum += xResult[pp + 2] * weight;
                         aSum += xResult[pp + 3] * weight;
                     }
-
                     if (alphaFix == 1) continue;
                     //完全透明ピクセルが混じっていた場合は、その分を差し引いてRGB修正する
                     double rgbFix = 1 / (1 - alphaFix);
@@ -264,28 +228,27 @@ namespace _20210505_Lanczosで縮小
                 }
             });
 
-
             BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
             return bitmap;
 
             //修正した重み取得
-            double[] GetFixWeihgts(double r, int n, int actD, double scale, double limitD)
+
+            double[] GetFixWeights(double r, int actD, double a, double scale, double inScale)
             {
-                int nn = actD * 2;//全体の参照距離
-                //基準距離
+                //全体の参照距離
+                int nn = actD * 2;
+                //基準になる距離計算
                 double s = r - (int)r;
                 double d = (s < 0.5) ? 0.5 - s : 0.5 - s + 1;
-
                 //各重みと重み合計
                 double[] ws = new double[nn];
                 double sum = 0;
                 for (int i = -actD; i < actD; i++)
                 {
-                    double w = GetLanczosWeight(Math.Abs(d + i) * scale, n, limitD);
+                    double w = GetWeightCubic(Math.Abs(d + i), a, scale, inScale);
                     sum += w;
                     ws[i + actD] = w;
                 }
-
                 //重み合計で割り算して修正、全体で100%(1.0)にする
                 for (int i = 0; i < nn; i++)
                 {
@@ -297,20 +260,17 @@ namespace _20210505_Lanczosで縮小
 
 
 
-
-
-
-
         /// <summary>
-        /// 画像のリサイズ、ランチョス法で補完、PixelFormats.Bgra32専用)
-        /// 高速化なし
+        /// 画像のリサイズ、バイキュービック法で補完、PixelFormats.Bgra32専用)
+        /// Parallelだけで高速化
         /// </summary>
         /// <param name="source">PixelFormats.Bgra32のBitmap</param>
         /// <param name="width">変換後の横ピクセル数を指定</param>
         /// <param name="height">変換後の縦ピクセル数を指定</param>
-        /// <param name="n">最大参照距離、3か4がいい</param>
+        /// <param name="a">係数、-1.0～-0.5がいい</param>
+        /// <param name="soft">trueで縮小時に画質がソフトになる？</param>
         /// <returns></returns>
-        private BitmapSource LanczosBgra32(BitmapSource source, int width, int height, int n)
+        private BitmapSource BicubicBgra32(BitmapSource source, int width, int height, double a, bool soft = false)
         {
             //1ピクセルあたりのバイト数、Byte / Pixel
             int pByte = (source.Format.BitsPerPixel + 7) / 8;
@@ -330,21 +290,22 @@ namespace _20210505_Lanczosで縮小
 
             //倍率
             double scale = width / (double)sourceWidth;
-            //最大参照距離 = 逆倍率 * n
-            double limitD = widthScale * n;
-            //実際の参照距離、は指定距離*逆倍率の切り上げにしたけど、切り捨てでも見た目の変化なし            
-            int actD = (int)Math.Ceiling(limitD);
-            //int actD = (int)(limitD);
-
+            double inScale = 1.0 / scale;//逆倍率
+                                         //実際の参照距離、縮小時だけに関係する、倍率*2の切り上げが正しいはず
+                                         //切り捨てするとぼやけるソフト画質になる
+            int actD = (int)Math.Ceiling(widthScale * 2);
+            if (soft == true) actD = ((int)widthScale) * 2;//切り捨て
 
             //拡大時の調整(これがないと縮小専用)
             if (1.0 < scale)
             {
-                scale = 1.0;//重み計算に使うようで、拡大時は1固定
-                actD = n;//拡大時の実際の参照距離は指定距離と同じ
+                scale = 1.0;//重み計算に使う、拡大時は1固定
+                inScale = 1.0;//逆倍率、拡大時は1固定
+                actD = 2;//拡大時のバイキュービックの参照距離は2で固定
             }
 
-            for (int y = 0; y < height; y++)
+
+            _ = Parallel.For(0, height, y =>
             {
                 for (int x = 0; x < width; x++)
                 {
@@ -355,8 +316,7 @@ namespace _20210505_Lanczosで縮小
                     int xKijun = (int)(rx + 0.5);
                     int yKijun = (int)(ry + 0.5);
                     //修正した重み取得
-                    //double[,] ws = GetFixWeights(rx, ry, actN, scale*0.1, n);
-                    double[,] ws = GetFixWeights(rx, ry, actD, scale, n, limitD);
+                    double[,] ws = GetFixWeights(rx, ry, actD, a, scale, inScale);
 
                     double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
                     double alphaFix = 0;
@@ -402,29 +362,22 @@ namespace _20210505_Lanczosで縮小
                     gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
                     rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
                     aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
-
                     int ap = (y * stride) + (x * pByte);
                     pixels[ap] = (byte)(bSum + 0.5);
                     pixels[ap + 1] = (byte)(gSum + 0.5);
                     pixels[ap + 2] = (byte)(rSum + 0.5);
                     pixels[ap + 3] = (byte)(aSum + 0.5);
                 }
-            }
-
-            //_ = Parallel.For(0, height, y =>
-            //  {
-
-            //  });
+            });
 
             BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
             return bitmap;
 
             //修正した重み取得
-            double[,] GetFixWeights(double rx, double ry, int actN, double scale, int n, double limitD)
+            double[,] GetFixWeights(double rx, double ry, int actN, double a, double scale, double inScale)
             {
-                //全体の参照距離
-                int nn = actN * 2;
-                //基準になる距離計算
+                int nn = actN * 2;//全体の参照距離
+                                  //基準になる距離計算
                 double sx = rx - (int)rx;
                 double sy = ry - (int)ry;
                 double dx = (sx < 0.5) ? 0.5 - sx : 0.5 - sx + 1;
@@ -434,13 +387,13 @@ namespace _20210505_Lanczosで縮小
                 double[] xw = new double[nn];
                 double[] yw = new double[nn];
                 double xSum = 0, ySum = 0;
+
                 for (int i = -actN; i < actN; i++)
                 {
-                    //距離に倍率を掛け算したのをLanczosで重み計算
-                    double x = GetLanczosWeight(Math.Abs(dx + i) * scale, n, limitD);
+                    double x = GetWeightCubic(Math.Abs(dx + i), a, scale, inScale);
                     xSum += x;
                     xw[i + actN] = x;
-                    double y = GetLanczosWeight(Math.Abs(dy + i) * scale, n, limitD);
+                    double y = GetWeightCubic(Math.Abs(dy + i), a, scale, inScale);
                     ySum += y;
                     yw[i + actN] = y;
                 }
@@ -464,6 +417,223 @@ namespace _20210505_Lanczosで縮小
                 return ws;
             }
         }
+
+
+
+        /// <summary>
+        /// 画像のリサイズ、バイリニア法で補完、PixelFormats.Bgra32専用)
+        /// </summary>
+        /// <param name="source">PixelFormats.Bgra32のBitmap</param>
+        /// <param name="width">変換後の横ピクセル数を指定</param>
+        /// <param name="height">変換後の縦ピクセル数を指定</param>
+        /// <param name="sharp">縮小時に参照距離の小数以下切り捨てすることで画質をシャープにする</param>
+        /// <returns></returns>
+        private BitmapSource BilinearBgra32(BitmapSource source, int width, int height, bool sharp = false)
+        {
+            //1ピクセルあたりのバイト数、Byte / Pixel
+            int pByte = (source.Format.BitsPerPixel + 7) / 8;
+
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int sourceStride = sourceWidth * pByte;//1行あたりのbyte数
+            byte[] sourcePixels = new byte[sourceHeight * sourceStride];
+            source.CopyPixels(sourcePixels, sourceStride, 0);
+
+            //変換後の画像の画素値の配列用
+            double widthScale = (double)sourceWidth / width;//横倍率(逆倍率)
+            double heightScale = (double)sourceHeight / height;
+            int stride = width * pByte;
+            byte[] pixels = new byte[height * stride];
+
+            //倍率
+            double scale = width / (double)sourceWidth;
+            //実際の参照距離、縮小時だけに関係する、切り下げだと画質はシャープになるかも
+            //int actN = (int)(widthScale + 0.5);//四捨五入
+            int actN = (int)widthScale;//切り捨て
+            if (sharp == false) actN = (int)Math.Ceiling(widthScale);
+
+
+            //拡大時の調整(これがないと縮小専用)
+            if (1.0 < scale)
+            {
+                scale = 1.0;//重み計算に使う、拡大時は1固定
+                actN = 1;//拡大時の実際の参照距離は指定距離と同じ
+            }
+
+            _ = Parallel.For(0, height, y =>
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    //参照点
+                    double rx = (x + 0.5) * widthScale;
+                    double ry = (y + 0.5) * heightScale;
+                    //参照点四捨五入で基準
+                    int xKijun = (int)(rx + 0.5);
+                    int yKijun = (int)(ry + 0.5);
+                    //修正した重み取得
+                    double[,] ws = GetFixWeights(rx, ry, actN, scale);
+
+                    double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
+                    double alphaFix = 0;
+                    //参照範囲は基準から上(xは左)へnn、下(xは右)へnn-1の範囲
+                    for (int yy = -actN; yy < actN; yy++)
+                    {
+                        int yc = yKijun + yy;
+                        //マイナス座標や画像サイズを超えていたら、収まるように修正
+                        yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+                        for (int xx = -actN; xx < actN; xx++)
+                        {
+                            int xc = xKijun + xx;
+                            xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                            int pp = (yc * sourceStride) + (xc * pByte);
+                            double weight = ws[xx + actN, yy + actN];
+                            //完全透明ピクセル(a=0)だった場合はRGBは計算しないで
+                            //重みだけ足し算して後で使う
+                            if (sourcePixels[pp + 3] == 0)
+                            {
+                                alphaFix += weight;
+                                continue;
+                            }
+                            bSum += sourcePixels[pp] * weight;
+                            gSum += sourcePixels[pp + 1] * weight;
+                            rSum += sourcePixels[pp + 2] * weight;
+                            aSum += sourcePixels[pp + 3] * weight;
+                        }
+                    }
+
+                    //                    C#、WPF、バイリニア法での画像の拡大縮小変換、半透明画像(32bit画像)対応版 - 午後わてんのブログ
+                    //https://gogowaten.hatenablog.com/entry/2021/04/17/151803#32bit%E3%81%A824bit%E3%81%AF%E9%81%95%E3%81%A3%E3%81%9F
+                    //完全透明ピクセルによるRGB値の修正
+                    //参照範囲がすべて完全透明だった場合は0のままでいいので計算しない
+                    if (alphaFix == 1) continue;
+                    //完全透明ピクセルが混じっていた場合は、その分を差し引いてRGB修正する
+                    double rgbFix = 1 / (1 - alphaFix);
+                    bSum *= rgbFix;
+                    gSum *= rgbFix;
+                    rSum *= rgbFix;
+
+                    //0～255の範囲を超えることがあるので、修正
+                    bSum = bSum < 0 ? 0 : bSum > 255 ? 255 : bSum;
+                    gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
+                    rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
+                    aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
+
+                    int ap = (y * stride) + (x * pByte);
+                    pixels[ap] = (byte)(bSum + 0.5);
+                    pixels[ap + 1] = (byte)(gSum + 0.5);
+                    pixels[ap + 2] = (byte)(rSum + 0.5);
+                    pixels[ap + 3] = (byte)(aSum + 0.5);
+                }
+            });
+
+            BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
+            return bitmap;
+
+            //修正した重み取得
+            double[,] GetFixWeights(double rx, double ry, int actN, double scale)
+            {
+                int nn = actN * 2;//全体の参照距離
+                                  //基準になる距離計算
+                double sx = rx - (int)rx;
+                double sy = ry - (int)ry;
+                double dx = (sx < 0.5) ? 0.5 - sx : 0.5 - sx + 1;
+                double dy = (sy < 0.5) ? 0.5 - sy : 0.5 - sy + 1;
+
+                //各ピクセルの重みと、重み合計を計算
+                double[] xw = new double[nn];
+                double[] yw = new double[nn];
+                double xSum = 0, ySum = 0;
+                for (int i = -actN; i < actN; i++)
+                {
+                    double x = GetBilinearWeight(Math.Abs(dx + i), scale);
+                    xSum += x;
+                    xw[i + actN] = x;
+                    double y = GetBilinearWeight(Math.Abs(dy + i), scale);
+                    ySum += y;
+                    yw[i + actN] = y;
+                }
+
+                //重み合計で割り算して修正、全体で100%(1.0)にする
+                for (int i = 0; i < nn; i++)
+                {
+                    xw[i] /= xSum;
+                    yw[i] /= ySum;
+                }
+
+                // x * y
+                double[,] ws = new double[nn, nn];
+                for (int y = 0; y < nn; y++)
+                {
+                    for (int x = 0; x < nn; x++)
+                    {
+                        ws[x, y] = xw[x] * yw[y];
+                    }
+                }
+                return ws;
+            }
+        }
+
+        /// <summary>
+        /// バイリニアでの重み計算
+        /// </summary>
+        /// <param name="d">距離</param>
+        /// <param name="scale">縮小倍率、拡大時は1で固定</param>
+        /// <returns></returns>
+        private double GetBilinearWeight(double d, double scale)
+        {
+            return 1 - (d * scale);
+        }
+
+
+
+        private BitmapSource BitmapHeightX2(BitmapSource source)
+        {
+            //1ピクセルあたりのバイト数、Byte / Pixel
+            int pByte = (source.Format.BitsPerPixel + 7) / 8;
+
+            //元画像の画素値の配列作成
+            int sourceWidth = source.PixelWidth;
+            int sourceHeight = source.PixelHeight;
+            int sourceStride = sourceWidth * pByte;//1行あたりのbyte数
+            byte[] sourcePixels = new byte[sourceHeight * sourceStride];
+            source.CopyPixels(sourcePixels, sourceStride, 0);
+
+            //変換後の画像の画素値の配列用
+            int height = sourceHeight * 2;
+            byte[] pixels = new byte[height * sourceStride];
+
+            for (int y = 0; y < sourceHeight; y++)
+            {
+                for (int x = 0; x < sourceWidth; x++)
+                {
+                    int pp = (y * sourceStride) + (x * pByte);
+                    int pp2 = pp + (sourceStride * y);
+                    pixels[pp2] = sourcePixels[pp];
+                    pixels[pp2 + 1] = sourcePixels[pp + 1];
+                    pixels[pp2 + 2] = sourcePixels[pp + 2];
+                    pixels[pp2 + 3] = sourcePixels[pp + 3];
+
+                    int pp3 = pp2 + sourceStride;
+                    pixels[pp3] = sourcePixels[pp];
+                    pixels[pp3 + 1] = sourcePixels[pp + 1];
+                    pixels[pp3 + 2] = sourcePixels[pp + 2];
+                    pixels[pp3 + 3] = sourcePixels[pp + 3];
+                }
+            }
+            //_ = Parallel.For(0, height, y =>
+            //{
+
+            //});
+
+            BitmapSource bitmap = BitmapSource.Create(sourceWidth, height, 96, 96, source.Format, null, pixels, sourceStride);
+            return bitmap;
+
+
+        }
+
+
+
 
 
 
@@ -569,12 +739,13 @@ namespace _20210505_Lanczosで縮小
 
 
         /// <summary>
-        /// クリップボードからBitmapSourceを取り出して返す、PNG(アルファ値保持)形式に対応
+        /// クリップボードからBitmapSourceを取り出して返す、PNG形式を優先
         /// </summary>
         /// <returns></returns>
         private BitmapSource GetImageFromClipboardWithPNG()
         {
             BitmapSource source = null;
+
             //クリップボードにPNG形式のデータがあったら、それを使ってBitmapFrame作成して返す
             //なければ普通にClipboardのGetImage、それでもなければnullを返す
             using var ms = (System.IO.MemoryStream)Clipboard.GetData("PNG");
@@ -585,24 +756,27 @@ namespace _20210505_Lanczosで縮小
             }
             else if (Clipboard.ContainsImage())
             {
-                //そのままだとAlphaがおかしいのでBgr32にコンバート
-                source = new FormatConvertedBitmap(Clipboard.GetImage(), PixelFormats.Bgr32, null, 0);
+                source = Clipboard.GetImage();
+                ////エクセルのグラフとかはAlphaがおかしいのでBgr32にコンバート
+                //source = new FormatConvertedBitmap(Clipboard.GetImage(), PixelFormats.Bgr32, null, 0);
             }
             return source;
         }
 
         /// <summary>
-        /// クリップボードからBitmapSourceを取り出して返す、bmp優先、次にpng(アルファ値保持)形式に対応
+        /// クリップボードからBitmapSourceを取り出して返す、エクセルのオブジェクト用、bmp優先してAlphaを0にして取り出す、
+        /// 次点でにpng(アルファ値保持)形式に対応
         /// </summary>
         /// <returns></returns>
         private BitmapSource GetImageFromClipboardBmpNextPNG()
         {
             BitmapSource source = null;
             BitmapSource img = Clipboard.GetImage();
+
             //BMP
             if (img != null)
             {
-                //そのままだとAlphaがおかしいのでBgr32にコンバート
+                //エクセル系はそのままだとAlphaがおかしいのでBgr32にコンバート
                 source = new FormatConvertedBitmap(img, PixelFormats.Bgr32, null, 0);
             }
             //PNG
@@ -675,7 +849,7 @@ namespace _20210505_Lanczosで縮小
         {
             var imgBrush = new ImageBrush(bitmap);
             imgBrush.Stretch = Stretch.None;//これは必要ないかも
-            //タイルモード、タイル
+                                            //タイルモード、タイル
             imgBrush.TileMode = TileMode.Tile;
             //タイルサイズは元画像のサイズ
             imgBrush.Viewport = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
@@ -707,7 +881,7 @@ namespace _20210505_Lanczosで縮小
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            MyExe(LanczosBgra32Ex, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+            MyImage.Source = BitmapHeightX2(MyBitmapOrigin32bit);
         }
 
 
@@ -716,7 +890,6 @@ namespace _20210505_Lanczosで縮小
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(LanczosBgra32Ex, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
         }
 
         private void MyButton3_Click(object sender, RoutedEventArgs e)
@@ -724,15 +897,13 @@ namespace _20210505_Lanczosで縮小
             if (MyBitmapOrigin == null) return;
             int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
             int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-            MyExe(LanczosBgra32, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
         }
 
         private void MyButton4_Click(object sender, RoutedEventArgs e)
         {
             if (MyBitmapOrigin == null) return;
-            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth * MySliderScale.Value);
-            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight * MySliderScale.Value);
-            MyExe(LanczosBgra32, MyBitmapOrigin32bit, yoko, tate, (int)MySlider.Value);
+            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
+            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
         }
 
         //画像をクリップボードにコピー
@@ -777,13 +948,6 @@ namespace _20210505_Lanczosで縮小
 
 
 
-        private void MyButton5_Click(object sender, RoutedEventArgs e)
-        {
-            if (MyBitmapOrigin == null) return;
-            int yoko = (int)Math.Ceiling(MyBitmapOrigin.PixelWidth / MySliderScale.Value);
-            int tate = (int)Math.Ceiling(MyBitmapOrigin.PixelHeight / MySliderScale.Value);
-
-        }
         private void MyButtonItimatu模様_Click(object sender, RoutedEventArgs e)
         {
             if (this.Background == MyImageBrush)
