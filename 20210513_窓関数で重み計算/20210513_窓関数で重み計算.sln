@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20210513_窓関数で重み計算", "20210513_窓関数で重み計算\20210513_窓関数で重み計算.csproj", "{C88CF00D-613E-49F6-B26F-9F113923006C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C88CF00D-613E-49F6-B26F-9F113923006C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C88CF00D-613E-49F6-B26F-9F113923006C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C88CF00D-613E-49F6-B26F-9F113923006C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C88CF00D-613E-49F6-B26F-9F113923006C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {13BA0006-70CD-47A0-BBA6-86DF1E1EFA19}
+	EndGlobalSection
+EndGlobal
