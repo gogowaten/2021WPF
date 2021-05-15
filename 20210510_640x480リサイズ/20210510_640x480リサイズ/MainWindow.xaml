@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210510_640x480リサイズ"
         mc:Ignorable="d"
-        Title="MainWindow" Height="587" Width="634"
+        Title="MainWindow" Height="587" Width="744"
         AllowDrop="True" Drop="Window_Drop">
   <Window.Resources>
     <Style TargetType="Button">
@@ -35,7 +35,7 @@
       <StackPanel DockPanel.Dock="Right" Background="White">
         <StackPanel Orientation="Horizontal">
           <StackPanel>
-            <Slider x:Name="MySliderScale" Minimum="1" Maximum="10" Value="2" Width="80"
+            <Slider x:Name="MySliderLanczosN" Minimum="2" Maximum="4" Value="2" Width="80"
                   HorizontalAlignment="Center" TickFrequency="1" IsSnapToTickEnabled="True"
                   MouseWheel="MySlider_MouseWheel" SmallChange="1" LargeChange="1">
               <Slider.LayoutTransform>
@@ -43,8 +43,8 @@
               </Slider.LayoutTransform>
             </Slider>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-              <TextBlock Text="倍率="/>
-              <TextBlock Text="{Binding ElementName=MySliderScale, Path=Value}"/>
+              <TextBlock Text="n="/>
+              <TextBlock Text="{Binding ElementName=MySliderLanczosN, Path=Value}"/>
             </StackPanel>
           </StackPanel>
           <StackPanel Margin="8,0,4,0">
@@ -67,6 +67,10 @@
         <Button x:Name="MyButton4" Content="横2倍trim2" Click="MyButton4_Click"/>
         <Button x:Name="MyButton5" Content="縦横2倍" Click="MyButton5_Click"/>
         <Button x:Name="MyButton6" Content="Auto" Click="MyButton6_Click"/>
+        <Button x:Name="MyButton7" Content="Bicubic" Click="MyButton7_Click"/>
+        <Button x:Name="MyButton8" Content="Lanczos" Click="MyButton8_Click"/>
+        <Button x:Name="MyButton9" Content="Lanczos" Click="MyButton9_Click"/>
+        <Button x:Name="MyButton10" Content="最近傍補間" Click="MyButton10_Click"/>
 
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
