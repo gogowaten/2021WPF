@@ -69,8 +69,12 @@
         <Button x:Name="MyButton6" Content="Auto" Click="MyButton6_Click"/>
         <Button x:Name="MyButton7" Content="Bicubic" Click="MyButton7_Click"/>
         <Button x:Name="MyButton8" Content="Lanczos" Click="MyButton8_Click"/>
-        <Button x:Name="MyButton9" Content="Lanczos" Click="MyButton9_Click"/>
+        <Button x:Name="MyButton9" Content="Lanczos 4x" Click="MyButton9_Click"/>
         <Button x:Name="MyButton10" Content="最近傍補間" Click="MyButton10_Click"/>
+        <Button x:Name="MyButton11" Content="Lonczos" Click="MyButton11_Click"/>
+        <Button x:Name="MyButton12" Content="Auto2" Click="MyButton12_Click"/>
+        <Button x:Name="MyButton13" Content="Auto2窓" Click="MyButton13_Click"/>
+        <Button x:Name="MyButton14" Content="Auto2窓2" Click="MyButton14_Click"/>
 
       </StackPanel>
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
