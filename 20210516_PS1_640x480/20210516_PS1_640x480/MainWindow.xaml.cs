@@ -321,77 +321,77 @@ namespace _20210516_PS1_640x480
                 actD = n;//拡大時の実際の参照距離は指定距離と同じ
             }
 
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    //参照点
-                    double rx = (x + 0.5) * widthScale;
-                    double ry = (y + 0.5) * heightScale;
-                    //参照点四捨五入で基準
-                    int xKijun = (int)(rx + 0.5);
-                    int yKijun = (int)(ry + 0.5);
-                    //修正した重み取得
-                    //double[,] ws = GetFixWeights(rx, ry, actN, scale*0.1, n);
-                    double[,] ws = GetFixWeights(rx, ry, actD, scale, n, limitD);
+            //for (int y = 0; y < height; y++)
+            //{
 
-                    double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
-                    double alphaFix = 0;
-                    //参照範囲は基準から上(xは左)へnn、下(xは右)へnn-1の範囲
-                    for (int yy = -actD; yy < actD; yy++)
-                    {
-                        int yc = yKijun + yy;
-                        //マイナス座標や画像サイズを超えていたら、収まるように修正
-                        yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
-                        for (int xx = -actD; xx < actD; xx++)
-                        {
-                            int xc = xKijun + xx;
-                            xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
-                            int pp = (yc * sourceStride) + (xc * pByte);
-                            double weight = ws[xx + actD, yy + actD];
-                            //完全透明ピクセル(a=0)だった場合はRGBは計算しないで
-                            //重みだけ足し算して後で使う
-                            if (sourcePixels[pp + 3] == 0)
-                            {
-                                alphaFix += weight;
-                                continue;
-                            }
-                            bSum += sourcePixels[pp] * weight;
-                            gSum += sourcePixels[pp + 1] * weight;
-                            rSum += sourcePixels[pp + 2] * weight;
-                            aSum += sourcePixels[pp + 3] * weight;
-                        }
-                    }
+            //}
 
-                    //                    C#、WPF、バイリニア法での画像の拡大縮小変換、半透明画像(32bit画像)対応版 - 午後わてんのブログ
-                    //https://gogowaten.hatenablog.com/entry/2021/04/17/151803#32bit%E3%81%A824bit%E3%81%AF%E9%81%95%E3%81%A3%E3%81%9F
-                    //完全透明ピクセルによるRGB値の修正
-                    //参照範囲がすべて完全透明だった場合は0のままでいいので計算しない
-                    if (alphaFix == 1) continue;
-                    //完全透明ピクセルが混じっていた場合は、その分を差し引いてRGB修正する
-                    double rgbFix = 1 / (1 - alphaFix);
-                    bSum *= rgbFix;
-                    gSum *= rgbFix;
-                    rSum *= rgbFix;
+            _ = Parallel.For(0, height, y =>
+              {
+                  for (int x = 0; x < width; x++)
+                  {
+                      //参照点
+                      double rx = (x + 0.5) * widthScale;
+                      double ry = (y + 0.5) * heightScale;
+                      //参照点四捨五入で基準
+                      int xKijun = (int)(rx + 0.5);
+                      int yKijun = (int)(ry + 0.5);
+                      //修正した重み取得
+                      //double[,] ws = GetFixWeights(rx, ry, actN, scale*0.1, n);
+                      double[,] ws = GetFixWeights(rx, ry, actD, scale, n, limitD);
 
-                    //0～255の範囲を超えることがあるので、修正
-                    bSum = bSum < 0 ? 0 : bSum > 255 ? 255 : bSum;
-                    gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
-                    rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
-                    aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
+                      double bSum = 0, gSum = 0, rSum = 0, aSum = 0;
+                      double alphaFix = 0;
+                      //参照範囲は基準から上(xは左)へnn、下(xは右)へnn-1の範囲
+                      for (int yy = -actD; yy < actD; yy++)
+                      {
+                          int yc = yKijun + yy;
+                          //マイナス座標や画像サイズを超えていたら、収まるように修正
+                          yc = yc < 0 ? 0 : yc > sourceHeight - 1 ? sourceHeight - 1 : yc;
+                          for (int xx = -actD; xx < actD; xx++)
+                          {
+                              int xc = xKijun + xx;
+                              xc = xc < 0 ? 0 : xc > sourceWidth - 1 ? sourceWidth - 1 : xc;
+                              int pp = (yc * sourceStride) + (xc * pByte);
+                              double weight = ws[xx + actD, yy + actD];
+                              //完全透明ピクセル(a=0)だった場合はRGBは計算しないで
+                              //重みだけ足し算して後で使う
+                              if (sourcePixels[pp + 3] == 0)
+                              {
+                                  alphaFix += weight;
+                                  continue;
+                              }
+                              bSum += sourcePixels[pp] * weight;
+                              gSum += sourcePixels[pp + 1] * weight;
+                              rSum += sourcePixels[pp + 2] * weight;
+                              aSum += sourcePixels[pp + 3] * weight;
+                          }
+                      }
 
-                    int ap = (y * stride) + (x * pByte);
-                    pixels[ap] = (byte)(bSum + 0.5);
-                    pixels[ap + 1] = (byte)(gSum + 0.5);
-                    pixels[ap + 2] = (byte)(rSum + 0.5);
-                    pixels[ap + 3] = (byte)(aSum + 0.5);
-                }
-            }
+                      //                    C#、WPF、バイリニア法での画像の拡大縮小変換、半透明画像(32bit画像)対応版 - 午後わてんのブログ
+                      //https://gogowaten.hatenablog.com/entry/2021/04/17/151803#32bit%E3%81%A824bit%E3%81%AF%E9%81%95%E3%81%A3%E3%81%9F
+                      //完全透明ピクセルによるRGB値の修正
+                      //参照範囲がすべて完全透明だった場合は0のままでいいので計算しない
+                      if (alphaFix == 1) continue;
+                      //完全透明ピクセルが混じっていた場合は、その分を差し引いてRGB修正する
+                      double rgbFix = 1 / (1 - alphaFix);
+                      bSum *= rgbFix;
+                      gSum *= rgbFix;
+                      rSum *= rgbFix;
 
-            //_ = Parallel.For(0, height, y =>
-            //  {
+                      //0～255の範囲を超えることがあるので、修正
+                      bSum = bSum < 0 ? 0 : bSum > 255 ? 255 : bSum;
+                      gSum = gSum < 0 ? 0 : gSum > 255 ? 255 : gSum;
+                      rSum = rSum < 0 ? 0 : rSum > 255 ? 255 : rSum;
+                      aSum = aSum < 0 ? 0 : aSum > 255 ? 255 : aSum;
 
-            //  });
+                      int ap = (y * stride) + (x * pByte);
+                      pixels[ap] = (byte)(bSum + 0.5);
+                      pixels[ap + 1] = (byte)(gSum + 0.5);
+                      pixels[ap + 2] = (byte)(rSum + 0.5);
+                      pixels[ap + 3] = (byte)(aSum + 0.5);
+                  }
+              });
 
             BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, source.Format, null, pixels, stride);
             return bitmap;
@@ -852,9 +852,19 @@ namespace _20210516_PS1_640x480
 
         #region 画像調整
 
+        //jinで撮ったもの専用、左16ドットから320以外は左右を削る
+        private BitmapSource Croped368x480(BitmapSource source)
+        {
+            return new CroppedBitmap(source, new Int32Rect(16, 0, 320, 480));
+        }
         private BitmapSource Make640x480(BitmapSource source)
         {
             BitmapSource bmp = source;
+            int w = bmp.PixelWidth;
+            int h = bmp.PixelHeight;
+            //368x480だけ特別
+            if (w == 368 && h == 480) bmp = Croped368x480(bmp);
+            
             if (bmp.PixelHeight <= 240)
             {
                 bmp = BitmapHeightX2(bmp);
@@ -862,7 +872,13 @@ namespace _20210516_PS1_640x480
             if (bmp.PixelWidth < 512) bmp = BitmapWidthX2(bmp);
             if (bmp.PixelWidth > 640 || bmp.PixelWidth < 624)
             {
-                bmp = LanczosBgra32(bmp, 640, 480, 4);//ランチョス、これがいい
+                //bmp = BitmapX2(bmp);
+                //bmp = LanczosBgra32(bmp, 588, 480, 3);//ランチョス、これがいい
+                //bmp = LanczosBgra32(bmp, 584, 480, 3);//ランチョス、これがいい
+                bmp = LanczosBgra32(bmp, 588, bmp.PixelHeight, 3);//ランチョス、これがいい
+                //bmp = LanczosBgra32(bmp, 584, bmp.PixelHeight, 3);//ランチョス、これがいい
+                //bmp = LanczosBgra32(bmp, 640, bmp.PixelHeight, 3);//ランチョス、これがいい
+                //bmp = LanczosBgra32(bmp, 640, 480, 3);//ランチョス、これがいい
                 //bmp = SincTypeGBgra32(bmp, 640, 480, 2);//シャープだけど輪郭、nは2より大きいとボケる
                 //bmp = SincBgra32(bmp, 640, 480, 4);//過剰なシャープ派手画質、
             }

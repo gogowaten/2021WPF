@@ -12,8 +12,7 @@
     <StackPanel>
       <DockPanel AllowDrop="True">
         <Button DockPanel.Dock="Right" x:Name="MyButtonDir" Content="保存フォルダ" Click="MyButtonDir_Click"/>
-        <TextBlock Text="保存フォルダ"/>
-        <TextBlock x:Name="MyTextBlockDir" Text="{Binding Path=MyDir}"/>
+        <TextBlock x:Name="MyTextBlockDir" Text="{Binding Path=MyDir}" Margin="10"/>
       </DockPanel>
       <Button x:Name="MyButtonSave" Content="実行" Click="MyButtonSave_Click"/>
       <ListBox x:Name="MyListBox"/>
