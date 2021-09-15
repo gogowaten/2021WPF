@@ -24,6 +24,7 @@ namespace _20210915_TrimTest
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const string APP_NAME = "Pixtrim3rd";
         private AppData MyAppData;//Bindingするアプリのデータ
         private const string APP_DATA_FILE_NAME = "myData.xml";
         private string AppDir;//アプリの実行ファイルのある場所
@@ -37,16 +38,21 @@ namespace _20210915_TrimTest
         private void MyInitialize()
         {
             AppDir = Environment.CurrentDirectory;
+            //タイトルバーにアプリ名とバージョン表示
+            var cl = Environment.GetCommandLineArgs();
+            this.Title = APP_NAME + " ver " + System.Diagnostics.FileVersionInfo.GetVersionInfo(cl[0]).FileVersion;
 
+            InitializeAppData();
         }
 
         private void InitializeAppData()
         {
+            
             //設定ファイルが存在すれば読み込んで適用、なければ初期化して適用
             string configPath = AppDir + "\\" + APP_DATA_FILE_NAME;
             if (System.IO.File.Exists(configPath))
             {
-                MyAppData = LoadConfig(configPath);
+                MyAppData = LoadAppData(configPath);
             }
 
             else
@@ -58,7 +64,7 @@ namespace _20210915_TrimTest
 
         #region アプリの設定ファイルの読み書き        
         //アプリの設定保存
-        private bool SaveConfig(string path)
+        private bool SaveAppData(string path)
         {
             var serializer = new DataContractSerializer(typeof(AppData));
             XmlWriterSettings settings = new();
@@ -85,7 +91,7 @@ namespace _20210915_TrimTest
             dialog.Filter = "(xml)|*.xml";
             if (dialog.ShowDialog() == true)
             {
-                SaveConfig(dialog.FileName);
+                SaveAppData(dialog.FileName);
             }
         }
 
@@ -97,13 +103,13 @@ namespace _20210915_TrimTest
             dialog.Filter = "(xml)|*.xml";
             if (dialog.ShowDialog() == true)
             {
-                AppData config = LoadConfig(dialog.FileName);
+                AppData config = LoadAppData(dialog.FileName);
                 if (config == null) return;
                 MyAppData = config;
                 this.DataContext = MyAppData;
             }
         }
-        private AppData LoadConfig(string path)
+        private AppData LoadAppData(string path)
         {
             var serealizer = new DataContractSerializer(typeof(AppData));
             try
@@ -120,6 +126,16 @@ namespace _20210915_TrimTest
             }
         }
         #endregion アプリの設定ファイルの読み書き
+
+
+        //アプリ終了時
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            //設定保存
+            _ = SaveAppData(System.IO.Path.Combine(AppDir, APP_DATA_FILE_NAME));
+
+        }
+
     }
 
 

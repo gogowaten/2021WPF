@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210915_TrimTest"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="MainWindow" Height="{Binding Path=AppHeight, Mode=TwoWay}" Width="{Binding AppWidth, Mode=TwoWay}"
+        Top="{Binding Path=AppTop, Mode=TwoWay}" Left="{Binding Path=AppLeft, Mode=TwoWay}"
         ResizeMode="CanResizeWithGrip"
-        AllowDrop="True">
-    <Grid>
+        AllowDrop="True"
+        Closed="Window_Closed">
+  <Window.DataContext>
+    <local:AppData/>
+  </Window.DataContext>
+
+  <Grid>
     <DockPanel>
       <StatusBar DockPanel.Dock="Bottom">
         <StatusBarItem x:Name="MyStatusBarItem1" Content="item1"/>
@@ -18,17 +24,20 @@
       <DockPanel DockPanel.Dock="Top">
         <Button Content="button1"/>
       </DockPanel>
+
       <StackPanel>
         <Button Content="button"/>
+        <Slider Value="{Binding Path=TrimTop}"/>
         <ListBox x:Name="MyListBox">
-          
+
         </ListBox>
       </StackPanel>
+
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Canvas x:Name="MyCanvas" Margin="10">
 
         </Canvas>
       </ScrollViewer>
     </DockPanel>
-    </Grid>
+  </Grid>
 </Window>
