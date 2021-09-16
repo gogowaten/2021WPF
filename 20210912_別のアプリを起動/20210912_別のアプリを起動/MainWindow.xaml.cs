@@ -97,7 +97,7 @@ namespace _20210912_別のアプリを起動
             string[] datas = (string[])e.Data.GetData(DataFormats.FileDrop);
             List<string> paths = datas.ToList();
             //拡張子がmp4のファイルリスト作成
-            paths = paths.Where(x => x.EndsWith(".mp4")).ToList();
+            paths = paths.Where(x => x.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)).ToList();
             paths.Sort();
             MyListBox.ItemsSource = paths;
 
