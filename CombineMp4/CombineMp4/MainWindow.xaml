@@ -1,0 +1,16 @@
+﻿<Window x:Class="CombineMp4.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CombineMp4"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        AllowDrop="True" Drop="Window_Drop">
+    <Grid>
+    <DockPanel>
+      <Button DockPanel.Dock="Bottom" x:Name="MyButtonSave" Content="保存" Click="MyButtonSave_Click"/>
+      <ListBox x:Name="MyListBox"/>
+    </DockPanel>
+    </Grid>
+</Window>
