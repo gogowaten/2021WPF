@@ -47,7 +47,7 @@ namespace _20210915_TrimTest
 
         private void InitializeAppData()
         {
-            
+
             //設定ファイルが存在すれば読み込んで適用、なければ初期化して適用
             string configPath = AppDir + "\\" + APP_DATA_FILE_NAME;
             if (System.IO.File.Exists(configPath))
