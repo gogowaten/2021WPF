@@ -12,36 +12,42 @@
   <Window.DataContext>
     <local:AppData/>
   </Window.DataContext>
-  
-  
-    <Grid>
+
+
+  <Grid>
     <DockPanel>
       <StatusBar DockPanel.Dock="Bottom">
         <StatusBarItem x:Name="MyStatusBarItem1" Content="item1"/>
         <Separator/>
         <StatusBarItem x:Name="MyStatusBarItem2" Content="item1"/>
+        <ProgressBar x:Name="MyProgressBar" Width="100" Height="10" Value="0"/>
       </StatusBar>
       <DockPanel DockPanel.Dock="Top">
-        <Button Content="button1"/>
+        <Button x:Name="MyButtonTest" Content="test" Click="MyButtonTest_Click"/>
       </DockPanel>
 
-      <StackPanel>
-        
-        <Button Content="button"/>
-        
-        <Slider Value="{Binding Path=TrimTop}" Minimum="0" Maximum="1000"/>
-        <TextBlock Text="{Binding Path=t, StringFormat=top \= 0 }"/>
-        <TextBlock Text="{Binding Path=TrimLeft, StringFormat=left \= 0 }"/>
-        <TextBlock Text="{Binding Path=TrimWidth, StringFormat=width \= 0 }"/>
-        <TextBlock Text="{Binding Path=TrimHeight, StringFormat=height \= 0 }"/>
 
-        <ListBox x:Name="MyListBox">
+      <DockPanel Width="200">
+        <StackPanel DockPanel.Dock="Top">
+          <Button x:Name="MyButtonSave" Content="保存" Click="MyButtonSave_Click"/>
 
-        </ListBox>
-      </StackPanel>
+          <Slider Value="{Binding Path=TrimTop}" Minimum="0" Maximum="1000"/>
+          <TextBlock Text="{Binding Path=TrimTop, StringFormat=top \= 0 }"/>
+          <TextBlock Text="{Binding Path=TrimLeft, StringFormat=left \= 0 }"/>
+          <TextBlock Text="{Binding Path=TrimWidth, StringFormat=width \= 0 }"/>
+          <TextBlock Text="{Binding Path=TrimHeight, StringFormat=height \= 0 }"/>
+        </StackPanel>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <ListBox x:Name="MyListBox"/>
+        </ScrollViewer>
+      </DockPanel>
+
+
 
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Canvas x:Name="MyCanvas" Margin="10">
+          <Image x:Name="MyImage" Stretch="None"/>
+
           <local:TrimThumb Width="{Binding Path=TrimWidth, Mode=TwoWay}" Height="{Binding Path=TrimHeight, Mode=TwoWay}"
                            Canvas.Top="{Binding Path=TrimTop, Mode=TwoWay}" Canvas.Left="{Binding Path=TrimLeft, Mode=TwoWay}"/>
         </Canvas>
