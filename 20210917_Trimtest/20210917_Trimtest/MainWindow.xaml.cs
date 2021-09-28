@@ -154,6 +154,8 @@ namespace _20210917_Trimtest
             foreach (string sourcePath in list)
             {
                 source = MakeBitmapSourceBgra32FromFile(sourcePath);
+                if (source == null) continue;
+                if (ValidationTrim(source, rect) == false) continue;
 
                 string folderPath = System.IO.Path.GetDirectoryName(sourcePath);
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
@@ -164,8 +166,8 @@ namespace _20210917_Trimtest
                 SaveTrimImage(source, savePath, rect);
 
                 count++;
-             
-                
+
+
             }
         }
         private Int32Rect MakeTrimRect()
@@ -181,7 +183,16 @@ namespace _20210917_Trimtest
             {
                 encoder.Save(fs);
             }
-
+        }
+        private bool ValidationTrim(BitmapSource source, Int32Rect rect)
+        {
+            bool result = true;
+            if (rect.X < 0 || rect.Y < 0) result = false;
+            if (rect.X + rect.Width > source.Width || rect.Y + rect.Height > source.Height)
+            {
+                result = false;
+            }
+            return result;
         }
 
         #endregion 画像保存
@@ -252,7 +263,23 @@ namespace _20210917_Trimtest
 
         private void MyButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            
+            var i = MyImage.Source;
+        }
+
+        private void MyButtonSimm_Click(object sender, RoutedEventArgs e)
+        {
+            byte[] piexls = ToGray8Array((BitmapSource)MyImage.Source);
+
+        }
+        private byte[] ToGray8Array(BitmapSource source)
+        {
+            var gray = new FormatConvertedBitmap(source, PixelFormats.Gray8, null, 0);
+            var rect = MakeTrimRect();
+            var trim = new CroppedBitmap(gray, rect);
+            int stride = rect.Width;
+            byte[] piexls = new byte[rect.Y * stride];
+            trim.CopyPixels(piexls, stride, 0);
+            return piexls;
         }
     }
 

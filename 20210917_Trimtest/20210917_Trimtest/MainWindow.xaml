@@ -29,7 +29,8 @@
 
       <DockPanel Width="200">
         <StackPanel DockPanel.Dock="Top">
-          <Button x:Name="MyButtonSave" Content="保存" Click="MyButtonSave_Click"/>
+          <Button x:Name="MyButtonSave" Margin="10" Content="保存" Click="MyButtonSave_Click"/>
+          <Button x:Name="MyButtonSimm" Margin="10" Content="SIMM" Click="MyButtonSimm_Click"/>
 
           <Slider Value="{Binding Path=TrimTop}" Minimum="0" Maximum="1000"/>
           <TextBlock Text="{Binding Path=TrimTop, StringFormat=top \= 0 }"/>
@@ -45,7 +46,9 @@
 
 
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <Canvas x:Name="MyCanvas" Margin="10">
+        <Canvas x:Name="MyCanvas" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Width="{Binding ElementName=MyImage, Path=ActualWidth}"
+                Height="{Binding ElementName=MyImage, Path=ActualHeight}">
           <Image x:Name="MyImage" Stretch="None"/>
 
           <local:TrimThumb Width="{Binding Path=TrimWidth, Mode=TwoWay}" Height="{Binding Path=TrimHeight, Mode=TwoWay}"
