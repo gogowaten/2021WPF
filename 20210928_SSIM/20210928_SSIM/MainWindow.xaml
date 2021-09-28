@@ -5,8 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20210928_SSIM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="550" Width="800"
+        AllowDrop="True"
+        Top="0" Left="0"
+        Drop="Window_Drop">
+  <Grid>
+    <DockPanel UseLayoutRounding="True">
+      <Menu DockPanel.Dock="Top" HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal">
+          <Button x:Name="MyButtonTest" Content="test" Click="MyButtonTest_Click"/>
+          <Button x:Name="MyButtonSIMM" Content="SIMM" Click="MyButtonSIMM_Click"/>
+        </StackPanel>
+      </Menu>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid>
+          <Image x:Name="MyImageOrigin" Stretch="None" VerticalAlignment="Top"/>
+          <Image x:Name="MyImage2nd" Stretch="None" VerticalAlignment="Top"/>
+        </Grid>
 
-    </Grid>
+      </ScrollViewer>
+    </DockPanel>
+  </Grid>
 </Window>
