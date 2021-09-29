@@ -156,7 +156,7 @@ namespace _20210928_SSIM
             {
                 for (int x = 0; x < width - wndSize; x++)
                 {
-                    (byte[] vs1, byte[] vs2) subWnd = GetNxNWindw(pixels1, pixels2, x, y, wndSize);
+                    (byte[] vs1, byte[] vs2) subWnd = GetNxNWindw(pixels1, pixels2, x, y, wndSize, width);
                     total += SSIM(subWnd.vs1, subWnd.vs2);
                     count++;
                 }
@@ -164,7 +164,7 @@ namespace _20210928_SSIM
             double result = total / count;
             return result;
         }
-        private (byte[], byte[]) GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize)
+        private (byte[], byte[]) GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride)
         {
             byte[] wind1 = new byte[wndSize * wndSize];
             byte[] wind2 = new byte[wndSize * wndSize];
@@ -173,7 +173,7 @@ namespace _20210928_SSIM
             {
                 for (int x = xBegin; x < xBegin + wndSize; x++)
                 {
-                    int p = y * wndSize + x;
+                    int p = y * stride + x;
                     wind1[count] = pixels1[p];
                     wind2[count] = pixels2[p];
                     count++;
@@ -191,7 +191,7 @@ namespace _20210928_SSIM
             {
                 for (int x = 0; x < width - 8; x++)
                 {
-                    (byte[] vs1, byte[] vs2) subWnd = Get8x8Windw(pixels1, pixels2, x, y);
+                    (byte[] vs1, byte[] vs2) subWnd = Get8x8Windw(pixels1, pixels2, x, y, width);
                     total += SSIM(subWnd.vs1, subWnd.vs2);
                     count++;
                 }
@@ -199,7 +199,7 @@ namespace _20210928_SSIM
             double result = total / count;
             return result;
         }
-        private (byte[], byte[]) Get8x8Windw(byte[] vs1, byte[] vs2, int xBegin, int yBegin)
+        private (byte[], byte[]) Get8x8Windw(byte[] vs1, byte[] vs2, int xBegin, int yBegin, int stride)
         {
             byte[] wind1 = new byte[8 * 8];
             byte[] wind2 = new byte[8 * 8];
@@ -208,7 +208,7 @@ namespace _20210928_SSIM
             {
                 for (int x = xBegin; x < xBegin + 8; x++)
                 {
-                    int p = y * 8 + x;
+                    int p = y * stride + x;
                     wind1[count] = vs1[p];
                     wind2[count] = vs2[p];
                     count++;
@@ -244,8 +244,8 @@ namespace _20210928_SSIM
             }
             return total / vs.Length;
         }
-        
-        
+
+
         private double Variance分散2(byte[] vs, double average)
         {
             double total = 0;
