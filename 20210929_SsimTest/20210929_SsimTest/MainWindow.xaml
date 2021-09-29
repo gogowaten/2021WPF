@@ -1,0 +1,19 @@
+﻿<Window x:Class="_20210929_SsimTest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_20210929_SsimTest"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="250" Width="500">
+    <Grid>
+    <Viewbox Stretch="Uniform">
+    <StackPanel Margin="4">
+      <TextBox x:Name="MyTextBox1" Text="1 2 3 4 5" Margin="2" TextAlignment="Right"/>
+      <TextBox x:Name="MyTextBox2" Text="1 2 3 4 5" Margin="2" TextAlignment="Right"/>
+      <Button x:Name="MyButton" Content="SSIM計算" Click="MyButton_Click" Width="200"/>
+      <TextBlock Text="結果" Name="MyTextBlock" TextAlignment="Center" Margin="2"/>
+      </StackPanel>
+    </Viewbox>
+  </Grid>
+</Window>
