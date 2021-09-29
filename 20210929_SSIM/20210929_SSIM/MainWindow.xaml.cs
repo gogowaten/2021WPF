@@ -23,8 +23,8 @@ namespace _20210929_SSIM
         private const double C1 = 0.01 * 255 * (0.01 * 255);//(0.01*255)^2=6.5025
         private const double C2 = 0.03 * 255 * (0.03 * 255);//(0.03*255)^2=58.5225
         private const double C3 = C2 / 2.0;//58.5225/2=29.26125
-        private (BitmapSource bitmap, byte[] pixels) MySource1st;
-        private (BitmapSource bitmap, byte[] pixels) MySource2nd;
+        private (BitmapSource bitmap, byte[] pixels) MySource1;
+        private (BitmapSource bitmap, byte[] pixels) MySource2;
 
         public MainWindow()
         {
@@ -39,18 +39,38 @@ namespace _20210929_SSIM
 
         private double SSIM8x8(byte[] pixels1, byte[] pixels2, int width, int height)
         {
+            if (pixels1.Length != pixels2.Length)
+            {
+                return double.NaN;
+            }
+
+            //System.Collections.Concurrent.ConcurrentBag<double> vs = new();
+            //Parallel.For(0, height - 8, y =>
+            //{
+            //    for (int x = 0; x < width-8; x++)
+            //    {
+            //        (byte[] vs1, byte[] vs2) = Get8x8Windw(pixels1, pixels2, x, y, width);
+            //        vs.Add(SSIM(vs1, vs2));
+            //    }
+            //});
+            //double total = 0;
+            //foreach (var item in vs)
+            //{
+            //    total += item;
+            //}
+            //double result = total / ((width - 8) * (height - 8));
+            //return result;
+
             double total = 0;
-            int count = 0;
             for (int y = 0; y < height - 8; y++)
             {
                 for (int x = 0; x < width - 8; x++)
                 {
-                    (byte[] vs1, byte[] vs2) subWnd = Get8x8Windw(pixels1, pixels2, x, y, width);
-                    total += SSIM(subWnd.vs1, subWnd.vs2);
-                    count++;
+                    (byte[] vs1, byte[] vs2) = Get8x8Windw(pixels1, pixels2, x, y, width);
+                    total += SSIM(vs1, vs2);
                 }
             }
-            double result = total / count;
+            double result = total / ((width - 8) * (height - 8));
             return result;
         }
         private (byte[], byte[]) Get8x8Windw(byte[] vs1, byte[] vs2, int xBegin, int yBegin, int stride)
@@ -58,6 +78,7 @@ namespace _20210929_SSIM
             byte[] wind1 = new byte[8 * 8];
             byte[] wind2 = new byte[8 * 8];
             int count = 0;
+
             for (int y = yBegin; y < yBegin + 8; y++)
             {
                 for (int x = xBegin; x < xBegin + 8; x++)
@@ -220,13 +241,22 @@ namespace _20210929_SSIM
             var temp = MakeBitmapSourceGray8(paths[0]);
             if (temp.Item1 == null && temp.Item2 == null)
             {
-                MessageBox.Show("ドロップされたファイルから画像を取得できなかった");
+                _ = MessageBox.Show("ドロップされたファイルから画像を取得できなかった");
             }
             else
             {
-                MySource1st = temp;
-                MyImage1.Source = MySource1st.bitmap;
+                MySource1 = temp;
+                MyImage1.Source = MySource1.bitmap;
                 MyTextBlock1.Text = System.IO.Path.GetFileName(paths[0]).ToString();
+                if (MyImage2.Source != null && MySource1.pixels.Length == MySource2.pixels.Length)
+                {
+                    double result = SSIM8x8(MySource1.pixels, MySource2.pixels, MySource1.bitmap.PixelWidth, MySource1.bitmap.PixelHeight);
+                    MyTextBlockSSIM.Text = "SSIM = " + result.ToString();
+                }
+                else
+                {
+                    MyTextBlockSSIM.Text = "SSIM";
+                }
             }
 
         }
@@ -241,22 +271,31 @@ namespace _20210929_SSIM
             var temp = MakeBitmapSourceGray8(paths[0]);
             if (temp.Item1 == null && temp.Item2 == null)
             {
-                MessageBox.Show("ドロップされたファイルから画像を取得できなかった");
+                _ = MessageBox.Show("ドロップされたファイルから画像を取得できなかった");
             }
             else
             {
-                MySource2nd = temp;
-                MyImage2.Source = MySource2nd.bitmap;
+                MySource2 = temp;
+                MyImage2.Source = MySource2.bitmap;
                 MyTextBlock2.Text = System.IO.Path.GetFileName(paths[0]).ToString();
+                if (MyImage1.Source != null && MySource1.pixels.Length == MySource2.pixels.Length)
+                {
+                    double result = SSIM8x8(MySource1.pixels, MySource2.pixels, MySource1.bitmap.PixelWidth, MySource1.bitmap.PixelHeight);
+                    MyTextBlockSSIM.Text = "SSIM = " + result.ToString();
+                }
+                else
+                {
+                    MyTextBlockSSIM.Text = "SSIM";
+                }
             }
 
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (MySource1st.bitmap != null && MySource2nd.bitmap != null)
+            if (MySource1.bitmap != null && MySource2.bitmap != null)
             {
-                double result = SSIM8x8(MySource1st.pixels, MySource2nd.pixels, MySource1st.bitmap.PixelWidth, MySource1st.bitmap.PixelHeight);
+                double result = SSIM8x8(MySource1.pixels, MySource2.pixels, MySource1.bitmap.PixelWidth, MySource1.bitmap.PixelHeight);
                 MyTextBlockSSIM.Text = "SSIM = " + result.ToString();
 
             }
