@@ -10,7 +10,7 @@
     <Viewbox Stretch="Uniform">
     <StackPanel Margin="4">
       <TextBox x:Name="MyTextBox1" Text="1 2 3 4 5" Margin="2" TextAlignment="Right"/>
-      <TextBox x:Name="MyTextBox2" Text="1 2 3 4 5" Margin="2" TextAlignment="Right"/>
+      <TextBox x:Name="MyTextBox2" Text="1 2 3 4 4" Margin="2" TextAlignment="Right"/>
       <Button x:Name="MyButton" Content="SSIM計算" Click="MyButton_Click" Width="200"/>
       <TextBlock Text="結果" Name="MyTextBlock" TextAlignment="Center" Margin="2"/>
       </StackPanel>

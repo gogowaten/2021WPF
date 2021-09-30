@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
+//画像比較に使われているSSIMの計算式をエクセルとC#で試してみた、平均、分散、共分散 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/09/30/135653
+
 
 namespace _20210929_SsimTest
 {
@@ -131,11 +124,20 @@ namespace _20210929_SsimTest
         }
 
         private void MyButton_Click(object sender, RoutedEventArgs e)
-        {            
-            byte[] vs1 = MyTextBox1.Text.Split(' ').Select(x => byte.Parse(x)).ToArray();
-            byte[] vs2 = MyTextBox2.Text.Split(' ').Select(x => byte.Parse(x)).ToArray();
-            double result = SSIM(vs1, vs2);
-            MyTextBlock.Text = $"SSIM = {result}";
+        {
+            double result = double.NaN;
+            try
+            {
+                byte[] vs1 = MyTextBox1.Text.Split(' ').Select(x => byte.Parse(x)).ToArray();
+                byte[] vs2 = MyTextBox2.Text.Split(' ').Select(x => byte.Parse(x)).ToArray();
+                result = SSIM(vs1, vs2);
+                MyTextBlock.Text = $"SSIM = {result}";
+            }
+            catch (Exception)
+            {
+                MyTextBlock.Text = $"SSIM = {result}";
+            }
+            
         }
     }
 }
