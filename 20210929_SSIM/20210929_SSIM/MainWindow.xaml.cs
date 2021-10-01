@@ -13,6 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+//SSIMで画像を比較するアプリできた、グレースケール版、C#、WPF - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/10/01/141136
+
+/// <summary>
+/// SSIMで画像の比較
+/// ブロックサイズは8ｘ8で1ピクセルずらし
+/// 画像ファイルドロップで計算開始
+/// </summary>
 namespace _20210929_SSIM
 {
     /// <summary>
@@ -31,6 +39,10 @@ namespace _20210929_SSIM
             InitializeComponent();
             RenderOptions.SetBitmapScalingMode(MyImage1, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetBitmapScalingMode(MyImage2, BitmapScalingMode.NearestNeighbor);
+#if DEBUG
+            Top = 0;
+            Left = 0;
+#endif
         }
 
 
@@ -43,23 +55,6 @@ namespace _20210929_SSIM
             {
                 return double.NaN;
             }
-
-            //System.Collections.Concurrent.ConcurrentBag<double> vs = new();
-            //Parallel.For(0, height - 8, y =>
-            //{
-            //    for (int x = 0; x < width-8; x++)
-            //    {
-            //        (byte[] vs1, byte[] vs2) = Get8x8Windw(pixels1, pixels2, x, y, width);
-            //        vs.Add(SSIM(vs1, vs2));
-            //    }
-            //});
-            //double total = 0;
-            //foreach (var item in vs)
-            //{
-            //    total += item;
-            //}
-            //double result = total / ((width - 8) * (height - 8));
-            //return result;
 
             double total = 0;
             for (int y = 0; y < height - 8; y++)
@@ -288,7 +283,6 @@ namespace _20210929_SSIM
                     MyTextBlockSSIM.Text = "SSIM";
                 }
             }
-
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -297,9 +291,7 @@ namespace _20210929_SSIM
             {
                 double result = SSIM8x8(MySource1.pixels, MySource2.pixels, MySource1.bitmap.PixelWidth, MySource1.bitmap.PixelHeight);
                 MyTextBlockSSIM.Text = "SSIM = " + result.ToString();
-
             }
-
         }
 
         private void MyScrollViewer1_ScrollChanged(object sender, ScrollChangedEventArgs e)
