@@ -58,7 +58,7 @@ namespace _20211002_SSIM_Color
 
         #region SSIM
         /// <summary>
-        /// 
+        /// ピクセルフォーマットBGRA画像専用
         /// </summary>
         /// <param name="pixels1"></param>
         /// <param name="pixels2"></param>
@@ -69,37 +69,116 @@ namespace _20211002_SSIM_Color
         /// <returns></returns>
         private double SSIMNxN(byte[] pixels1, byte[] pixels2, int width, int height, int wndSize, int step)
         {
-            double total = 0;
+            double totalB = 0;
+            double totalG = 0;
+            double totalR = 0;
+            double totalA = 0;
             int count = 0;
-            for (int y = 0; y < height - wndSize; y += step)
+            byte[] B1 = new byte[wndSize * wndSize];
+            byte[] B2 = new byte[wndSize * wndSize];
+            byte[] G1 = new byte[wndSize * wndSize];
+            byte[] G2 = new byte[wndSize * wndSize];
+            byte[] R1 = new byte[wndSize * wndSize];
+            byte[] R2 = new byte[wndSize * wndSize];
+            byte[] A1 = new byte[wndSize * wndSize];
+            byte[] A2 = new byte[wndSize * wndSize];
+
+            for (int y = 0; y < height - wndSize; y += 4 + step)
             {
-                for (int x = 0; x < width - wndSize; x += step)
+                for (int x = 0; x < width - wndSize; x += 4 + step)
                 {
-                    (byte[] vs1, byte[] vs2) subWnd = GetNxNWindw(pixels1, pixels2, x, y, wndSize, width);
-                    total += SSIM(subWnd.vs1, subWnd.vs2);
+                    GetNxNWindw(pixels1, pixels2, x, y, wndSize, width, B1, B2, G1, G2, R1, R2, A1, A2);
+                    totalB += SSIM(B1, B2);
+                    totalG += SSIM(G1, G2);
+                    totalR += SSIM(R1, R2);
+                    totalA += SSIM(A1, A2);
                     count++;
                 }
             }
-            double result = total / count;
+            //BGR
+            totalB /= count;
+            totalG /= count;
+            totalR /= count;            
+            double result = totalB + totalG + totalR;
+            result /= 3;
             return result;
+
+            ////BGRA
+            ////double result = totalB + totalG + totalR + totalA;
+            ////result /= count * 4;
+            //totalB /= count;
+            //totalG /= count;
+            //totalR /= count;
+            //totalA /= count;
+            //double result = totalB + totalG + totalR + totalA;
+            //result /= 4;
+            //return result;
         }
-        private (byte[], byte[]) GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride)
+
+        private void GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride, byte[] B1, byte[] B2, byte[] G1, byte[] G2, byte[] R1, byte[] R2, byte[] A1, byte[] A2)
         {
-            byte[] wind1 = new byte[wndSize * wndSize];
-            byte[] wind2 = new byte[wndSize * wndSize];
             int count = 0;
             for (int y = yBegin; y < yBegin + wndSize; y++)
             {
                 for (int x = xBegin; x < xBegin + wndSize; x++)
                 {
-                    int p = y * stride + x;
-                    wind1[count] = pixels1[p];
-                    wind2[count] = pixels2[p];
+                    int p = y * stride + 4 * x;
+                    B1[count] = pixels1[p];
+                    B2[count] = pixels2[p];
+                    G1[count] = pixels1[p + 1];
+                    G2[count] = pixels2[p + 1];
+                    R1[count] = pixels1[p + 2];
+                    R2[count] = pixels2[p + 2];
+                    A1[count] = pixels1[p + 3];
+                    A2[count] = pixels2[p + 3];
                     count++;
                 }
             }
-            return (wind1, wind2);
         }
+
+        ///// <summary>
+        ///// グレースケール画像専用
+        ///// </summary>
+        ///// <param name="pixels1"></param>
+        ///// <param name="pixels2"></param>
+        ///// <param name="width"></param>
+        ///// <param name="height"></param>
+        ///// <param name="wndSize">ブロックサイズ、通常は8</param>
+        ///// <param name="step">ブロック間のピクセル数</param>
+        ///// <returns></returns>
+        //private double SSIMNxN(byte[] pixels1, byte[] pixels2, int width, int height, int wndSize, int step)
+        //{
+        //    double total = 0;
+        //    int count = 0;
+        //    for (int y = 0; y < height - wndSize; y += step)
+        //    {
+        //        for (int x = 0; x < width - wndSize; x += step)
+        //        {
+        //            (byte[] vs1, byte[] vs2) subWnd = GetNxNWindw(pixels1, pixels2, x, y, wndSize, width);
+        //            total += SSIM(subWnd.vs1, subWnd.vs2);
+        //            count++;
+        //        }
+        //    }
+        //    double result = total / count;
+        //    return result;
+        //}
+        //private (byte[], byte[]) GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride)
+        //{
+        //    byte[] wind1 = new byte[wndSize * wndSize];
+        //    byte[] wind2 = new byte[wndSize * wndSize];
+        //    int count = 0;
+        //    for (int y = yBegin; y < yBegin + wndSize; y++)
+        //    {
+        //        for (int x = xBegin; x < xBegin + wndSize; x++)
+        //        {
+        //            int p = y * stride + x;
+        //            wind1[count] = pixels1[p];
+        //            wind2[count] = pixels2[p];
+        //            count++;
+        //        }
+        //    }
+        //    return (wind1, wind2);
+        //}
 
 
         private double SSIM(byte[] vs1, byte[] vs2)
@@ -274,7 +353,7 @@ namespace _20211002_SSIM_Color
             string[] datas = (string[])e.Data.GetData(DataFormats.FileDrop);
             List<string> paths = datas.ToList();
             paths.Sort();
-            (BitmapSource, byte[]) temp = MakeBitmapSourceFromImageFile(paths[0],PixelFormats.Bgra32);
+            (BitmapSource, byte[]) temp = MakeBitmapSourceFromImageFile(paths[0], PixelFormats.Bgra32);
             if (temp.Item1 == null && temp.Item2 == null)
             {
                 _ = MessageBox.Show("ドロップされたファイルから画像を取得できなかった");
@@ -298,7 +377,7 @@ namespace _20211002_SSIM_Color
             }
 
         }
-        
+
         private void ScrollViewer_Drop_2(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop) == false) return;
@@ -306,7 +385,7 @@ namespace _20211002_SSIM_Color
             string[] datas = (string[])e.Data.GetData(DataFormats.FileDrop);
             List<string> paths = datas.ToList();
             paths.Sort();
-            (BitmapSource, byte[]) temp = MakeBitmapSourceFromImageFile(paths[0],PixelFormats.Bgra32);
+            (BitmapSource, byte[]) temp = MakeBitmapSourceFromImageFile(paths[0], PixelFormats.Bgra32);
             if (temp.Item1 == null && temp.Item2 == null)
             {
                 _ = MessageBox.Show("ドロップされたファイルから画像を取得できなかった");
