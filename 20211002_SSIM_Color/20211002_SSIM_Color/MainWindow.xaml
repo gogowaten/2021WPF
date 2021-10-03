@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20211002_SSIM_Color"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="350" Width="600">
   <Grid UseLayoutRounding="True">
     <DockPanel>
       <DockPanel DockPanel.Dock="Top" Margin="4">

@@ -13,6 +13,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+//SSIMで画像比較アプリRGBで比較版、WPF、C# - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/10/03/095701
+
+
 ////MSE / PSNR vs SSIM の比較画像紹介 - Qiita
 ////https://qiita.com/yoya/items/510043d836c9f2f0fe2f
 
@@ -45,8 +49,8 @@ namespace _20211002_SSIM_Color
             RenderOptions.SetBitmapScalingMode(MyImage2, BitmapScalingMode.NearestNeighbor);
             MyComboBoxWndSize.ItemsSource = new List<int>() { 4, 8, 16 };
             MyComboBoxWndSize.SelectedIndex = 1;
-            MyComboBoxStep.ItemsSource = new List<int>() { 1, 2, 4, 8 };
-            MyComboBoxStep.SelectedIndex = 1;
+            MyComboBoxStep.ItemsSource = new List<int>() { 1, 2, 4, 8, 16 };
+            MyComboBoxStep.SelectedIndex = 2;
 
 #if DEBUG
             Top = 0;
@@ -58,12 +62,12 @@ namespace _20211002_SSIM_Color
 
         #region SSIM
         /// <summary>
-        /// ピクセルフォーマットBGRA画像専用
+        /// ピクセルフォーマットBGRA32画像専用
         /// </summary>
-        /// <param name="pixels1"></param>
+        /// <param name="pixels1">順番がBGRAの画素値配列</param>
         /// <param name="pixels2"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
+        /// <param name="width">横ピクセル数</param>
+        /// <param name="height">縦ピクセル数</param>
         /// <param name="wndSize">ブロックサイズ、通常は8</param>
         /// <param name="step">ブロック間のピクセル数</param>
         /// <returns></returns>
@@ -98,7 +102,7 @@ namespace _20211002_SSIM_Color
             //BGR
             totalB /= count;
             totalG /= count;
-            totalR /= count;            
+            totalR /= count;
             double result = totalB + totalG + totalR;
             result /= 3;
             return result;
@@ -115,7 +119,9 @@ namespace _20211002_SSIM_Color
             //return result;
         }
 
-        private void GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride, byte[] B1, byte[] B2, byte[] G1, byte[] G2, byte[] R1, byte[] R2, byte[] A1, byte[] A2)
+        private void GetNxNWindw(byte[] pixels1, byte[] pixels2, 
+            int xBegin, int yBegin, int wndSize, int stride,
+            byte[] B1, byte[] B2, byte[] G1, byte[] G2, byte[] R1, byte[] R2, byte[] A1, byte[] A2)
         {
             int count = 0;
             for (int y = yBegin; y < yBegin + wndSize; y++)
