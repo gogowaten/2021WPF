@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <RootNamespace>_20211004_SSIM_RGBWeight</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="HSV">
+      <HintPath>..\..\..\..\..\Documents\Visual Studio 2017\Projects\20171224_MVVM\20180217_HSV_dll\HSV\bin\Release\HSV.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
