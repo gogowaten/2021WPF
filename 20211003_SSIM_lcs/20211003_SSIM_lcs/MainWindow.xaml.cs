@@ -23,12 +23,8 @@ namespace _20211003_SSIM_lcs
         private const double C1 = 0.01 * 255 * (0.01 * 255);//(0.01*255)^2=6.5025
         private const double C2 = 0.03 * 255 * (0.03 * 255);//(0.03*255)^2=58.5225
         private const double C3 = C2 / 2.0;//58.5225/2=29.26125
-        //private (BitmapSource bitmap, byte[] pixels) MySourceGray1;
-        //private (BitmapSource bitmap, byte[] pixels) MySourceGray2;
         private (BitmapSource bitmap, byte[] pixels) MySource1;
         private (BitmapSource bitmap, byte[] pixels) MySource2;
-        //private (BitmapSource bitmap, byte[] pixels) MySourceColor1;
-        //private (BitmapSource bitmap, byte[] pixels) MySourceColor2;
 
 
         public MainWindow()
@@ -39,7 +35,7 @@ namespace _20211003_SSIM_lcs
             MyComboBoxWndSize.ItemsSource = new List<int>() { 4, 8, 16 };
             MyComboBoxWndSize.SelectedIndex = 1;
             MyComboBoxStep.ItemsSource = new List<int>() { 1, 2, 4, 8 };
-            MyComboBoxStep.SelectedIndex = 1;
+            MyComboBoxStep.SelectedIndex = 0;
 
 #if DEBUG
             Top = 0;
@@ -48,90 +44,10 @@ namespace _20211003_SSIM_lcs
         }
 
 
-
         #region SSIM
 
-        ///// <summary>
-        ///// ピクセルフォーマットBGRA画像専用
-        ///// </summary>
-        ///// <param name="pixels1"></param>
-        ///// <param name="pixels2"></param>
-        ///// <param name="width"></param>
-        ///// <param name="height"></param>
-        ///// <param name="wndSize">ブロックサイズ、通常は8</param>
-        ///// <param name="step">ブロック間のピクセル数</param>
-        ///// <returns></returns>
-        //private double SSIMNxN(byte[] pixels1, byte[] pixels2, int width, int height, int wndSize, int step)
-        //{
-        //    double totalB = 0;
-        //    double totalG = 0;
-        //    double totalR = 0;
-        //    double totalA = 0;
-        //    int count = 0;
-        //    byte[] B1 = new byte[wndSize * wndSize];
-        //    byte[] B2 = new byte[wndSize * wndSize];
-        //    byte[] G1 = new byte[wndSize * wndSize];
-        //    byte[] G2 = new byte[wndSize * wndSize];
-        //    byte[] R1 = new byte[wndSize * wndSize];
-        //    byte[] R2 = new byte[wndSize * wndSize];
-        //    byte[] A1 = new byte[wndSize * wndSize];
-        //    byte[] A2 = new byte[wndSize * wndSize];
-
-        //    for (int y = 0; y < height - wndSize; y += 4 + step)
-        //    {
-        //        for (int x = 0; x < width - wndSize; x += 4 + step)
-        //        {
-        //            GetNxNWindw(pixels1, pixels2, x, y, wndSize, width, B1, B2, G1, G2, R1, R2, A1, A2);
-        //            totalB += SSIM(B1, B2);
-        //            totalG += SSIM(G1, G2);
-        //            totalR += SSIM(R1, R2);
-        //            totalA += SSIM(A1, A2);
-        //            count++;
-        //        }
-        //    }
-        //    //BGR
-        //    totalB /= count;
-        //    totalG /= count;
-        //    totalR /= count;
-        //    double result = totalB + totalG + totalR;
-        //    result /= 3;
-        //    return result;
-
-        //    ////BGRA
-        //    ////double result = totalB + totalG + totalR + totalA;
-        //    ////result /= count * 4;
-        //    //totalB /= count;
-        //    //totalG /= count;
-        //    //totalR /= count;
-        //    //totalA /= count;
-        //    //double result = totalB + totalG + totalR + totalA;
-        //    //result /= 4;
-        //    //return result;
-        //}
-
-        //private void GetNxNWindw(byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride, byte[] B1, byte[] B2, byte[] G1, byte[] G2, byte[] R1, byte[] R2, byte[] A1, byte[] A2)
-        //{
-        //    int count = 0;
-        //    for (int y = yBegin; y < yBegin + wndSize; y++)
-        //    {
-        //        for (int x = xBegin; x < xBegin + wndSize; x++)
-        //        {
-        //            int p = y * stride + 4 * x;
-        //            B1[count] = pixels1[p];
-        //            B2[count] = pixels2[p];
-        //            G1[count] = pixels1[p + 1];
-        //            G2[count] = pixels2[p + 1];
-        //            R1[count] = pixels1[p + 2];
-        //            R2[count] = pixels2[p + 2];
-        //            A1[count] = pixels1[p + 3];
-        //            A2[count] = pixels2[p + 3];
-        //            count++;
-        //        }
-        //    }
-        //}
-
         /// <summary>
-        /// グレースケール画像専用
+        /// グレースケール画像専用、SSIM計算
         /// </summary>
         /// <param name="pixels1"></param>
         /// <param name="pixels2"></param>
@@ -150,15 +66,24 @@ namespace _20211003_SSIM_lcs
             {
                 for (int x = 0; x < width - wndSize; x += step)
                 {
-                    (byte[] vs1, byte[] vs2) subWnd = GetNxNWindw(wind1, wind2, pixels1, pixels2, x, y, wndSize, width);
-                    total += SSIMlcs(subWnd.vs1, subWnd.vs2);
-                    //total += SSIM(subWnd.vs1, subWnd.vs2);
+                    GetBlockWindw(wind1, wind2, pixels1, pixels2, x, y, wndSize, width);
+                    total += SSIM(wind1, wind2);
                     count++;
                 }
             }
             double result = total / count;
             return result;
         }
+        /// <summary>
+        /// グレースケール画像専用、LCSでSSIM
+        /// </summary>
+        /// <param name="pixels1">画素値配列</param>
+        /// <param name="pixels2"></param>
+        /// <param name="width">横ピクセル数</param>
+        /// <param name="height">縦ピクセル数</param>
+        /// <param name="wndSize">ブロックウィンドウサイズ、8が適当</param>
+        /// <param name="step">ブロックウィンドウのずらし幅ピクセル、2か4が適当</param>
+        /// <returns></returns>
         private (double, double, double, double) SSIMWithLCS(byte[] pixels1, byte[] pixels2, int width, int height, int wndSize, int step)
         {
             double tSsim = 0;
@@ -170,8 +95,9 @@ namespace _20211003_SSIM_lcs
             {
                 for (int x = 0; x < width - wndSize; x += step)
                 {
-                    (byte[] vs1, byte[] vs2) subWnd = GetNxNWindw(wind1, wind2, pixels1, pixels2, x, y, wndSize, width);
-                    var lcs = GetLCS(wind1, wind2);
+                    GetBlockWindw(wind1, wind2, pixels1, pixels2, x, y, wndSize, width);
+                    (double, double, double) lcs = GetLCS(wind1, wind2);
+                    //tSsim += lcs.Item1* lcs.Item1 * lcs.Item2 * lcs.Item3;
                     tSsim += lcs.Item1 * lcs.Item2 * lcs.Item3;
                     tL += lcs.Item1;
                     tC += lcs.Item2;
@@ -186,7 +112,18 @@ namespace _20211003_SSIM_lcs
             return (ssim, l, c, s);
         }
 
-        private (byte[], byte[]) GetNxNWindw(byte[] wind1, byte[] wind2,
+        /// <summary>
+        /// 指定されたブロックウィンドウの配列を入れる、グレースケール画像専用
+        /// </summary>
+        /// <param name="wind1">受け取り用配列</param>
+        /// <param name="wind2"></param>
+        /// <param name="pixels1">画素値配列</param>
+        /// <param name="pixels2"></param>
+        /// <param name="xBegin">ブロックウィンドウの左上座標に当たる配列のインデックス</param>
+        /// <param name="yBegin"></param>
+        /// <param name="wndSize">ブロックウィンドウサイズ</param>
+        /// <param name="stride">1ピクセルあたりのbyte数 * 横ピクセル数</param>
+        private void GetBlockWindw(byte[] wind1, byte[] wind2,
             byte[] pixels1, byte[] pixels2, int xBegin, int yBegin, int wndSize, int stride)
         {
             int count = 0;
@@ -200,42 +137,23 @@ namespace _20211003_SSIM_lcs
                     count++;
                 }
             }
-            return (wind1, wind2);
         }
 
 
-        //private double SSIM(byte[] vs1, byte[] vs2)
-        //{
-        //    double ave1 = Average(vs1);//平均
-        //    double ave2 = Average(vs2);
-        //    double covar = Covariance(vs1, ave1, vs2, ave2);//共分散
-        //    double vari1 = Variance(vs1, ave1);//分散
-        //    double vari2 = Variance(vs2, ave2);
-        //    double bunsi = (2 * ave1 * ave2 + C1) * (2 * covar + C2);//分子
-        //    double bunbo = (ave1 * ave1 + ave2 * ave2 + C1) * (vari1 + vari2 + C2);//分母
-        //    double ssim = bunsi / bunbo;
-        //    return ssim;
-        //}
-
-        private double SSIMlcs(byte[] vsX, byte[] vsY)
+        private double SSIM(byte[] vs1, byte[] vs2)
         {
-            double aveX = Average(vsX);//平均
-            double aveY = Average(vsY);
-            double covar = Covariance(vsX, aveX, vsY, aveY);//共分散
-            double variX = Variance(vsX, aveX);//分散
-            double variY = Variance(vsY, aveY);
-            double stdevX = Math.Sqrt(variX);
-            double stdevY = Math.Sqrt(variY);
-
-            double l = (2 * aveX * aveY + C1) / (aveX * aveX + aveY * aveY + C1);
-            //l = Math.Pow(l, 0.5);
-            double c = (2 * stdevX * stdevY + C2) / (variX + variY + C2);
-            //c = Math.Pow(c, 0.5);
-            double s = (covar + C3) / (stdevX * stdevY + C3);
-            //s = Math.Pow(s, 2);
-            double ssim = l * c * s;
+            double ave1 = Average(vs1);//平均
+            double ave2 = Average(vs2);
+            double covar = Covariance(vs1, ave1, vs2, ave2);//共分散
+            double vari1 = Variance(vs1, ave1);//分散
+            double vari2 = Variance(vs2, ave2);
+            double bunsi = (2 * ave1 * ave2 + C1) * (2 * covar + C2);//分子
+            double bunbo = (ave1 * ave1 + ave2 * ave2 + C1) * (vari1 + vari2 + C2);//分母
+            double ssim = bunsi / bunbo;
             return ssim;
         }
+
+
         private (double, double, double) GetLCS(byte[] vsX, byte[] vsY)
         {
             double aveX = Average(vsX);//平均
@@ -243,7 +161,7 @@ namespace _20211003_SSIM_lcs
             double covar = Covariance(vsX, aveX, vsY, aveY);//共分散
             double variX = Variance(vsX, aveX);//分散
             double variY = Variance(vsY, aveY);
-            double stdevX = Math.Sqrt(variX);
+            double stdevX = Math.Sqrt(variX);//標準偏差
             double stdevY = Math.Sqrt(variY);
 
             double l = (2 * aveX * aveY + C1) / (aveX * aveX + aveY * aveY + C1);
@@ -406,13 +324,19 @@ namespace _20211003_SSIM_lcs
 
         private void MyDisplaySSIM()
         {
-            var result = SSIMWithLCS(MySource1.pixels, MySource2.pixels,
+            (double, double, double, double) result = SSIMWithLCS(MySource1.pixels, MySource2.pixels,
                         MySource1.bitmap.PixelWidth, MySource1.bitmap.PixelHeight,
                         (int)MyComboBoxWndSize.SelectedItem, (int)MyComboBoxStep.SelectedItem);
-            MyTextBlockSSIM.Text = "SSIM = " + result.Item1.ToString();
+            MyTextBlockLCS.Text = result.Item1.ToString();
             MyTextBlockL.Text = result.Item2.ToString();
             MyTextBlockC.Text = result.Item3.ToString();
             MyTextBlockS.Text = result.Item4.ToString();
+
+            MyTextBlockSSIM.Text = "SSIM = " +
+                SSIMNxN(MySource1.pixels, MySource2.pixels,
+                MySource2.bitmap.PixelWidth, MySource2.bitmap.PixelHeight,
+                (int)MyComboBoxWndSize.SelectedItem, (int)MyComboBoxStep.SelectedItem).ToString();
+
         }
 
         private void ScrollViewer_Drop_1(object sender, DragEventArgs e)

@@ -9,7 +9,7 @@
   <Grid UseLayoutRounding="True">
     <DockPanel>
       <DockPanel DockPanel.Dock="Top" Margin="4">
-        <Button DockPanel.Dock="Right" Content="SSIM再計算" Click="Button_Click" FontSize="20"/>
+        <Button DockPanel.Dock="Right" Content="再計算" Click="Button_Click" FontSize="20"/>
         <Slider x:Name="MySliderScale" Value="1" Minimum="1" Maximum="10" SmallChange="1" LargeChange="1"
                 TickFrequency="1" IsSnapToTickEnabled="True" Width="100" VerticalAlignment="Center"
                 MouseWheel="MySliderScale_MouseWheel"/>
@@ -26,11 +26,13 @@
             <ColumnDefinition/>
           </Grid.ColumnDefinitions>
           <StackPanel Grid.Column="0" Margin="2">
-            <TextBlock Text="輝度" TextAlignment="Right"/>
-            <TextBlock Text="コントラスト" TextAlignment="Right"/>
-            <TextBlock Text="構造" TextAlignment="Right"/>
+            <TextBlock Text="l * c * s" TextAlignment="Right"/>
+            <TextBlock Text="輝度(l)" TextAlignment="Right"/>
+            <TextBlock Text="コントラスト(c)" TextAlignment="Right"/>
+            <TextBlock Text="構造(s)" TextAlignment="Right"/>
           </StackPanel>
           <StackPanel Grid.Column="1" Margin="2">
+            <TextBlock Text="lcs" Name="MyTextBlockLCS"/>
             <TextBlock Text="l" Name="MyTextBlockL"/>
             <TextBlock Text="c" Name="MyTextBlockC"/>
             <TextBlock Text="s" Name="MyTextBlockS"/>
