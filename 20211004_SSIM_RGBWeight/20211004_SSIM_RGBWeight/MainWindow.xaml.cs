@@ -148,7 +148,7 @@ namespace _20211004_SSIM_RGBWeight
             {
                 for (int x = 0; x < width - wndSize; x += 4 + step)
                 {
-                    GetNxNWindw(pixels1, pixels2, x, y, wndSize, width, B1, B2, G1, G2, R1, R2, A1, A2);
+                    GetNxNWindow(pixels1, pixels2, x, y, wndSize, width, B1, B2, G1, G2, R1, R2, A1, A2);
                     bTotal += SSIM(B1, B2);
                     gTotal += SSIM(G1, G2);
                     rTotal += SSIM(R1, R2);
@@ -181,7 +181,7 @@ namespace _20211004_SSIM_RGBWeight
 
         }
 
-        private void GetNxNWindw(byte[] pixels1, byte[] pixels2,
+        private void GetNxNWindow(byte[] pixels1, byte[] pixels2,
             int xBegin, int yBegin, int wndSize, int stride,
             byte[] B1, byte[] B2, byte[] G1, byte[] G2, byte[] R1, byte[] R2, byte[] A1, byte[] A2)
         {
@@ -337,7 +337,7 @@ namespace _20211004_SSIM_RGBWeight
         //    }
         //    return (total / vs.Length) - (average * average);
         //}
-
+        
         /// <summary>
         /// 平均
         /// </summary>
