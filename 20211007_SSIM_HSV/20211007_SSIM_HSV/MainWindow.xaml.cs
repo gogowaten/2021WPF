@@ -54,6 +54,8 @@ namespace _20211007_SSIM_HSV
         public MainWindow()
         {
             InitializeComponent();
+
+            
             RenderOptions.SetBitmapScalingMode(MyImage1, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetBitmapScalingMode(MyImage2, BitmapScalingMode.NearestNeighbor);
             MyComboBoxWndSize.ItemsSource = new List<int>() { 4, 8, 16 };
@@ -172,7 +174,8 @@ namespace _20211007_SSIM_HSV
                     }
 
                     //hTotal += SSIMHue(h1, h2, temp);
-                    hTotal += SSIMHue2(h1, h2, temp);
+                    //hTotal += SSIMHue2(h1, h2, temp);
+                    hTotal += SSIMHue3(h1, h2, temp);
                     sTotal += SSIM(s1, s2);
                     vTotal += SSIM(v1, v2);
                     count++;
@@ -255,6 +258,8 @@ namespace _20211007_SSIM_HSV
             return ssim;
         }
 
+
+        //共分散の計算がわからんので、
         /// <summary>
         /// Hue(色相)専用SSIM、分散と共分散も専用のもので計算
         /// </summary>
@@ -266,13 +271,15 @@ namespace _20211007_SSIM_HSV
         {
             double ave1 = Average(h1);//平均
             double ave2 = Average(h2);
-            double covar = CovarianceHue(h1, ave1, h2, ave2);//共分散
             double vari1 = VarianceHue(h1, ave1);//分散
             double vari2 = VarianceHue(h2, ave2);
+            double stdev1 = Math.Sqrt(vari1);//標準偏差
+            double stdev2 = Math.Sqrt(vari2);//標準偏差
             double CF2 = 0.03 * 359 * (0.03 * 359);
-            double bunsi = 2 * covar + CF2;//分子
+            double bunsi = 2 * stdev1 * stdev2 + CF2;//分子
             double bunbo = vari1 + vari2 + CF2;//分母
             double ssim = bunsi / bunbo;
+
 
             //色相の類似度を0-1で表す、1のとき完全一致
             //色相が10と330の類似度は
@@ -285,7 +292,33 @@ namespace _20211007_SSIM_HSV
                 temp[i] = 1 - (diff / 180.0);
             }
             double fixAve = Average(temp);
-            //ssim = 1;
+            ssim *= fixAve;
+            return ssim;
+        }
+        private double SSIMHue3(double[] h1, double[] h2, double[] temp)
+        {
+            double ave1 = Average(h1);//平均
+            double ave2 = Average(h2);
+            double covar = CovarianceHue(h1, ave1, h2, ave2);//共分散
+            double vari1 = VarianceHue(h1, ave1);//分散
+            double vari2 = VarianceHue(h2, ave2);
+            double CF2 = 0.03 * 359 * (0.03 * 359);
+            double bunsi = 2 * covar + CF2;//分子            
+            double bunbo = vari1 + vari2 + CF2;//分母
+            double ssim = bunsi / bunbo;
+
+
+            //色相の類似度を0-1で表す、1のとき完全一致
+            //色相が10と330の類似度は
+            //このときの差は、330-10=320ではなく、360-330+10=40で計算
+            //差の最大値は180なので、1-(40/180)=0.77777778
+            for (int i = 0; i < h1.Length; i++)
+            {
+                double diff = Math.Abs(h1[i] - h2[i]);
+                if (diff > 180) { diff = Math.Abs(diff - 360); }
+                temp[i] = 1 - (diff / 180.0);
+            }
+            double fixAve = Average(temp);
             ssim *= fixAve;
             return ssim;
         }
@@ -373,47 +406,64 @@ namespace _20211007_SSIM_HSV
             }
             decimal total = 0;
 
-            for (int i = 0; i < vs1.Length; i++)
-            {
-                //decimal d1 = (decimal)(vs1[i] - ave1);
-                //if (d1 > 180) { d1 -= 180; }
-                //if (d1 < -180) { d1 += 180; }
-                //decimal d2 = (decimal)(vs2[i] - ave2);
-                //if (d2 > 180) { d2 -= 180; }
-                //if (d2 < -180) { d2 += 180; }
+            //for (int i = 0; i < vs1.Length; i++)
+            //{
+            //    decimal d1 = (decimal)(vs1[i] - ave1);
+            //    if (d1 > 180) { d1 -= 180; }
+            //    if (d1 < -180) { d1 += 180; }
+            //    decimal d2 = (decimal)(vs2[i] - ave2);
+            //    if (d2 > 180) { d2 -= 180; }
+            //    if (d2 < -180) { d2 += 180; }
 
-                //decimal d1 = Math.Abs((decimal)(vs1[i] - ave1));
-                //if (d1 > 180) { d1 = 360 - d1; }
-                //decimal d2 = Math.Abs((decimal)(vs2[i] - ave2));
-                //if (d2 > 180) { d2 = 360 - d2; }
+            //    decimal d1 = Math.Abs((decimal)(vs1[i] - ave1));
+            //    if (d1 > 180) { d1 = 360 - d1; }
+            //    decimal d2 = Math.Abs((decimal)(vs2[i] - ave2));
+            //    if (d2 > 180) { d2 = 360 - d2; }
 
-                //total += d1 * d2;
-            }
+            //    total += d1 * d2;
+            //}
+
+            //double[] ds1 = new double[vs1.Length];
+            //double[] ds2 = new double[vs1.Length];
+            //for (int i = 0; i < vs1.Length; i++)
+            //{
+            //    double d1 = vs1[i] - ave1;
+            //    double d2 = vs2[i] - ave2;
+            //    double diff = Math.Abs(d1 - d2);
+            //    if (diff > 180)
+            //    {
+            //        if (d1 > d2) { d1 -= 360; }
+            //        else { d2 -= 360; }
+            //    }
+            //    ds1[i] = d1;
+            //    ds2[i] = d2;
+            //}
+            //var d1Ave = Average(ds1);
+            //var d2Ave = Average(ds2);
+
+            //for (int i = 0; i < ds1.Length; i++)
+            //{
+            //    decimal d1 = (decimal)(ds1[i] - d1Ave);
+            //    decimal d2 = (decimal)(ds2[i] - d2Ave);
+            //    total += d1 * d2;
+            //}
+
+            //return (double)(total / vs2.Length);
+
+
             double[] ds1 = new double[vs1.Length];
             double[] ds2 = new double[vs1.Length];
             for (int i = 0; i < vs1.Length; i++)
             {
-                double d1 = vs1[i] - ave1;
-                double d2 = vs2[i] - ave2;
-                double diff = Math.Abs(d1 - d2);
-                if (diff > 180)
-                {
-                    if (d1 > d2) { d1 -= 360; }
-                    else { d2 -= 360; }
-                }
-                ds1[i] = d1;
-                ds2[i] = d2;
+                ds1[i] = Math.Abs(vs1[i] - ave1) > 180 ? (vs1[i] - 360) : vs1[i];
+                ds2[i] = Math.Abs(vs2[i] - ave2) > 180 ? (vs2[i] - 360) : vs2[i];
             }
-            var d1Ave = Average(ds1);
-            var d2Ave = Average(ds2);
-
-            for (int i = 0; i < ds1.Length; i++)
+            for (int i = 0; i < vs1.Length; i++)
             {
-                decimal d1 = (decimal)(ds1[i] - d1Ave);
-                decimal d2 = (decimal)(ds2[i] - d2Ave);
-                total += d1 * d2;
+                total += (decimal)((ds1[i] - ave1) * (ds2[i] - ave2));
             }
-            return (double)(total / vs2.Length);
+            return (double)(total / vs1.Length);
+
         }
         //private double CovarianceHue(double[] vs1, double[] vs2)
         //{
@@ -554,6 +604,32 @@ namespace _20211007_SSIM_HSV
             return total / (double)vs.Length;
         }
 
+        /// <summary>
+        /// 角度やHueの平均
+        /// </summary>
+        /// <param name="hue">0から360度</param>
+        /// <returns></returns>
+        private double AverageHue(double[] hue)
+        {
+            decimal sin = 0;
+            decimal cos = 0;
+            for (int i = 0; i < hue.Length; i++)
+            {
+                sin += (decimal)Math.Sin(Radian(hue[i]));
+                cos += (decimal)Math.Cos(Radian(hue[i]));
+            }
+            double result = (double)Degree(Math.Atan2((double)sin, (double)cos));
+            if (result < 0) { result += 360; }
+            return result;
+        }
+        private static double Radian(double degree)
+        {
+            return degree / 180.0 * Math.PI;
+        }
+        private static double Degree(double radian)
+        {
+            return radian / Math.PI * 180;
+        }
         #endregion 基本計算
 
 
