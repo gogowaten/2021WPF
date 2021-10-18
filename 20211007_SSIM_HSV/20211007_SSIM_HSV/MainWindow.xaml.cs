@@ -55,7 +55,7 @@ namespace _20211007_SSIM_HSV
         {
             InitializeComponent();
 
-            
+
             RenderOptions.SetBitmapScalingMode(MyImage1, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetBitmapScalingMode(MyImage2, BitmapScalingMode.NearestNeighbor);
             MyComboBoxWndSize.ItemsSource = new List<int>() { 4, 8, 16 };
@@ -297,8 +297,8 @@ namespace _20211007_SSIM_HSV
         }
         private double SSIMHue3(double[] h1, double[] h2, double[] temp)
         {
-            double ave1 = Average(h1);//平均
-            double ave2 = Average(h2);
+            double ave1 = AverageHue(h1);//色相の平均
+            double ave2 = AverageHue(h2);
             double covar = CovarianceHue(h1, ave1, h2, ave2);//共分散
             double vari1 = VarianceHue(h1, ave1);//分散
             double vari2 = VarianceHue(h2, ave2);
@@ -321,6 +321,43 @@ namespace _20211007_SSIM_HSV
             double fixAve = Average(temp);
             ssim *= fixAve;
             return ssim;
+        }
+        private double SsimHue4(double[] h1, double[] h2)
+        {
+            int length = h1.Length;
+            double sin1 = 0, cos1 = 0;
+            double sin2 = 0, cos2 = 0;
+            for (int i = 0; i < length; i++)
+            {
+                sin1 += Math.Sin(Radian(h1[i]));
+                sin2 += Math.Sin(Radian(h2[i]));
+                cos1 += Math.Cos(Radian(h1[i]));
+                cos2 += Math.Cos(Radian(h2[i]));
+            }
+            //平均
+            double ave1 = Degree(Math.Atan2(sin1, cos1));
+            if (ave1 < 0) { ave1 += 360; }
+            double ave2 = Degree(Math.Atan2(sin2, cos2));
+            if (ave2 < 0) { ave2 += 360; }
+
+            //分散
+            double varp1 = 1 - Math.Sqrt((sin1 / length) * (sin1 / length) + (cos1 / length) * (cos1 / length));
+            double varp2 = 1 - Math.Sqrt((sin2 / length) * (sin2 / length) + (cos2 / length) * (cos2 / length));
+
+            //共分散
+            double total = 0;
+            for (int i = 0; i < length; i++)
+            {
+                total += Fix180(h1[i]) * Fix180(h2[i]);
+            }
+            double covar = total / length;
+
+            double Fix180(double v)
+            {
+                double t = Math.Abs(v - ave1);
+                if (t > 180) { return 360 - t; }
+                else { return t; }
+            }
         }
 
 
@@ -538,11 +575,11 @@ namespace _20211007_SSIM_HSV
             return (double)(total / vs.Length);
         }
         /// <summary>
-        /// Hue(色相)専用分散
+        /// Hue(色相)や角度の分散
         /// </summary>
         /// <param name="vs"></param>
         /// <param name="average"></param>
-        /// <returns></returns>
+        /// <returns>0.0-1.0</returns>
         private double VarianceHue(double[] vs, double average)
         {
             decimal total = 0;
@@ -608,19 +645,22 @@ namespace _20211007_SSIM_HSV
         /// 角度やHueの平均
         /// </summary>
         /// <param name="hue">0から360度</param>
-        /// <returns></returns>
+        /// <returns>0-360</returns>
         private double AverageHue(double[] hue)
         {
-            decimal sin = 0;
-            decimal cos = 0;
-            for (int i = 0; i < hue.Length; i++)
-            {
-                sin += (decimal)Math.Sin(Radian(hue[i]));
-                cos += (decimal)Math.Cos(Radian(hue[i]));
-            }
-            double result = (double)Degree(Math.Atan2((double)sin, (double)cos));
+            double sin = 0, cos = 0;
+            TotalSinAndCos(hue, ref sin, ref cos);
+            double result = (double)Degree(Math.Atan2(sin, cos));
             if (result < 0) { result += 360; }
             return result;
+        }
+        private void TotalSinAndCos(double[] hue, ref double sin, ref double cos)
+        {
+            for (int i = 0; i < hue.Length; i++)
+            {
+                sin += Math.Sin(Radian(hue[i]));
+                cos += Math.Cos(Radian(hue[i]));
+            }
         }
         private static double Radian(double degree)
         {
