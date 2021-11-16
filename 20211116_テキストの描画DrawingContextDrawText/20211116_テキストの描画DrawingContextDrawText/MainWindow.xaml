@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:_20211116_テキストの描画DrawingContextDrawText"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-    <Path x:Name="MyPath"/>
+  <Grid UseLayoutRounding="True">
+    <Path x:Name="MyPath" HorizontalAlignment="Center" VerticalAlignment="Center"
+          TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"/>
   </Grid>
 </Window>

@@ -1,0 +1,38 @@
+﻿<Window x:Class="_20211116_描画速度canvas.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_20211116_描画速度canvas"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
+      <Canvas x:Name="xCanvas1" Width="100000"/>
+    </ScrollViewer>
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
+      <Canvas x:Name="xCanvas2" Width="100000">
+        <local:Squares x:Name="xSquares"/>
+      </Canvas>
+    </ScrollViewer>
+    <ScrollViewer Grid.Row="2" Name="MyScrollViewer1"
+                  HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden"
+                  ScrollChanged="MyScrollViewer1_ScrollChanged">
+      <Canvas x:Name="xCanvas3" Width="100000"/>
+    </ScrollViewer>
+    <ScrollViewer Grid.Row="3" Name="MyScrollViewer2"
+                  HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden"
+                  ScrollChanged="MyScrollViewer2_ScrollChanged">
+      <Canvas x:Name="xCanvas4" Width="100000">
+        <local:Squares2 x:Name="xCanvas4Squares"/>
+      </Canvas>
+    </ScrollViewer>
+    
+  </Grid>
+</Window>
