@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31829.152
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20211116_テキストの描画DrawingContextDrawText", "20211116_テキストの描画DrawingContextDrawText\20211116_テキストの描画DrawingContextDrawText.csproj", "{5AD3D854-CBDA-4AB6-B0F2-A335D38E8596}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5AD3D854-CBDA-4AB6-B0F2-A335D38E8596}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AD3D854-CBDA-4AB6-B0F2-A335D38E8596}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AD3D854-CBDA-4AB6-B0F2-A335D38E8596}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AD3D854-CBDA-4AB6-B0F2-A335D38E8596}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {737424B0-01A6-450E-A6A2-3AEFD36C6A97}
+	EndGlobalSection
+EndGlobal

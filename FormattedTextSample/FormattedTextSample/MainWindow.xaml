@@ -1,0 +1,51 @@
+﻿<Window x:Class="FormattedTextSample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FormattedTextSample"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+  <StackPanel>
+    <StackPanel Orientation="Horizontal">
+      <Label>フォント</Label>
+      <ComboBox ItemsSource="{x:Static Fonts.SystemFontFamilies}" SelectedValue="{Binding SelectedFontFamily, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+    </StackPanel>
+    <CheckBox
+            x:Name="CheckBoxWidth"
+            Checked="CheckBoxWidth_Checked"
+            Content="Width"
+            Unchecked="CheckBoxWidth_Unchecked" />
+    <CheckBox
+            x:Name="CheckBoxHeight"
+            Checked="CheckBoxHeight_Checked"
+            Content="Height"
+            Unchecked="CheckBoxHeight_Unchecked" />
+    <CheckBox
+            x:Name="CheckBoxBaseline"
+            Checked="CheckBoxBaseline_Checked"
+            Content="BaseLine"
+            Unchecked="CheckBoxBaseline_Unchecked" />
+    <CheckBox
+            x:Name="CheckBoxOverhangAfter"
+            Checked="CheckBoxOverhangAfter_Checked"
+            Content="OverhangAfter"
+            Unchecked="CheckBoxOverhangAfter_Unchecked" />
+    <CheckBox
+            x:Name="CheckBoxOverhangLeading"
+            Checked="CheckBoxOverhangLeading_Checked"
+            Content="OverhangLeading"
+            Unchecked="CheckBoxOverhangLeading_Unchecked" />
+    <CheckBox
+            x:Name="CheckBoxOverhangTrailing"
+            Checked="CheckBoxOverhangTrailing_Checked"
+            Content="OverhangTrailing"
+            Unchecked="CheckBoxOverhangTrailing_Unchecked" />
+    <CheckBox
+            x:Name="CheckBoxExtent"
+            Checked="CheckBoxExtent_Checked"
+            Content="Extent"
+            Unchecked="CheckBoxExtent_Unchecked" />
+    <local:MyView x:Name="myView"/>
+  </StackPanel>
+</Window>
