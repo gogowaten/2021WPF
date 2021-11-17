@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
   <Grid UseLayoutRounding="True">
-    <Path x:Name="MyPath" HorizontalAlignment="Center" VerticalAlignment="Center"
+    <Path x:Name="MyPath" HorizontalAlignment="Left" VerticalAlignment="Top"
           TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"/>
   </Grid>
 </Window>

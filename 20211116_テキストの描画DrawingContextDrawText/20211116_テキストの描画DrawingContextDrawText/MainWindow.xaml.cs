@@ -25,47 +25,63 @@ namespace _20211116_テキストの描画DrawingContextDrawText
         {
             InitializeComponent();
 
-            string text = "ゆっくりしていってね！！！\nゆっくり霊夢とゆっくり魔理沙";
+            string text = "ゆっくりしていってね！！！\n" +
+                "ゆっくり霊夢とゆっくり魔理沙\nWPFの文字列描画";
             CultureInfo cultureInfo = CultureInfo.CurrentUICulture;
             FlowDirection flowDirection = FlowDirection.LeftToRight;
             Typeface typeface = new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch);
             //FormattedText fText = new(text, cultureInfo, flowDirection, typeface, 50, new SolidColorBrush(), 96);
             FormattedText fText = new(text, cultureInfo, flowDirection, new Typeface("Meiryo UI"), 50, Brushes.Red, 96);
-            
+
             var textWidth = fText.GetMaxTextWidths();
             var geo = fText.BuildGeometry(new Point(0, 0));
 
             MyPath.Data = geo;
             MyPath.Fill = Brushes.Transparent;
-            MyPath.Stroke = Brushes.Black;
+            MyPath.Stroke = Brushes.MediumAquamarine;
+            MyPath.StrokeThickness = 2;
 
-
-        }
-    }
-
-    public class Square : Control
-    {
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
-            drawingContext.DrawRectangle(Brushes.MediumAquamarine, null, new Rect(0, 0, Width, Height));
-        }
-    }
-    public class Squares : Control
-    {
-        public List<Square> Objects;
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
-            if (Objects == null)
+            DrawingVisual dv = new();
+            //ro.DrawGlyphRun
+            using (DrawingContext context = dv.RenderOpen())
             {
-                return;
+                context.DrawText(fText, new Point());
+                //context.DrawText(fText, new Point());
             }
-            foreach (Square item in Objects)
+            RenderTargetBitmap render = new((int)dv.ContentBounds.Width, (int)dv.ContentBounds.Height, 96, 96, PixelFormats.Pbgra32);
+            render.Render(dv);
+
+            Pen MyPen = new Pen(Brushes.MediumAquamarine, 4);
+            Rect renderRect = geo.GetRenderBounds(MyPen);
+            Geometry geo2 = fText.BuildHighlightGeometry(new Point());
+
+            TranslateTransform tt = new(-renderRect.X, -renderRect.Y);
+            geo.Transform = tt;
+            
+            using (DrawingContext context = dv.RenderOpen())
             {
-                Rect r = new(Canvas.GetLeft(item), Canvas.GetTop(item), item.Width, item.Height);
-                drawingContext.DrawRectangle(Brushes.MediumOrchid, null, r);
+                context.DrawGeometry(Brushes.Transparent, MyPen, geo);
             }
+
+            Rect dvRect = dv.ContentBounds;
+            RenderTargetBitmap render2 = new((int)dvRect.Width + 1, (int)dvRect.Height + 1, 96, 96, PixelFormats.Pbgra32);
+            render2.Render(dv);
+
+            //RenderTargetBitmap render2 = new((int)fText.Width, (int)fText.Height, 96, 96, PixelFormats.Pbgra32);
+            //render2.Render(dv);
+
+            //RenderTargetBitmap render2 = new((int)geo.Bounds.Right, (int)geo.Bounds.Bottom, 96, 96, PixelFormats.Pbgra32);
+            //render2.Render(dv);
+
+            //RenderTargetBitmap render2 = new((int)dv.ContentBounds.Width, (int)dv.ContentBounds.Height, 96, 96, PixelFormats.Pbgra32);
+            //render2.Render(dv);
+
+            Rect georect = geo.Bounds;
+            var twidth = fText.Width;
+            var tHeight = fText.Height;
+            var tExtent = fText.Extent;
+            var tBaseLine = fText.Baseline;
         }
     }
+
 }
