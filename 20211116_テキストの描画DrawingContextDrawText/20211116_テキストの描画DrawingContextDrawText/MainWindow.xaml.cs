@@ -25,8 +25,8 @@ namespace _20211116_テキストの描画DrawingContextDrawText
         {
             InitializeComponent();
 
-            string text = "ゆっくりしていってね！！！\n" +
-                "ゆっくり霊夢とゆっくり魔理沙\nWPFの文字列描画";
+            string text = "WPFの文字列描画\n" +
+                "ゆっくり霊夢とゆっくり魔理沙の\nゆっくりしていってね！！！";
             CultureInfo cultureInfo = CultureInfo.CurrentUICulture;
             FlowDirection flowDirection = FlowDirection.LeftToRight;
             Typeface typeface = new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch);
@@ -51,13 +51,14 @@ namespace _20211116_テキストの描画DrawingContextDrawText
             RenderTargetBitmap render = new((int)dv.ContentBounds.Width, (int)dv.ContentBounds.Height, 96, 96, PixelFormats.Pbgra32);
             render.Render(dv);
 
-            Pen MyPen = new Pen(Brushes.MediumAquamarine, 4);
+            Pen MyPen = new(Brushes.MediumAquamarine, 2);
             Rect renderRect = geo.GetRenderBounds(MyPen);
             Geometry geo2 = fText.BuildHighlightGeometry(new Point());
 
             TranslateTransform tt = new(-renderRect.X, -renderRect.Y);
             geo.Transform = tt;
             
+
             using (DrawingContext context = dv.RenderOpen())
             {
                 context.DrawGeometry(Brushes.Transparent, MyPen, geo);
@@ -75,6 +76,7 @@ namespace _20211116_テキストの描画DrawingContextDrawText
 
             //RenderTargetBitmap render2 = new((int)dv.ContentBounds.Width, (int)dv.ContentBounds.Height, 96, 96, PixelFormats.Pbgra32);
             //render2.Render(dv);
+            
 
             Rect georect = geo.Bounds;
             var twidth = fText.Width;
