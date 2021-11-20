@@ -1,0 +1,79 @@
+﻿<Window x:Class="FormattedTextBox.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FormattedTextBox"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="200" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <StackPanel Grid.Row="0" Grid.Column="0">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0">FontFamily</Label>
+        <ComboBox Grid.Row="0"
+                          Grid.Column="1"
+                          ItemsSource="{Binding Source={x:Static Member=Fonts.SystemFontFamilies}}"
+                          SelectedValue="{Binding FontFamilyValue}" />
+        <Label Grid.Row="1" Grid.Column="0">FontStyle</Label>
+        <ComboBox Grid.Row="1"
+                          Grid.Column="1"
+                          DisplayMemberPath="Name"
+                          ItemsSource="{Binding FontStyles}"
+                          SelectedValue="{Binding FontStyleValue}"
+                          SelectedValuePath="Value" />
+        <Label Grid.Row="2" Grid.Column="0">FontWeight</Label>
+        <ComboBox Grid.Row="2"
+                          Grid.Column="1"
+                          Height="26"
+                          VerticalAlignment="Top"
+                          DisplayMemberPath="Name"
+                          ItemsSource="{Binding FontWeights}"
+                          SelectedValue="{Binding FontWeightValue}"
+                          SelectedValuePath="Value" />
+        <Label Grid.Row="3" Grid.Column="0">FontSize</Label>
+        <TextBox Grid.Row="3"
+                         Grid.Column="1"
+                         Text="{Binding TextBoxFontSize}" />
+        <Label Grid.Row="4" Grid.Column="0">BrushColor</Label>
+        <ComboBox Grid.Row="4"
+                          Grid.Column="1"
+                          DisplayMemberPath="Key"
+                          ItemsSource="{Binding TextBoxColors}"
+                          SelectedValue="{Binding BrushColor}"
+                          SelectedValuePath="Value" />
+        <Label Grid.Row="5" Grid.Column="0">PenColor</Label>
+        <ComboBox Grid.Row="5" x:Name="MyComboBoxPenColor"
+                          Grid.Column="1"
+                          DisplayMemberPath="Key"
+                          ItemsSource="{Binding TextBoxColors}"
+                          SelectedValue="{Binding PenColor}"
+                          SelectedValuePath="Value" />
+        <Label Grid.Row="6" Grid.Column="0">PenSize</Label>
+        <TextBox Grid.Row="6"
+                         Grid.Column="1"
+                         Text="{Binding TextBoxPenSize}" />
+      </Grid>
+    </StackPanel>
+    <Grid x:Name="grid"
+              Grid.Row="0"
+              Grid.Column="1" />
+  </Grid>
+</Window>
