@@ -7,6 +7,9 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
   <Grid UseLayoutRounding="True">
-    <StackPanel x:Name="MyStackPanel"/>
+    <StackPanel x:Name="MyStackPanel">
+      <TextBlock x:Name="MyTextBlock" Text="cleal?"/>
+      <TextBox x:Name="MyTextBox" Text="cleal?"/>
+    </StackPanel>
   </Grid>
 </Window>

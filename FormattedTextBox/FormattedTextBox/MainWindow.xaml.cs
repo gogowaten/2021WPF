@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 
 //WPF - Sample / FormattedTextBox / FormattedTextBox at master · gesource/WPF-Sample
 //https://github.com/gesource/WPF-Sample/tree/master/FormattedTextBox/FormattedTextBox
-
+//ここのを少し改変
 
 namespace FormattedTextBox
 {
@@ -147,7 +147,8 @@ namespace FormattedTextBox
                 FlowDirection.LeftToRight,
                 new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
                 FontSize,
-                new SolidColorBrush()
+                new SolidColorBrush(),
+                96
             );
 
             drawingContext.DrawGeometry(

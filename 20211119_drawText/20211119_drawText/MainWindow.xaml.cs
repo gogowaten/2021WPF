@@ -49,14 +49,26 @@ namespace _20211119_drawText
             //formattedText.SetTextDecorations(TextDecorations.Strikethrough, 10, 5);
             TextDecoration textDecoration = new();
             textDecoration.Pen = new(Brushes.Black, 1);
+            textDecoration.Location = TextDecorationLocation.Strikethrough;
             TextDecorationCollection textDecorations = new();
             textDecorations.Add(textDecoration);
 
             formattedText.SetTextDecorations(textDecorations);
 
-            TextBox textBox = new();
-            textBox.Text = formattedText;
-            textBox.
+            TextEffect textEffect = new();
+            textEffect.PositionStart = 2;
+            MyTextBlock.TextDecorations = textDecorations;
+            MyTextBox.TextDecorations = textDecorations;
+
+            DrawingVisual dv = new();
+            using (var dc = dv.RenderOpen())
+            {
+                dc.DrawText(formattedText, new Point());
+            }
+            Rect drawRect = dv.ContentBounds;
+            RenderTargetBitmap targetBitmap = new((int)drawRect.Width, (int)drawRect.Height, 96, 96, PixelFormats.Pbgra32);
+            targetBitmap.Render(dv);
+
 
             var geo = formattedText.BuildGeometry(new Point());
             Pen MyPen = new(Brushes.Magenta, 1);
@@ -74,8 +86,8 @@ namespace _20211119_drawText
             Grid grid = new();
             grid.Background = MyBrush;
             _ = MyStackPanel.Children.Add(grid);
-            grid.Width = renderRect.Width;
-            grid.Height = renderRect.Height;
+            grid.Width = drawRect.Width;
+            grid.Height = drawRect.Height;
 
 
             Path MyPath = new();
@@ -106,7 +118,7 @@ namespace _20211119_drawText
 
             //ぼかし＆ドロップシャドウはできない？
             System.Windows.Media.Effects.Effect effect;
-            TextEffect textEffect = new();
+            
             
 
         }
