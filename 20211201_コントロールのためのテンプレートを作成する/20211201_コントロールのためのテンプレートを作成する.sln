@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20211201_コントロールのためのテンプレートを作成する", "20211201_コントロールのためのテンプレートを作成する\20211201_コントロールのためのテンプレートを作成する.csproj", "{4C6433A8-C3D8-4B0C-A189-89F9CDA7B08F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C6433A8-C3D8-4B0C-A189-89F9CDA7B08F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C6433A8-C3D8-4B0C-A189-89F9CDA7B08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C6433A8-C3D8-4B0C-A189-89F9CDA7B08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C6433A8-C3D8-4B0C-A189-89F9CDA7B08F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EC57E5E1-740C-4A9A-9D3F-DB4E979AD9B0}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20211201_TextBox のスタイルとテンプレート", "20211201_TextBox のスタイルとテンプレート\20211201_TextBox のスタイルとテンプレート.csproj", "{C5825C74-BED7-4AAD-958A-676C43EF3E15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5825C74-BED7-4AAD-958A-676C43EF3E15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5825C74-BED7-4AAD-958A-676C43EF3E15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5825C74-BED7-4AAD-958A-676C43EF3E15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5825C74-BED7-4AAD-958A-676C43EF3E15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0BEADDB8-B2AA-4669-B5F2-321FB565F7F5}
+	EndGlobalSection
+EndGlobal

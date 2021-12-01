@@ -14,10 +14,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using System.Globalization;
+//テキストボックスの枠表示を消すだけならControlTemplateは必要なかった
 
 namespace _20211122_textbox_template
 {
-    class MyTextBoxTemplate : TextBox
+    internal class MyTextBoxTemplate : TextBox
     {
         public Grid RootPanel;
 
@@ -29,9 +30,9 @@ namespace _20211122_textbox_template
             //ControlTemplate template = new(typeof(TextBox));
             //template.VisualTree = new FrameworkElementFactory(typeof(Grid), "root");
             //Template = template;
-            //ApplyTemplate();            
+            //ApplyTemplate();
             //RootPanel = (Grid)template.FindName("root", this);
-            
+
             //RootPanel.Background = Brushes.GreenYellow;
 
             //ScrollViewer scrollViewer = new();
@@ -42,11 +43,12 @@ namespace _20211122_textbox_template
             //RootPanel.Children.Add(scrollViewer);
             //RootPanel.Children.Add(contentPresenter);
 
-            
 
+            //枠表示なし
             this.BorderThickness = new Thickness(0);
             //this.BorderBrush = null;
             
+
 
         }
         protected override void OnRender(DrawingContext drawingContext)
