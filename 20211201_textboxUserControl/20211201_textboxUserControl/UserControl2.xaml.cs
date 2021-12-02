@@ -12,6 +12,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
+//WPFで雑にウォーターマーク付きのテキストボックスを作る - プログラムの事とか
+//https://puni-o.hatenablog.com/entry/2016/12/15/110619
+//WPF でテンプレートを作成する -WPF.NET Framework | Microsoft Docs
+//https://docs.microsoft.com/ja-jp/dotnet/desktop/wpf/controls/how-to-create-apply-template?view=netframeworkdesktop-4.8
+
 //これは難しい、わからん
 namespace _20211201_textboxUserControl
 {

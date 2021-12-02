@@ -12,6 +12,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
+//WPF4 .5入門 その53 「ユーザーコントロール」 - かずきのBlog@hatena
+//https://blog.okazuki.jp/entry/2014/09/08/203943
+
 //これがいい
 namespace _20211201_textboxUserControl
 {
