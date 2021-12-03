@@ -7,6 +7,10 @@ using System.Windows;
 //プログラミングな日々: WPF用縦書きテキストブロック Tategaki ver .2.1.0
 //https://days-of-programming.blogspot.com/2015/01/wpf-tategaki-ver210.html
 
+//ブログ記事
+//C# フォント一覧じゃなくて、フォントファイル一覧取得 - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/12/03/223826
+
 namespace _20211203_フォントファイル一覧取得
 {
     /// <summary>
