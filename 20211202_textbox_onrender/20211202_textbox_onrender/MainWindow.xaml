@@ -10,6 +10,7 @@
     <StackPanel>
       <Slider x:Name="fSize" Minimum="1" Maximum="100" Value="50"/>
       <Slider x:Name="fHuti" Minimum="0" Maximum="10"/>
+      <local:CustomControl1 Background="Red" Width="100" Height="10"/>
       <Canvas Height="100">
         <local:Class2 x:Name="MyClass2" Canvas.Left="0" Canvas.Top="0"
                       />
