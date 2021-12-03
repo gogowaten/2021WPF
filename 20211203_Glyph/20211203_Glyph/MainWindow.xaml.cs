@@ -24,6 +24,24 @@ namespace _20211203_Glyph
         {
             InitializeComponent();
 
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+            string[] fList = System.IO.Directory.GetFiles(path, "*");
+
+            string path2 = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                @"Microsoft\Windows\Fonts");
+            string[] fList2 = System.IO.Directory.GetFiles(path2, "*");
+
+            var count = fList.Length;
+
+
+
+
+
+
+
+
+
             SortedDictionary<string, string> MyFonts = new();
 
             var dirF = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
@@ -45,7 +63,7 @@ namespace _20211203_Glyph
             var ffs2 = System.IO.Directory.GetFiles(dirF, "*", System.IO.SearchOption.AllDirectories);
 
             //ユーザーのフォントフォルダのファイルリスト取得
-            var userDir = System.IO.Path.Combine(
+            string userDir = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 @"Microsoft\Windows\Fonts");
             string[] userFonts;
