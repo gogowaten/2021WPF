@@ -23,6 +23,8 @@ namespace _20211202_textbox_onrender
         public MainWindow()
         {
             InitializeComponent();
+            var f = Fonts.SystemFontFamilies;
+
             MyClass2.DragDelta += MyClass2_DragDelta;
         }
 
