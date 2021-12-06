@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Globalization;
+
 //SystemFontFamiliesを表示する part1 : Win32 & wpf メモ
 //http://blog.livedoor.jp/oans/archives/54753149.html
 
@@ -58,6 +60,61 @@ namespace _20211205_Glyph
             //IEnumerable<string>[] sysffs = typefaces.Select(a => a.Select(a => a.FontFamily).Select(a => a.Source)).ToArray();
             //var inu = systemFonts.Select(a => a.GetTypefaces().Select(a => a.FontFamily).Select(a => a.Source).ToList());
 
+            #region インストールされているフォントのDictionary, 作成Key：日本語名、Value：FontFamiry
+
+            //フォント全部
+            ICollection<FontFamily> sysFonts = Fonts.SystemFontFamilies;
+            //今のPCで使っている言語(日本語)取得
+            var language =
+                System.Windows.Markup.XmlLanguage.GetLanguage(
+                CultureInfo.CurrentCulture.IetfLanguageTag);
+            //test、FontFamiryのリスト作成
+            var lang4 = sysFonts
+                .Select(a => a.FamilyNames).ToArray();
+            //test、フォント名で日本語名があればそれを取得、なければnull
+            //FirstOrDefaultを使って日本語名取得、なければnullを返す
+            var lang5 = sysFonts
+                .Select(a => a.FamilyNames.FirstOrDefault(b => b.Key == language).Value).ToArray();
+            //test、フォント名で日本語名があればそれを取得、なければ初期名取得
+            var lang6 = sysFonts
+                .Select(a => a.FamilyNames.FirstOrDefault(b => b.Key == language).Value ?? a.Source).ToArray();
+            //Dictionary作成、Keyは日本語名、なければ初期名、ValueはFontFamiry
+            var lang7 = sysFonts
+                .ToDictionary(a => a.FamilyNames.FirstOrDefault(b => b.Key == language).Value ?? a.Source);
+            //名前でソートしたいのでDortedDictionaryを使って作成してるけど、名前に重複があるとエラーになるから対策したほうがいい
+            SortedDictionary<string, FontFamily> keyValuePairs7 = new(lang7);
+            //↑と同じ結果
+            var lang8 = sysFonts
+                .ToDictionary(a => a.FamilyNames.FirstOrDefault(b => b.Key == language).Value ?? a.Source, v => v);
+            SortedDictionary<string, FontFamily> keyValuePairs8 = new(lang8);
+
+            #endregion インストールされているフォントのDictionary, 作成Key：日本語名、Value：FontFamiry
+
+            var tFaces1 = keyValuePairs7
+                .Select(a => a.Value.GetTypefaces()).ToArray();
+            var tFaces2 = keyValuePairs7
+                .Select(a => a.Value.GetTypefaces()
+                .Select(a => a.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface2))).ToArray();
+            GlyphTypeface gtf = null;
+            Dictionary<string, Uri> myDict2 = new();
+            Dictionary<string, Typeface> myDict3 = new();
+
+            foreach (var item in keyValuePairs7.Select(a => a.Value.GetTypefaces()))
+            {
+                item.FirstOrDefault(a => a.TryGetGlyphTypeface(out gtf));
+                if (gtf != null)
+                {
+                    if (myDict2.TryAdd(System.IO.Path.GetFileNameWithoutExtension(gtf.FontUri.LocalPath), gtf.FontUri) == false)
+                    {
+                        myDict3.Add(item.FirstOrDefault(a => a.FaceNames != null).FontFamily.Source, item.FirstOrDefault(a => a.FontFamily != null));
+                    };
+                    gtf = null;
+                }
+                else
+                {
+                    myDict3.Add(item.FirstOrDefault(a => a.FaceNames != null).FontFamily.Source, item.FirstOrDefault(a => a.FontFamily != null));
+                }
+            }
 
             List<Uri> uris = new();
             GlyphTypeface glyphTypeface1 = null;
@@ -68,20 +125,24 @@ namespace _20211205_Glyph
                 //_ = aaa.Select(a => a.TryGetGlyphTypeface(out glyphTypeface1));//空っぽ
                 if (glyphTypeface1 != null)
                 {
-                    myDict.TryAdd(System.IO.Path.GetFileNameWithoutExtension(glyphTypeface1.FontUri.AbsolutePath), glyphTypeface1.FontUri);
+                    myDict.TryAdd(System.IO.Path.GetFileNameWithoutExtension(glyphTypeface1.FontUri.LocalPath), glyphTypeface1.FontUri);
                     uris.Add(glyphTypeface1.FontUri);
                     glyphTypeface1 = null;
                 }
             }
-            var groupe = uris.GroupBy(a => System.IO.Path.GetFileNameWithoutExtension(a.AbsolutePath));
-            //var fdict = uris.ToDictionary(a => System.IO.Path.GetFileNameWithoutExtension(a.AbsolutePath));
-            //SortedDictionary<string, Uri> sfdict = new(fdict);
-            SortedDictionary<string, Uri> fontDict = new();
-            foreach (var item in uris)
-            {
-                fontDict.Add(System.IO.Path.GetFileNameWithoutExtension(item.AbsolutePath), item);
-            }
-            
+            var group = uris.GroupBy(a => System.IO.Path.GetFileNameWithoutExtension(a.LocalPath)).ToArray();
+            //
+            Dictionary<string, Uri> groupFirst = uris
+                .GroupBy(a => System.IO.Path.GetFileNameWithoutExtension(a.LocalPath))
+                .ToDictionary(a => a.Key, a => a.First());
+            SortedDictionary<string, Uri> fontDict = new(groupFirst);
+            //
+            Dictionary<string, Uri> groupFirst2 = uris
+                .GroupBy(a => System.IO.Path.GetFileNameWithoutExtension(a.LocalPath))
+                .ToDictionary(a => a.Key, a => a.First());
+
+
+
 
 
             GlyphRun gr = new(new GlyphTypeface(uris[53]),
