@@ -25,30 +25,50 @@ namespace _20211204_Font一覧リスト
     public partial class MainWindow : Window
     {
         private List<FontData> fontDatas = new();
+        private Dictionary<string, FontFamily> FontDictionary = new();
+
         public MainWindow()
         {
             InitializeComponent();
 
 
-            //日本語のフォント名があればそれを選択
             string ietf = System.Globalization.CultureInfo.CurrentCulture.IetfLanguageTag;
             var language = System.Windows.Markup.XmlLanguage.GetLanguage(ietf);
             foreach (var item in Fonts.SystemFontFamilies)
             {
                 FontData data = new() { FontFamily = item, Name = item.Source };
+                string name = item.Source;
+                FontFamily font = item;
 
+                //日本語のフォント名があればそれを選択
                 foreach (var c in item.FamilyNames)
                 {
                     if (c.Key == language)
                     {
                         data.Name = c.Value;
+                        name = c.Value;
                         continue;
                     }
                 }
 
                 fontDatas.Add(data);
+                FontDictionary.Add(name, font);
             }
+            //var neko = fontDatas[89];
+            //var inu = neko.FontFamily.GetTypefaces();
+            //foreach (var item in inu)
+            //{
+            //    item.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface);
+            //    var pa = glyphTypeface.FontUri;
+            //}
+
             MyListBox.ItemsSource = fontDatas;
+            
+            SortedDictionary<string, FontFamily> keyValuePairs = new(FontDictionary);
+            MyListBox2.ItemsSource = keyValuePairs;
+
+
+            
         }
     }
 
@@ -56,5 +76,11 @@ namespace _20211204_Font一覧リスト
     {
         public string Name { get; set; }
         public FontFamily FontFamily { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+            //return base.ToString();
+        }
     }
 }

@@ -6,13 +6,19 @@
         xmlns:local="clr-namespace:_20211204_Font一覧リスト"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-    <ListBox x:Name="MyListBox">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <ListBox Grid.Column="0" x:Name="MyListBox" FontSize="20">
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <TextBlock Text="{Binding Name}" FontFamily="{Binding FontFamily}" FontSize="20"/>
+          <TextBlock Text="{Binding Name}" FontFamily="{Binding FontFamily}"/>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+    <ListBox Grid.Column="1" x:Name="MyListBox2" FontSize="20"
+             DisplayMemberPath="Key" SelectedValuePath="Value"/>
   </Grid>
 </Window>
