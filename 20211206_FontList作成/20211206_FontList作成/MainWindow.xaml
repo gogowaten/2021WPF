@@ -7,6 +7,22 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
   <Grid x:Name="MyGrid">
-    <TextBlock x:Name="MyTextBlock" Text="fgjゆっくり" FontSize="50"/>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="150"/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+
+    <TextBlock Grid.Row="0" x:Name="MyTextBlock" Text="fgjゆっくり" FontSize="50"/>
+
+    <ListBox Grid.Row="1" x:Name="MyListBox" FontSize="20">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
+          <!--<TextBlock Text="{Binding FontFamily.Source}" FontFamily="{Binding FontFamily}"/>-->
+          <!--<TextBlock Text="{Binding FamilyName}" FontFamily="{Binding FontFamily}"/>-->
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
   </Grid>
 </Window>
