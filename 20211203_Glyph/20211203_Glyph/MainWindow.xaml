@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20211203_Glyph"
         mc:Ignorable="d"
-        Title="MainWindow" Height="250" Width="400">
+        Title="MainWindow" Height="250" Width="700">
   <!--GlyphRun オブジェクトと Glyphs 要素の概要 - WPF .NET Framework | Microsoft Docs
 https://docs.microsoft.com/ja-jp/dotnet/desktop/wpf/advanced/introduction-to-the-glyphrun-object-and-glyphs-element?view=netframeworkdesktop-4.8-->
 

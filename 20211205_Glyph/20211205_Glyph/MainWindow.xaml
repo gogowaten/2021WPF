@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:_20211205_Glyph"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+  <Grid x:Name="MyGrid">
     <Canvas x:Name="MyCanvas">
       <!--<Glyphs FontUri="C:\Windows\Fonts\meiryo.ttc"
               FontRenderingEmSize="50"
@@ -19,7 +19,7 @@
               UnicodeString="ゆっくりしていってね！！！"
               StyleSimulations="BoldSimulation"
               OriginX="0" OriginY="100"/>-->
-      
+
     </Canvas>
-    </Grid>
+  </Grid>
 </Window>

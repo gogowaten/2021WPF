@@ -24,17 +24,15 @@ namespace _20211203_Glyph
         {
             InitializeComponent();
 
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
-            string[] fList = System.IO.Directory.GetFiles(path, "*");
+            //string path = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+            //string[] fList = System.IO.Directory.GetFiles(path, "*");
 
-            string path2 = System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Microsoft\Windows\Fonts");
-            string[] fList2 = System.IO.Directory.GetFiles(path2, "*");
+            //string path2 = System.IO.Path.Combine(
+            //    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            //    @"Microsoft\Windows\Fonts");
+            //string[] fList2 = System.IO.Directory.GetFiles(path2, "*");
 
-            var count = fList.Length;
-
-
+            //var count = fList.Length;
 
 
 
@@ -42,68 +40,61 @@ namespace _20211203_Glyph
 
 
 
-            SortedDictionary<string, string> MyFonts = new();
 
-            var dirF = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
 
-            //フォントフォルダのフォントファイルリストUri取得
-            //string[] uris = System.IO.Directory.GetFiles(dirF, "*.ttf");
-            IEnumerable<Uri> uris =
-                System.IO.Directory.GetFiles(dirF, "*.ttf").Concat
-                (System.IO.Directory.GetFiles(dirF, "*.ttc")).Concat
-                (System.IO.Directory.GetFiles(dirF, "*.otf")).Select
-                (x => new Uri(x));
-            //IEnumerable<string> ffs =
+            //SortedDictionary<string, string> MyFonts = new();
+
+            //var dirF = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+
+            ////フォントフォルダのフォントファイルリストUri取得
+            ////string[] uris = System.IO.Directory.GetFiles(dirF, "*.ttf");
+            //IEnumerable<Uri> uris =
             //    System.IO.Directory.GetFiles(dirF, "*.ttf").Concat
             //    (System.IO.Directory.GetFiles(dirF, "*.ttc")).Concat
-            //    (System.IO.Directory.GetFiles(dirF, "*.otf"));
+            //    (System.IO.Directory.GetFiles(dirF, "*.otf")).Select
+            //    (x => new Uri(x));
+            ////IEnumerable<string> ffs =
+            ////    System.IO.Directory.GetFiles(dirF, "*.ttf").Concat
+            ////    (System.IO.Directory.GetFiles(dirF, "*.ttc")).Concat
+            ////    (System.IO.Directory.GetFiles(dirF, "*.otf"));
 
 
-            //フォントフォルダのファイルリスト取得、これだと余計なファイルも入る
-            var ffs2 = System.IO.Directory.GetFiles(dirF, "*", System.IO.SearchOption.AllDirectories);
+            ////フォントフォルダのファイルリスト取得、これだと余計なファイルも入る
+            //var ffs2 = System.IO.Directory.GetFiles(dirF, "*", System.IO.SearchOption.AllDirectories);
 
-            //ユーザーのフォントフォルダのファイルリスト取得
-            string userDir = System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Microsoft\Windows\Fonts");
-            string[] userFonts;
-            //List<string> userFonts = new();
-            if (System.IO.Directory.Exists(userDir))
-            {
-                userFonts = System.IO.Directory.GetFiles(userDir, "*");
-            }
+            ////ユーザーのフォントフォルダのファイルリスト取得
+            //string userDir = System.IO.Path.Combine(
+            //    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            //    @"Microsoft\Windows\Fonts");
+            //string[] userFonts;
+            ////List<string> userFonts = new();
+            //if (System.IO.Directory.Exists(userDir))
+            //{
+            //    userFonts = System.IO.Directory.GetFiles(userDir, "*");
+            //}
 
-            var ggg = GetFontUris();
-
-
-
-
-            ICollection<FontFamily> fs = Fonts.SystemFontFamilies;
+            //var ggg = GetFontUris();
 
 
 
-            foreach (var item in fs)
-            {
-                var ftf = item.FamilyTypefaces;
-                var type = item.GetType();
-                var tfs = item.GetTypefaces();
-                var fm = item.FamilyMaps;
-                var bu = item.BaseUri;
-                LanguageSpecificStringDictionary fn = item.FamilyNames;
-                var so = item.Source;
-                foreach (var name in fn)
-                {
-                    string fName = name.Value;
-                    string dd = System.IO.Path.Combine(dirF, fName);
-                    dd += ".otf";
-                    var ex = System.IO.File.Exists(dd);
-                }
-            }
+
+
 
             string str = "ゆっくりしていってね！！！";
+            var meiryo = new FontFamily("メイリオ");
+            //var meiryo = new FontFamily("Meiryo UI");
+            var typefaces = meiryo.GetTypefaces();
+            Uri uri = null;
+            foreach (var item in typefaces)
+            {
+                item.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface);
+                uri = glyphTypeface.FontUri;
+                break;
+            }
+
             Glyphs glyphs = new()
             {
-                FontUri = new Uri("Meiryo UI"),
+                FontUri = uri,
                 FontRenderingEmSize = 50,
                 UnicodeString = str,
                 Fill = Brushes.MediumAquamarine
@@ -112,32 +103,32 @@ namespace _20211203_Glyph
 
         }
 
-        /// <summary>
-        /// フォントファイルのUriリスト作成
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<Uri> GetFontUris()
-        {
-            //systemのフォントフォルダpath
-            string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
-            //ユーザーのフォントフォルダpath
-            string userPath = System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Microsoft\Windows\Fonts");
+        ///// <summary>
+        ///// フォントファイルのUriリスト作成
+        ///// </summary>
+        ///// <returns></returns>
+        //private IEnumerable<Uri> GetFontUris()
+        //{
+        //    //systemのフォントフォルダpath
+        //    string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+        //    //ユーザーのフォントフォルダpath
+        //    string userPath = System.IO.Path.Combine(
+        //        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        //        @"Microsoft\Windows\Fonts");
 
-            IEnumerable<Uri> uris = MakeList(systemPath).Concat(MakeList(userPath));
+        //    IEnumerable<Uri> uris = MakeList(systemPath).Concat(MakeList(userPath));
 
-            //指定フォルダのフォントファイルリスト作成、対象はttf,ttc,otf
-            IEnumerable<Uri> MakeList(string folderPath)
-            {
-                IEnumerable<Uri> temp =
-                    System.IO.Directory.GetFiles(folderPath, "*.ttf").Concat
-                    (System.IO.Directory.GetFiles(folderPath, "*.ttc")).Concat
-                    (System.IO.Directory.GetFiles(folderPath, "*.otf")).Select
-                    (x => new Uri(x));
-                return temp;
-            }
-            return uris;
-        }
+        //    //指定フォルダのフォントファイルリスト作成、対象はttf,ttc,otf
+        //    IEnumerable<Uri> MakeList(string folderPath)
+        //    {
+        //        IEnumerable<Uri> temp =
+        //            System.IO.Directory.GetFiles(folderPath, "*.ttf").Concat
+        //            (System.IO.Directory.GetFiles(folderPath, "*.ttc")).Concat
+        //            (System.IO.Directory.GetFiles(folderPath, "*.otf")).Select
+        //            (x => new Uri(x));
+        //        return temp;
+        //    }
+        //    return uris;
+        //}
     }
 }
