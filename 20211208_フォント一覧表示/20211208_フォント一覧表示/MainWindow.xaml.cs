@@ -5,6 +5,8 @@ using System.Windows.Media;
 using System.Globalization;
 using System.Windows.Markup;
 
+//WPF、インストールされているフォント一覧取得、Fonts.SystemFontFamiliesそのままでは不十分だった - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2021/12/09/125022
 
 
 namespace _20211208_フォント一覧表示
