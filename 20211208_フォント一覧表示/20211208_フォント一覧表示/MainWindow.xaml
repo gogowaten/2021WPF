@@ -15,23 +15,24 @@
       <TextBlock DockPanel.Dock="Top" x:Name="MyTextBlock1" FontSize="20" 
                  Background="MediumAquamarine" Foreground="White" TextAlignment="Center"/>
       <ListBox Name="MyListBox1" FontSize="20">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <!--<TextBlock Text="{Binding Source}" FontFamily="{Binding }"/>--><!--Fonts.SystemFontFamilysを直接ItemsSourceにする場合-->
-          <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <!--Fonts.SystemFontFamilysを直接ItemsSourceにする場合-->
+            <!--<TextBlock Text="{Binding Source}" FontFamily="{Binding }"/>-->
+            <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
       </ListBox>
     </DockPanel>
     <DockPanel Grid.Column="1" Margin="10">
       <TextBlock DockPanel.Dock="Top" x:Name="MyTextBlock2" FontSize="20" 
                  Background="MediumOrchid" Foreground="White" TextAlignment="Center"/>
       <ListBox Name="MyListBox2" FontSize="20">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
       </ListBox>
     </DockPanel>
   </Grid>

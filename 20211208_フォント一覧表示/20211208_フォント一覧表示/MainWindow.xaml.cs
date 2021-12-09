@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Globalization;
 using System.Windows.Markup;
+
+
 
 namespace _20211208_フォント一覧表示
 {
@@ -45,7 +37,7 @@ namespace _20211208_フォント一覧表示
             //    System.Windows.Markup.XmlLanguage.GetLanguage(
             //    CultureInfo.CurrentCulture.IetfLanguageTag);
             CultureInfo culture = CultureInfo.CurrentCulture;//日本
-            CultureInfo cultureUS = new("en-US");//米国？
+            CultureInfo cultureUS = new("en-US");//英語？米国？
 
             List<string> uName = new();//フォント名の重複判定に使う
             Dictionary<string, FontFamily> tempDictionary = new();
@@ -91,10 +83,6 @@ namespace _20211208_フォント一覧表示
             //英語のXmlLanguage取得
             XmlLanguage[] lang0 = FontFamily.FamilyNames.Select(a => a.Key).ToArray();
             
-
-            CultureInfo culture = CultureInfo.CurrentCulture;
-            CultureInfo cultureUS = new("en-US");
-
             List<string> uName = new();//フォント名の重複判定に使う
             Dictionary<string, FontFamily> tempDictionary = new();
 
