@@ -5,6 +5,11 @@ using System.Windows.Media;
 using System.Globalization;
 using System.Windows.Markup;
 
+//参照したところ
+//SystemFontFamiliesを表示する part1 : Win32 & wpf メモ
+//http://blog.livedoor.jp/oans/archives/54753149.html
+
+
 //WPF、インストールされているフォント一覧取得、Fonts.SystemFontFamiliesそのままでは不十分だった - 午後わてんのブログ
 //https://gogowaten.hatenablog.com/entry/2021/12/09/125022
 
