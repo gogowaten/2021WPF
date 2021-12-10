@@ -40,7 +40,25 @@ namespace _20211205_Glyph
             Glyphs glyphs;
             GlyphTypeface glyphTypeface;
 
-            glyphRun. = new();
+            FontFamily fontFamily = new FontFamily("Meiryo UI");
+            var typefaces = fontFamily.GetTypefaces();
+            Uri myFontUri = null;
+            foreach (var face in typefaces)
+            {
+                face.TryGetGlyphTypeface(out GlyphTypeface gType);
+                myFontUri = gType.FontUri;
+                break;
+            }
+
+            glyphs = new();
+            glyphs.FontUri = myFontUri;
+            glyphs.FontRenderingEmSize = 100;
+            //glyphs.StyleSimulations = StyleSimulations.BoldItalicSimulation;
+            glyphs.UnicodeString = "(ゆっくり)";
+            glyphs.Fill = Brushes.MediumOrchid;
+            //glyphs.IsSideways = true;
+            MyGrid.Children.Add(glyphs);
+
             //GlyphRun クラス (System.Windows.Media) | Microsoft Docs
             //https://docs.microsoft.com/ja-jp/dotnet/api/system.windows.media.glyphrun?view=net-6.0
             //  同じ描画スタイルが設定され、サイズ、フォント、およびフォントの書体が同じである一連のグリフを表します。
