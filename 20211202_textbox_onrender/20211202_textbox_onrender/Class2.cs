@@ -30,7 +30,7 @@ namespace _20211202_textbox_onrender
             RootCanvas = (Canvas)template.FindName(ROOT_NAME, this);
             RootCanvas.Background = Brushes.Red;
             Class1 class1 = new();
-            class1.Text = "class1";
+            class1.Text = "testClass2";
             class1.BorderThickness = new Thickness(10);
             
             RootCanvas.Children.Add(class1);

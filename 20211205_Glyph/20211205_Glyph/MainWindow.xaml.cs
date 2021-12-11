@@ -17,6 +17,9 @@ using System.Globalization;
 //SystemFontFamiliesを表示する part1 : Win32 & wpf メモ
 //http://blog.livedoor.jp/oans/archives/54753149.html
 
+
+//使わないかも、FormattedTextで十分かな、違いがわからん
+
 namespace _20211205_Glyph
 {
     /// <summary>
@@ -27,6 +30,14 @@ namespace _20211205_Glyph
         public MainWindow()
         {
             InitializeComponent();
+
+
+            //GlyphsとGlyphRun
+            //Glypes
+            //  指定したstringを表示できる、要素、element
+            //  GlyphRunに変換できる
+            //GlyphRunは
+            //  stringじゃなくてchar（1文字）ごとに細かく指定できる
 
             Test2();
 
@@ -56,8 +67,49 @@ namespace _20211205_Glyph
             //glyphs.StyleSimulations = StyleSimulations.BoldItalicSimulation;
             glyphs.UnicodeString = "(ゆっくり)";
             glyphs.Fill = Brushes.MediumOrchid;
+            //glyphs.BidiLevel = 1;
             //glyphs.IsSideways = true;
+            GlyphRun gRun = glyphs.ToGlyphRun();
+            var chars = gRun.Characters;
+            var clustre = gRun.ClusterMap;
+            var box = gRun.ComputeAlignmentBox();
+            var inkBox = gRun.ComputeInkBoundingBox();
+            var dfName = gRun.DeviceFontName;
+            var inside = gRun.GetCaretCharacterHitFromDistance(100, out bool isindside);
+            var hit = gRun.GetNextCaretCharacterHit(new System.Windows.Media.TextFormatting.CharacterHit());
+            var gInd = gRun.GlyphIndices;
+            var gOffset = gRun.GlyphOffsets;
+            var gTypeface = gRun.GlyphTypeface;
+            
             MyGrid.Children.Add(glyphs);
+
+            DrawingVisual dv = new();
+            //dv.Offset = new Vector(0, -100);
+
+            using (var dc = dv.RenderOpen())
+            {
+                //dc.DrawRectangle(Brushes.MediumBlue, null, new Rect(0, 0, 500, 500));
+                //dc.DrawRectangle(Brushes.MediumBlue, null, new Rect(0, 0, box.Width, box.Height));
+                dc.DrawGlyphRun(Brushes.MediumAquamarine, gRun);
+                
+            }
+            Rect r3 = dv.Drawing.Bounds;
+            Rect r = dv.ContentBounds;
+            Rect r2 = dv.DescendantBounds;
+            var geo = gRun.BuildGeometry();
+            Rect rectGeo1 = geo.Bounds;
+            Rect rectGeo2 = geo.GetRenderBounds(null);
+            RenderTargetBitmap bitmap = new((int)box.Width, (int)box.Height, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(dv);
+
+            glyphRunDrawing = new(Brushes.MediumAquamarine, gRun);
+            MyGrid.Background = new DrawingBrush(glyphRunDrawing);
+            //Glyphs
+            //FontUri               フォント
+            //FontRenderingEmSize   フォントサイズみたいなもの
+            //StyleSimulations      太字と斜体の指定
+            //BidiLevel             文字を並べる向きの指定、0or偶数で左から、奇数で右からになる
+            //ToGlyphRun()          GlyphRun作成
 
             //GlyphRun クラス (System.Windows.Media) | Microsoft Docs
             //https://docs.microsoft.com/ja-jp/dotnet/api/system.windows.media.glyphrun?view=net-6.0

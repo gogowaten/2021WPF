@@ -15,7 +15,7 @@
         <local:Class2 x:Name="MyClass2" Canvas.Left="0" Canvas.Top="0"
                       />
       </Canvas>
-      <local:Class1 Text="test"
+      <local:Class1 Text="testClass1"
                   FontSize="{Binding ElementName=fSize, Path=Value}"/>
     </StackPanel>
   </Grid>
