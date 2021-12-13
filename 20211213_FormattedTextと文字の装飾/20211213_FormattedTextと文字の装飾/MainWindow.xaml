@@ -6,7 +6,11 @@
         xmlns:local="clr-namespace:_20211213_FormattedTextと文字の装飾"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-  <Grid>
-    <TextBox x:Name="MyTextBox"/>
+  <Grid UseLayoutRounding="True">
+    <StackPanel>
+      <TextBox x:Name="MyTextBox" FontSize="50"/>
+      <local:FormattedTextBox Text="abcdefg" FontSize="200"/>
+      <Image x:Name="MyImage" Stretch="None"/>
+    </StackPanel>
   </Grid>
 </Window>
