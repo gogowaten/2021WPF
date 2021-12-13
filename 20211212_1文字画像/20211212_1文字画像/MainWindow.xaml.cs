@@ -24,10 +24,10 @@ namespace _20211212_1文字画像
     /// DrawTextでは文字の色とDecorationの色を別に指定できるけど、Geometryではできなさそう
     /// 逆にGeometryでは縁取りができるけど、DrawTextではできない
     /// 
-    /// 指定範囲でアンダーラインできる？
+    /// 範囲指定でアンダーラインなどできる？→できた、けどGeometryでは文字色と同じになるはず
     /// 縁取りの2重3重にできる？→できた
     /// 太字以上に太くできる？→できた、GeometryのGetWidenedPathGeometry()
-    /// ドロップシャドウできる？
+    /// ドロップシャドウできる？できた、
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -60,8 +60,8 @@ namespace _20211212_1文字画像
             fmText.SetTextDecorations(textDecorations);
 
             DrawingVisual dv = new();
-            double w = fmText.WidthIncludingTrailingWhitespace;
-            double h = fmText.Height;
+            int w = (int)fmText.WidthIncludingTrailingWhitespace;
+            int h = (int)fmText.Height;
             using (var dc = dv.RenderOpen())
             {
                 dc.DrawRectangle(Brushes.Green, null, new Rect(0, 0, w, h));
@@ -80,7 +80,7 @@ namespace _20211212_1文字画像
                 dc.DrawRectangle(Brushes.Green, null, new Rect(0, 0, w, h));
                 dc.DrawGeometry(Brushes.MediumBlue, null, geo);
             }
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
 
             //多色縁取りその1
@@ -96,7 +96,7 @@ namespace _20211212_1文字画像
                 dc.DrawGeometry(Brushes.LightGray, null, wideGeo1);
                 dc.DrawGeometry(Brushes.Red, null, geo);
             }
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
 
 
@@ -113,7 +113,7 @@ namespace _20211212_1文字画像
                 //dc.DrawGeometry(Brushes.LightGray, null, outLine1);
                 dc.DrawGeometry(Brushes.Red, null, geo);
             }
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
 
             //太字以上に太く
@@ -126,7 +126,7 @@ namespace _20211212_1文字画像
                 dc.DrawRectangle(Brushes.DarkRed, null, new Rect(0, 0, w, h));
                 dc.DrawGeometry(Brushes.Salmon, null, wideGeo1);
             }
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
 
             //ドロップシャドウ方法1
@@ -148,7 +148,7 @@ namespace _20211212_1文字画像
                 dc.DrawRectangle(Brushes.DarkRed, null, new Rect(0, 0, w, h));
                 dc.DrawRectangle(visualBrush, null, new Rect(0, 0, w, h));
             }
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv2);
 
             //ドロップシャドウ方法2
@@ -162,7 +162,7 @@ namespace _20211212_1文字画像
                 dc.DrawGeometry(Brushes.Salmon, null, geo);
             }
             //画像化
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
 
             using (var dc = dv.RenderOpen())
@@ -171,14 +171,92 @@ namespace _20211212_1文字画像
                 dc.DrawRectangle(Brushes.DarkRed, null, new Rect(0, 0, w, h));
                 dc.DrawImage(bitmap, new Rect(0, 0, w, h));
             }
-            bitmap = new((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv2);
 
 
+            //範囲指定装飾1、FormattedText、装飾と文字色は別に指定できる
+            textDecoration = new(
+                TextDecorationLocation.Underline,
+                new Pen(Brushes.Red, 20),
+                0,
+                TextDecorationUnit.FontRecommended,
+                TextDecorationUnit.FontRecommended);
+            textDecorations = new();
+            textDecorations.Add(textDecoration);
+            fmText.SetTextDecorations(null);
+            fmText.SetTextDecorations(textDecorations, 3, 5);//範囲指定
+            dv = new();
+            using (var dc = dv.RenderOpen())
+            {
+                dc.DrawRectangle(Brushes.Green, null, new Rect(0, 0, w, h));
+                dc.DrawText(fmText, new Point(0, 0));
+                Point offsetP = new(0, -((fmText.Height - fmText.Extent) / 2.0));
+                //dc.DrawText(fmText, offsetP);
+            }
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(dv);
 
+
+            //範囲指定装飾2、Geometry、装飾は文字色と同じになる
+            textDecoration = new(
+                TextDecorationLocation.Underline,
+                new Pen(Brushes.Red, 20),
+                0,
+                TextDecorationUnit.FontRecommended,
+                TextDecorationUnit.FontRecommended);
+            textDecorations = new();
+            textDecorations.Add(textDecoration);
+            fmText.SetTextDecorations(null);
+            fmText.SetTextDecorations(textDecorations, 3, 5);//範囲指定
+            geo = fmText.BuildGeometry(new Point());
+            dv = new();
+            using (var dc = dv.RenderOpen())
+            {
+                dc.DrawRectangle(Brushes.Green, null, new Rect(0, 0, w, h));
+                dc.DrawGeometry(Brushes.MediumAquamarine, null, geo);
+            }
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(dv);
+
+
+            //多重縁取り
+            geo = fmText.BuildGeometry(new Point());
+            //myPen = new Pen(Brushes.Transparent, 2);
+            //wideGeo1 = geo.GetWidenedPathGeometry(myPen);
+            //wideGeo2 = wideGeo1.GetWidenedPathGeometry(myPen);
+            //int wideCount = wideGeo1.Figures.Count;
+            //PathGeometry outline1 = geo.GetOutlinedPathGeometry();
+            //PathGeometry outline2 = outline1.GetOutlinedPathGeometry();
+            //int outCount = outline1.Figures.Count;
+            //PathGeometry flatGeo = geo.GetFlattenedPathGeometry();
+            //PathGeometry flatGeo2 = flatGeo.GetFlattenedPathGeometry();
+            //int flatCount = flatGeo.Figures.Count;
+            //TranslateTransform tt = new(20, 20);
+            var geo2 = fmText.BuildGeometry(new Point(20,20));
+            using (var dc = dv.RenderOpen())
+            {
+                dc.DrawGeometry(null, new Pen(Brushes.Black, 8), geo2);
+                dc.DrawGeometry(null, new Pen(Brushes.DarkGoldenrod, 6), geo);
+                dc.DrawGeometry(null, new Pen(Brushes.Gold, 4), geo);
+                dc.DrawGeometry(null, new Pen(Brushes.White, 2), geo);
+                dc.DrawGeometry(Brushes.Red, null, geo);
+            }
+            bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(dv);
 
         }
 
-
+        private BitmapSource GeometryToBitmap(Geometry geometry, Brush brush, Pen pen, int width, int height)
+        {
+            DrawingVisual drawing = new();
+            using (var dc = drawing.RenderOpen())
+            {
+                dc.DrawGeometry(brush, pen, geometry);
+            }
+            RenderTargetBitmap bitmap = new(width, height, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(drawing);
+            return bitmap;
+        }
     }
 }
