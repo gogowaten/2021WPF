@@ -5,11 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20211213_FormattedTextと文字の装飾"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="850" Width="800">
   <Grid UseLayoutRounding="True">
     <StackPanel>
-      <TextBox x:Name="MyTextBox" FontSize="50"/>
-      <local:FormattedTextBox Text="abcdefg" FontSize="200"/>
+      <local:FormattedTextBox1 Text="下線アンダーラインUnderLine abcdefg" FontSize="50" Margin="15"/>
+      <local:FormattedTextBox3 Text="基線ベースラインBaseLine" FontSize="50" Margin="15"/>
+      <local:FormattedTextBox4 Text="上線オーバーラインOverLine" FontSize="50" Margin="15"/>
+      <local:FormattedTextBox5 Text="取り消し線Strikethrough" FontSize="50" Margin="15"/>
+      <local:FormattedTextBox2 Text="二重下線PenOffset" FontSize="50" Margin="15"/>
+      <local:FormattedTextBox6 Text="全線AllTextDecorationLocation" FontSize="50" Margin="15"/>
+      <local:FormattedTextBox7 Text="装飾の範囲指定（3文字目から4文字）" FontSize="50" Margin="15"/>
       <Image x:Name="MyImage" Stretch="None"/>
     </StackPanel>
   </Grid>

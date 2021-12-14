@@ -21,50 +21,20 @@ namespace _20211213_FormattedTextと文字の装飾
     /// </summary>
     public partial class MainWindow : Window
     {
-        public BitmapSource MyBitmap { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-            MyTextBox.TextChanged += MyTextBox_TextChanged;
-            MyImage.DataContext = this;
+
+
         }
 
-        private void MyTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            //throw new NotImplementedException();
-            if (MyTextBox.Text.Trim().Length == 0) { return; }
 
-            FormattedText formattedText = new(
-                MyTextBox.Text,
-                CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                new Typeface(
-                    MyTextBox.FontFamily,
-                    MyTextBox.FontStyle,
-                    MyTextBox.FontWeight,
-                    MyTextBox.FontStretch),
-                MyTextBox.FontSize,
-                Brushes.Red,
-                96);
-
-            DrawingVisual dv = new();
-            using (var dc = dv.RenderOpen())
-            {
-                dc.DrawText(formattedText, new Point());
-            }
-
-            int w = (int)formattedText.Width;
-            int h = (int)formattedText.Height;
-            RenderTargetBitmap bitmap = new(w, h, 96, 96, PixelFormats.Pbgra32);
-            bitmap.Render(dv);
-            MyImage.Source = bitmap;
-        }
     }
 
-    public class FormattedTextBox : TextBox
+    public class BaseFormattedTextBox : TextBox
     {
-        public FormattedTextBox()
+        public BaseFormattedTextBox()
         {
             Foreground = Brushes.Transparent;
             Background = Brushes.Transparent;
@@ -74,6 +44,79 @@ namespace _20211213_FormattedTextと文字の装飾
             base.OnTextChanged(e);
             InvalidateVisual();
         }
+
+    }
+
+    /// <summary>
+    /// アンダーライン
+    /// </summary>
+    public class FormattedTextBox1 : BaseFormattedTextBox
+    {
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            //base.OnRender(drawingContext);
+            if (Text.Trim().Length == 0) { return; }
+
+            FormattedText formattedText = new(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Gray,
+                96);
+            TextDecoration textDecoration = new();
+            textDecoration.Pen = new Pen(Brushes.Magenta, 1);
+            textDecoration.Location = TextDecorationLocation.Underline;
+            textDecoration.PenOffset = 0;
+            TextDecorationCollection decorations = new();
+            decorations.Add(textDecoration);
+
+            formattedText.SetTextDecorations(decorations);
+            drawingContext.DrawText(formattedText, new Point());
+        }
+    }
+
+    /// <summary>
+    /// 二重アンダーライン
+    /// </summary>
+    public class FormattedTextBox2 : BaseFormattedTextBox
+    {
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            //base.OnRender(drawingContext);
+            if (Text.Trim().Length == 0) { return; }
+
+            FormattedText formattedText = new(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Gray,
+                96);
+            TextDecoration textDecoration = new();
+            textDecoration.Pen = new Pen(Brushes.MediumSpringGreen, 1);
+            textDecoration.Location = TextDecorationLocation.Underline;
+            textDecoration.PenOffset = 0;
+            TextDecorationCollection decorations = new();
+            decorations.Add(textDecoration);
+            textDecoration = new();
+            textDecoration.Pen = new Pen(Brushes.Magenta, 1);
+            textDecoration.Location = TextDecorationLocation.Underline;
+            textDecoration.PenOffset = 1;
+            decorations.Add(textDecoration);
+
+            formattedText.SetTextDecorations(decorations);
+            drawingContext.DrawText(formattedText, new Point());
+        }
+    }
+
+    /// <summary>
+    /// ベースライン
+    /// </summary>
+    public class FormattedTextBox3 : BaseFormattedTextBox
+    {
         protected override void OnRender(DrawingContext drawingContext)
         {
             //base.OnRender(drawingContext);
@@ -89,17 +132,142 @@ namespace _20211213_FormattedTextと文字の装飾
                 96);
             TextDecoration textDecoration = new();
             textDecoration.Pen = new Pen(Brushes.Red, 1);
+            textDecoration.Location = TextDecorationLocation.Baseline;
+            textDecoration.PenOffset = 0;
+            TextDecorationCollection decorations = new();
+            decorations.Add(textDecoration);
+
+            formattedText.SetTextDecorations(decorations);
+            drawingContext.DrawText(formattedText, new Point());
+        }
+    }
+
+    /// <summary>
+    /// オーバーライン
+    /// </summary>
+    public class FormattedTextBox4 : BaseFormattedTextBox
+    {
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            //base.OnRender(drawingContext);
+            if (Text.Trim().Length == 0) { return; }
+
+            FormattedText formattedText = new(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Gray,
+                96);
+            TextDecoration textDecoration = new();
+            textDecoration.Pen = new Pen(Brushes.Magenta, 1);
+            textDecoration.Location = TextDecorationLocation.OverLine;
+            textDecoration.PenOffset = 0;
+            TextDecorationCollection decorations = new();
+            decorations.Add(textDecoration);
+
+            formattedText.SetTextDecorations(decorations);
+            drawingContext.DrawText(formattedText, new Point());
+        }
+    }
+
+    /// <summary>
+    /// ストライクスルー打ち消し線
+    /// </summary>
+    public class FormattedTextBox5 : BaseFormattedTextBox
+    {
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            //base.OnRender(drawingContext);
+            if (Text.Trim().Length == 0) { return; }
+
+            FormattedText formattedText = new(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Gray,
+                96);
+            TextDecoration textDecoration = new();
+            textDecoration.Pen = new Pen(Brushes.DeepPink, 1);
+            textDecoration.Location = TextDecorationLocation.Strikethrough;
+            textDecoration.PenOffset = 0;
+            TextDecorationCollection decorations = new();
+            decorations.Add(textDecoration);
+
+            formattedText.SetTextDecorations(decorations);
+            drawingContext.DrawText(formattedText, new Point());
+        }
+    }
+
+    /// <summary>
+    /// 全部
+    /// </summary>
+    public class FormattedTextBox6 : BaseFormattedTextBox
+    {
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            //base.OnRender(drawingContext);
+            if (Text.Trim().Length == 0) { return; }
+
+            FormattedText formattedText = new(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Gray,
+                96);
+            TextDecorationCollection decorations = new();
+            decorations.Add(MakeTextDecoration(
+                TextDecorationLocation.Strikethrough, new Pen(Brushes.DeepPink, 1), 0));
+            decorations.Add(MakeTextDecoration(
+                TextDecorationLocation.Baseline, new Pen(Brushes.DeepPink, 1), 0));
+            decorations.Add(MakeTextDecoration(
+                TextDecorationLocation.OverLine, new Pen(Brushes.DeepPink, 1), 0));
+            decorations.Add(MakeTextDecoration(
+                TextDecorationLocation.Underline, new Pen(Brushes.DeepPink, 1), 0));
+            formattedText.SetTextDecorations(decorations);
+            drawingContext.DrawText(formattedText, new Point());
+        }
+        private static TextDecoration MakeTextDecoration(TextDecorationLocation location, Pen pen, double offset = 0.0)
+        {
+            TextDecoration textDecoration = new();
+            textDecoration.Pen = pen;
+            textDecoration.Location = location;
+            textDecoration.PenOffset = offset;
+            return textDecoration;
+        }
+    }
+
+    /// <summary>
+    /// 範囲指定
+    /// </summary>
+    public class FormattedTextBox7 : BaseFormattedTextBox
+    {
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            //base.OnRender(drawingContext);
+            if (Text.Trim().Length == 0) { return; }
+
+            FormattedText formattedText = new(
+                Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                Brushes.Gray,
+                96);
+
+            TextDecoration textDecoration = new();
+            textDecoration.Pen = new Pen(Brushes.DeepPink, 1);
             textDecoration.Location = TextDecorationLocation.Underline;
             textDecoration.PenOffset = 0;
             TextDecorationCollection decorations = new();
             decorations.Add(textDecoration);
-            textDecoration = new();
-            textDecoration.Pen = new Pen(Brushes.MediumVioletRed, 1);
-            textDecoration.Location = TextDecorationLocation.Underline;
-            textDecoration.PenOffset = 1;
-            decorations.Add(textDecoration);
-            
-            formattedText.SetTextDecorations(decorations);
+            formattedText.SetTextDecorations(decorations, 3, 4);
             drawingContext.DrawText(formattedText, new Point());
         }
     }
