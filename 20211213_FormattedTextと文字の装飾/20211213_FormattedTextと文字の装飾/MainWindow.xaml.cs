@@ -26,6 +26,9 @@ namespace _20211213_FormattedTextと文字の装飾
         {
             InitializeComponent();
 
+            TextDecoration textDecoration = new(TextDecorationLocation.Underline, new Pen(Brushes.Red, 1), 0, TextDecorationUnit.FontRecommended, TextDecorationUnit.FontRecommended);
+
+            MyTextBox.TextDecorations = new() { textDecoration };
 
         }
 
@@ -60,19 +63,11 @@ namespace _20211213_FormattedTextと文字の装飾
             FormattedText formattedText = new(
                 Text,
                 CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FlowDirection.RightToLeft,
+                new Typeface(FontFamily, FontStyles.Italic, FontWeights.Bold, FontStretch),
                 FontSize,
                 Brushes.Gray,
-                96);
-            TextDecoration textDecoration = new();
-            textDecoration.Pen = new Pen(Brushes.Magenta, 1);
-            textDecoration.Location = TextDecorationLocation.Underline;
-            textDecoration.PenOffset = 0;
-            TextDecorationCollection decorations = new();
-            decorations.Add(textDecoration);
-
-            formattedText.SetTextDecorations(decorations);
+                96);formattedText.TextAlignment = TextAlignment.Right;
             drawingContext.DrawText(formattedText, new Point());
         }
     }
@@ -82,6 +77,7 @@ namespace _20211213_FormattedTextと文字の装飾
     /// </summary>
     public class FormattedTextBox2 : BaseFormattedTextBox
     {
+        
         protected override void OnRender(DrawingContext drawingContext)
         {
             //base.OnRender(drawingContext);
@@ -91,23 +87,10 @@ namespace _20211213_FormattedTextと文字の装飾
                 Text,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                new Typeface(FontFamily, FontStyle, FontWeights.Black, FontStretch),
                 FontSize,
                 Brushes.Gray,
                 96);
-            TextDecoration textDecoration = new();
-            textDecoration.Pen = new Pen(Brushes.MediumSpringGreen, 1);
-            textDecoration.Location = TextDecorationLocation.Underline;
-            textDecoration.PenOffset = 0;
-            TextDecorationCollection decorations = new();
-            decorations.Add(textDecoration);
-            textDecoration = new();
-            textDecoration.Pen = new Pen(Brushes.Magenta, 1);
-            textDecoration.Location = TextDecorationLocation.Underline;
-            textDecoration.PenOffset = 1;
-            decorations.Add(textDecoration);
-
-            formattedText.SetTextDecorations(decorations);
             drawingContext.DrawText(formattedText, new Point());
         }
     }
@@ -126,18 +109,10 @@ namespace _20211213_FormattedTextと文字の装飾
                 Text,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                new Typeface(FontFamily, FontStyle, FontWeights.DemiBold, FontStretch),
                 FontSize,
                 Brushes.Gray,
                 96);
-            TextDecoration textDecoration = new();
-            textDecoration.Pen = new Pen(Brushes.Red, 1);
-            textDecoration.Location = TextDecorationLocation.Baseline;
-            textDecoration.PenOffset = 0;
-            TextDecorationCollection decorations = new();
-            decorations.Add(textDecoration);
-
-            formattedText.SetTextDecorations(decorations);
             drawingContext.DrawText(formattedText, new Point());
         }
     }
