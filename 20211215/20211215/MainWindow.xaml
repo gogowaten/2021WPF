@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:_20211215"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Left="{Binding Path=Left, Mode=TwoWay}">
+        Left="{Binding Path=WindowLeft, Mode=TwoWay}">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>

@@ -27,11 +27,16 @@ namespace _20211215
         public Canvas RootCanvas;
         private static readonly string RootName = "canvas";
         public ThumbData ThumbData;
+        private MainWindow MyMainWindow;
+        
 
-        public ThumbEx(UIElement element)
+        public ThumbEx(UIElement element,MainWindow mainWindow)
         {
-            ThumbData = new();
-            DataContext = ThumbData;
+            //ThumbData = new();
+            //DataContext = ThumbData;
+            Focusable = true;
+            MyMainWindow = mainWindow;
+
 
             ControlTemplate template = new(typeof(Thumb));
             template.VisualTree = new FrameworkElementFactory(typeof(Canvas), RootName);
@@ -58,12 +63,19 @@ namespace _20211215
             //binding.Mode = BindingMode.TwoWay;
             //this.SetBinding(Canvas.LeftProperty, binding);
 
-           
+
             //binding = new();
             //binding.Source = this;
             //binding.Path = new PropertyPath(LeftProperty);
             //binding.Mode = BindingMode.TwoWay;
             //SetBinding(this.ThumbData.Left, binding);
+            this.GotFocus += ThumbEx_GotFocus;
+        }
+
+        private void ThumbEx_GotFocus(object sender, RoutedEventArgs e)
+        {
+            //MyMainWindow.MyCurrentThumb = sender as ThumbEx;
+            MyMainWindow.DataContext = this;
         }
 
         public void AddContent(UIElement element)
