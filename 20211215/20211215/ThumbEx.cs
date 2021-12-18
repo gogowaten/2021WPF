@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Controls.Primitives;
 using System.ComponentModel;
-
+using System.Collections.ObjectModel;
 
 //DependencyProperty INotifyPropertyChanged
 
@@ -24,20 +24,21 @@ namespace _20211215
 {
     public class ThumbEx : Thumb
     {
-        public Canvas RootCanvas;
+        private Canvas RootCanvas;
         private static readonly string RootName = "canvas";
         public ThumbData ThumbData;
         private MainWindow MyMainWindow;
-        
+        private ObservableCollection<UIElement> Children = new();
 
-        public ThumbEx(UIElement element,MainWindow mainWindow)
+
+        public ThumbEx(UIElement element, MainWindow mainWindow)
         {
             //ThumbData = new();
             //DataContext = ThumbData;
             Focusable = true;
             MyMainWindow = mainWindow;
 
-
+            
             ControlTemplate template = new(typeof(Thumb));
             template.VisualTree = new FrameworkElementFactory(typeof(Canvas), RootName);
             Template = template;
@@ -47,7 +48,9 @@ namespace _20211215
             Canvas.SetLeft(this, 0);
             Canvas.SetTop(this, 0);
 
-            _ = RootCanvas.Children.Add(element);
+            //_ = RootCanvas.Children.Add(element);
+            AddChildren(element);
+
 
             Binding binding = new();
             binding.Source = this;
@@ -74,18 +77,23 @@ namespace _20211215
 
         private void ThumbEx_GotFocus(object sender, RoutedEventArgs e)
         {
-            //MyMainWindow.MyCurrentThumb = sender as ThumbEx;
             MyMainWindow.DataContext = this;
         }
 
-        public void AddContent(UIElement element)
+
+        public void AddChildren(UIElement element)
         {
             RootCanvas.Children.Add(element);
+            Children.Add(element);
+
+            
+
         }
 
+
         //
-        #region DependencyProperty
-        //public double MyLeft { get; set; }
+            #region DependencyProperty
+            //public double MyLeft { get; set; }
 
         public double Left
         {

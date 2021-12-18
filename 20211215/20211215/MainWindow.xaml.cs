@@ -100,14 +100,14 @@ namespace _20211215
             Canvas.SetLeft(textBox, 100);
 
             MyThunbEx2 = new(textBlock, this);
-            MyThunbEx2.AddContent(textBlock2);
-            MyThunbEx2.AddContent(textBox);
+            MyThunbEx2.AddChildren(textBlock2);
+            MyThunbEx2.AddChildren(textBox);
             MyCanvas.Children.Add(MyThunbEx2);
         }
 
         private void MyButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            DataContext = MyThunbEx2;
+            //DataContext = MyThunbEx2;
             //MyThunbEx.Focus();
             var f = MyThunbEx.Focusable;
             var current = MyCurrentThumb;
