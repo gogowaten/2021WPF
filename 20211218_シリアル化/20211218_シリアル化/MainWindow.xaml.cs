@@ -16,6 +16,7 @@ using System.Xml;
 using System.Windows.Markup;
 using System.Xml.Serialization;
 using System.Runtime.Serialization;
+using System.Collections.ObjectModel;
 
 namespace _20211218_シリアル化
 {
@@ -37,9 +38,19 @@ namespace _20211218_シリアル化
             MyData.Left = 20;
             MyData.MyListInt.Add(3);
             MyData.MyListInt.Add(200);
+            MyData.Observable = new ObservableCollection<int>() { 2, 5, 8 };
+            Dictionary<string, int> dict = new();
+            dict.Add("test1", 20);
+            dict.Add("test2", 50);
+            MyData.MyDictionary = dict;
+            MyData.MyDictionary.Add("test3", 99);
+
+            //MyData.MyDependencyInt = 50;
+            MyData.MyNotifyInt = 50;
 
             MyDataWithChilden = new();
             MyDataWithChilden.Children.Add(MyData);
+
 
             Test3(MyData);
             //string neko2 = Test2(MyData);
@@ -47,6 +58,13 @@ namespace _20211218_シリアル化
             //Test3(MyDataWithChilden);
             //string neko = Test1(MyData);
         }
+
+        /// <summary>
+        /// XamlDesignerSerializationManagerを使ってXAMLをシリアライズする
+        /// XAMLならほとんどシリアライズできるけど、XAMLだけ
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         private string Test1(object obj)
         {
             XmlWriterSettings settings = new();
