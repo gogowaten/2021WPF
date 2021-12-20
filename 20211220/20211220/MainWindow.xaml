@@ -6,7 +6,15 @@
         xmlns:local="clr-namespace:_20211220"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+  <Grid>
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Right" Width="150">
+        <Button x:Name="ButtonAdd" Content="Add" Click="ButtonAdd_Click"/>
+        <Button x:Name="ButtonCheck" Content="check" Click="ButtonCheck_Click"/>
+        <Label Content="{Binding Left}"/>
+        <TextBlock Text="{Binding Left}"/>
+      </StackPanel>
+      <Canvas x:Name="MyCanvas"/>
+    </DockPanel>
+  </Grid>
 </Window>
