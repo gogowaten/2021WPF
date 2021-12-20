@@ -57,6 +57,8 @@ namespace _20211218_シリアル化
 
             //Test3(MyDataWithChilden);
             //string neko = Test1(MyData);
+            DataContext = MyData;
+
         }
 
         /// <summary>

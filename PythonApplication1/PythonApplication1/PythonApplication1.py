@@ -12,8 +12,8 @@ def printVersions(versions):
 
 def readFile(version):
     lines = []
-    with open(f'resource/gt2-ws/{version}.cht') as f:
-        lines = [line.rstrip() for line in f.readlines()]
+    #with open(f'resource/gt2-ws/{version}.cht') as f:
+    #    lines = [line.rstrip() for line in f.readlines()]
     return lines
 
 def parseTag(line):
@@ -36,9 +36,10 @@ while not 1 <= choice <= len(versions):
 
 print('Select the aspect ratio to generate the patch for, in \'X:Y\' format (e.g. 16:9):')
 AR = None
-#while not AR:
-#    AR = parse('{:d}:{:d}', input(''))
-AR = (16,10)
+while not AR:
+    #AR = parse('{:d}:{:d}', input(''))
+    AR = (16,10)
+#AR = (16,10)
 
 origAR = (4, 3)
 
