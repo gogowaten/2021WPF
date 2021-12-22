@@ -29,6 +29,8 @@ namespace _20211222
         private Canvas RootCanvas;
         private MainWindow MyMainWindow;
         public bool IsGroup;
+        public bool IsRootExThumb;
+        
         public ExThumb RootExThumb;
         private double left;
         private double top;
@@ -66,6 +68,7 @@ namespace _20211222
             Top = top;
             Name = name;
             DragDelta += ExThumb_DragDelta;
+            //DragDelta += new DragDeltaEventHandler(ExThumb_DragDelta);
             GotFocus += ExThumb_GotFocus;
             SetBinding(Canvas.LeftProperty, MakeBinding("Left"));
             SetBinding(Canvas.TopProperty, MakeBinding("Top"));
@@ -86,16 +89,19 @@ namespace _20211222
 
         private void ExThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            ExThumb ex = sender as ExThumb;
-            if (ex.Name == ex.RootExThumb.Name)
-            {
-                Left += e.HorizontalChange;
-                Top += e.VerticalChange;
-            }
-            else
-            {
+            Left += e.HorizontalChange;
+            Top += e.VerticalChange;
 
-            }
+            //ExThumb ex = sender as ExThumb;
+            //if (ex.Name == ex.RootExThumb.Name)
+            //{
+            //    Left += e.HorizontalChange;
+            //    Top += e.VerticalChange;
+            //}
+            //else
+            //{
+
+            //}
 
         }
 
@@ -108,13 +114,21 @@ namespace _20211222
             b.Mode = BindingMode.TwoWay;
             return b;
         }
+
+
+        //グループ化のときに使う
         public void AddChildrenExThumb(ExThumb exThumb)
         {
             RootCanvas.Children.Add(exThumb);
             Children.Add(exThumb);
             IsGroup = true;
+            IsRootExThumb = true;
+            exThumb.IsRootExThumb = false;
             exThumb.RootExThumb = this;
-            exThumb.DragDelta -= ExThumb_DragDelta;
+            //これが効かない?
+            //exThumb.DragDelta -= ExThumb_DragDelta;
+            exThumb.DragDelta -= exThumb.ExThumb_DragDelta;
+            
         }
         public void AddChildrenElement(UIElement element)
         {
