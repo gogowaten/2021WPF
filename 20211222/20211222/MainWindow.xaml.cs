@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+//グループ化と解除まで作った
+//階層関連は未実装
+
 namespace _20211222
 {
     /// <summary>
@@ -20,40 +23,51 @@ namespace _20211222
     /// </summary>
     public partial class MainWindow : Window
     {
-        public ExThumb CurrentExThumb = new();
+        private ExThumb currentExThumb;
+        private ExThumb MyExThumb1;
+        private ExThumb MyExThumb2;
+        private ExThumb MyGroupExThumb1;
+        public ExThumb CurrentExThumb
+        {
+            get => currentExThumb; set
+            {
+                currentExThumb = value;
+                DataContext = value;
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
 
-       
+
             Test1();
             GroupTest1();
 
         }
 
-       
+
 
         private void Test1()
         {
-            TextBlock textBlock1 = new();
-            textBlock1.Text = "textBlock1";
-            textBlock1.FontSize = 30;
-            textBlock1.Background = Brushes.Cyan;
-            ExThumb exThumb1 = new(this, "test1", textBlock1, 10, 10);
+            ExThumb exThumb1 = new(this, "textBlock1", MakeTextBloxk("textBlock1", 30, Brushes.Cyan), 50, 0);
+            ExThumb exThumb2 = new(this, "textBlock2", MakeTextBloxk("textBlock2", 30, Brushes.Cyan), 0, 100);
             MyCanvas.Children.Add(exThumb1);
-
+            MyCanvas.Children.Add(exThumb2);
+            MyExThumb1 = exThumb1;
+            MyExThumb2 = exThumb2;
         }
         private void GroupTest1()
         {
-            TextBlock t1 = MakeTextBloxk("textBlock1", 30, Brushes.Magenta);
-            ExThumb ex1 = new(this, "text1", t1, 0, 0);
-            TextBlock t2 = MakeTextBloxk("textBlock2", 30, Brushes.MediumAquamarine);
-            ExThumb ex2 = new(this, "text2", t2, 100, 100);
-            ExThumb exGroup = new(this, "Group", 100, 100);
+            TextBlock t1 = MakeTextBloxk("GroupItem1", 30, Brushes.Magenta);
+            ExThumb ex1 = new(this, "GroupItem1", t1, 0, 0);
+            TextBlock t2 = MakeTextBloxk("GroupItem2", 30, Brushes.MediumAquamarine);
+            ExThumb ex2 = new(this, "GroupItem2", t2, 100, 100);
+            ExThumb exGroup = new(this, "Group", 200, 100);
             exGroup.AddChildrenExThumb(ex1);
             exGroup.AddChildrenExThumb(ex2);
             MyCanvas.Children.Add(exGroup);
-            
+            MyGroupExThumb1 = exGroup;
         }
         private TextBlock MakeTextBloxk(string text, double fontsize, Brush brush)
         {
@@ -68,6 +82,43 @@ namespace _20211222
         {
             var dc = DataContext;
             var cex = CurrentExThumb;
+        }
+
+        private void ButtonGroup_Click(object sender, RoutedEventArgs e)
+        {
+            //1と2をグループ化
+            //グループ化Thumbの座標決定
+            double x = MyExThumb1.Left;
+            if (x > MyExThumb2.Left) { x = MyExThumb2.Left; }
+            double y = MyExThumb1.Top;
+            if (y > MyExThumb2.Top) { y = MyExThumb2.Top; }
+            ExThumb group = new(this, "Group1", x, y);
+            //Itemの座標修正
+            MyExThumb1.Left -= x; MyExThumb1.Top -= y;
+            MyExThumb2.Left -= x; MyExThumb2.Top -= y;
+            //ItemをCanvasから削除
+            MyCanvas.Children.Remove(MyExThumb1);
+            MyCanvas.Children.Remove(MyExThumb2);
+            //ItemをグループThumbに追加
+            group.AddChildrenExThumb(MyExThumb1);
+            group.AddChildrenExThumb(MyExThumb2);
+            MyCanvas.Children.Add(group);
+            MyGroupExThumb1 = group;
+        }
+
+        private void ButtonUnGroup_Click(object sender, RoutedEventArgs e)
+        {
+            double x = MyGroupExThumb1.Left;
+            double y = MyGroupExThumb1.Top;
+            foreach (var item in MyGroupExThumb1.Children)
+            {
+                MyGroupExThumb1.RemoveChildrenExThumb(item);
+                item.Left += x;
+                item.Top += y;
+                MyCanvas.Children.Add(item);
+            }
+            MyCanvas.Children.Remove(MyGroupExThumb1);
+            MyGroupExThumb1 = null;
         }
     }
 }

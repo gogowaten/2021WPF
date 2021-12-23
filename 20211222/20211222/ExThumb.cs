@@ -30,7 +30,8 @@ namespace _20211222
         private MainWindow MyMainWindow;
         public bool IsGroup;
         public bool IsRootExThumb;
-        
+        public ExThumb ParentExThumb;
+
         public ExThumb RootExThumb;
         private double left;
         private double top;
@@ -46,10 +47,7 @@ namespace _20211222
         public double Top { get => top; set { top = value; OnPropertyChanged(); } }
 
 
-        public ExThumb()
-        {
 
-        }
         public ExThumb(MainWindow mainWindow, string name, double left = 0, double top = 0)
         {
             MyMainWindow = mainWindow;
@@ -68,7 +66,6 @@ namespace _20211222
             Top = top;
             Name = name;
             DragDelta += ExThumb_DragDelta;
-            //DragDelta += new DragDeltaEventHandler(ExThumb_DragDelta);
             GotFocus += ExThumb_GotFocus;
             SetBinding(Canvas.LeftProperty, MakeBinding("Left"));
             SetBinding(Canvas.TopProperty, MakeBinding("Top"));
@@ -78,7 +75,7 @@ namespace _20211222
 
         private void ExThumb_GotFocus(object sender, RoutedEventArgs e)
         {
-            MyMainWindow.DataContext = this.RootExThumb;
+            //MyMainWindow.DataContext = this.RootExThumb;
             MyMainWindow.CurrentExThumb = this.RootExThumb;
         }
 
@@ -91,18 +88,6 @@ namespace _20211222
         {
             Left += e.HorizontalChange;
             Top += e.VerticalChange;
-
-            //ExThumb ex = sender as ExThumb;
-            //if (ex.Name == ex.RootExThumb.Name)
-            //{
-            //    Left += e.HorizontalChange;
-            //    Top += e.VerticalChange;
-            //}
-            //else
-            //{
-
-            //}
-
         }
 
 
@@ -124,12 +109,22 @@ namespace _20211222
             IsGroup = true;
             IsRootExThumb = true;
             exThumb.IsRootExThumb = false;
-            exThumb.RootExThumb = this;
+            exThumb.RootExThumb = this;//これは後で修正
+            exThumb.ParentExThumb = this;
+
             //これが効かない?
             //exThumb.DragDelta -= ExThumb_DragDelta;
+            //正解はこれ
             exThumb.DragDelta -= exThumb.ExThumb_DragDelta;
-            
+
         }
+        public void RemoveChildrenExThumb(ExThumb exThumb)
+        {
+            exThumb.ParentExThumb.RootCanvas.Children.Remove(exThumb);
+            exThumb.RootExThumb = exThumb;
+            exThumb.DragDelta += exThumb.ExThumb_DragDelta;
+        }
+
         public void AddChildrenElement(UIElement element)
         {
             RootCanvas.Children.Add(element);
