@@ -17,6 +17,8 @@ using System.Collections.ObjectModel;
 
 //最上位パネルにCanvasを使っていたのを、ExThumbに変更した
 //これで表示オブジェクトは全てExThumbに統一できた
+//動的追加できた
+//グループ化処理はコメントアウト
 
 namespace _20211223
 {

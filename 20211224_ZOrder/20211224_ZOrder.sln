@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32002.261
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20211224_ZOrder", "20211224_ZOrder\20211224_ZOrder.csproj", "{600E3973-2B77-4E97-9E99-8E9B9D077272}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{600E3973-2B77-4E97-9E99-8E9B9D077272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{600E3973-2B77-4E97-9E99-8E9B9D077272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{600E3973-2B77-4E97-9E99-8E9B9D077272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{600E3973-2B77-4E97-9E99-8E9B9D077272}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {99C24A8B-2E07-4694-89F9-E8BCC64AC7FE}
+	EndGlobalSection
+EndGlobal
