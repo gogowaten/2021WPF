@@ -139,7 +139,23 @@ namespace _20211223
             exThumb.RootExThumb = exThumb;
             exThumb.DragDelta += exThumb.ExThumb_DragDelta;
         }
+        public void ChangeParent(ExThumb newExThumb)
+        {
+            ParentExThumb.RootCanvas.Children.Remove(this);
+            ParentExThumb.Children.Remove(this);
+            newExThumb.RootCanvas.Children.Add(this);
+            newExThumb.Children.Add(this);
+            this.ParentExThumb = newExThumb;
+            this.RootExThumb = GetRootExThumb(this);
 
+        }
+        //グループ化できるのはParentが同じ者同士
+        public void MakeGroup(List<ExThumb> exThumbs)
+        {
+            //要素全てがIsGroupではなかった場合は、新たにGroup用ExThumbを作成して、全てを詰め込む
+            //要素の中にIsGroupがある場合は、一番上にあるものに詰め込む
+
+        }
         public void AddChildrenElement(UIElement element)
         {
             RootCanvas.Children.Add(element);

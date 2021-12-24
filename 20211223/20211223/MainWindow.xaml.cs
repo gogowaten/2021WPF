@@ -14,6 +14,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 
+
+//最上位パネルにCanvasを使っていたのを、ExThumbに変更した
+//これで表示オブジェクトは全てExThumbに統一できた
+
 namespace _20211223
 {
     /// <summary>
@@ -135,6 +139,15 @@ namespace _20211223
             //group.AddChildrenExThumb(MyExThumb2);
             //MyCanvas.Children.Add(group);
             //MyGroupExThumb1 = group;
+            var chi = MyLayers[0].Children;
+            var minX = MyLayers[0].Children.Min(a => a.Left);
+            var minY = MyLayers[0].Children.Min(a => a.Top);
+            var group = new ExThumb(this, "Group", minX, minY);
+            foreach (var item in chi)
+            {
+                item.ChangeParent(group);
+            }
+
         }
 
         private void ButtonUnGroup_Click(object sender, RoutedEventArgs e)
