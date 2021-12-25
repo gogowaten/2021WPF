@@ -20,7 +20,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
 
-namespace _20211223
+namespace _20211224_ZOrder
 {
     public class ExThumb : Thumb, INotifyPropertyChanged
     {
@@ -35,6 +35,7 @@ namespace _20211223
         public ExThumb RootExThumb;
         private double left;
         private double top;
+        private int z;
 
         public ObservableCollection<ExThumb> Children { get; set; } = new();
 
@@ -45,13 +46,12 @@ namespace _20211223
         }
         public double Left { get => left; set { left = value; OnPropertyChanged(); } }
         public double Top { get => top; set { top = value; OnPropertyChanged(); } }
-
+        public int Z { get => z; set { z = value; OnPropertyChanged(); } }
 
 
         public ExThumb(MainWindow mainWindow, string name, double left = 0, double top = 0)
         {
             MyMainWindow = mainWindow;
-            UIElementCollection child = RootCanvas.Children;
 
             ControlTemplate template = new(typeof(Thumb));
             template.VisualTree = new FrameworkElementFactory(typeof(Canvas), ROOT_PANEL_NAME);

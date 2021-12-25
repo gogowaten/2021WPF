@@ -6,7 +6,19 @@
         xmlns:local="clr-namespace:_20211224_ZOrder"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+  <Grid x:Name="MyGrid">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition Width="150"/>
+    </Grid.ColumnDefinitions>
+    <!--<Canvas x:Name="MyCanvas"/>-->
+    <StackPanel Grid.Column="1">
+      <TextBlock Text="{Binding Path=Left, StringFormat=Left\=0}"/>
+      <TextBlock Text="{Binding Path=Top, StringFormat=Top\=0}"/>
+      <Button x:Name="ButtonTest1" Content="check" Click="ButtonTest1_Click"/>
+      <Button x:Name="ButtonGroup" Content="Group" Click="ButtonGroup_Click"/>
+      <Button x:Name="ButtonUnGroup" Content="UnGroup" Click="ButtonUnGroup_Click"/>
+      <Button x:Name="ButtonAddThumb" Content="追加" Click="ButtonAddThumb_Click"/>
+    </StackPanel>
+  </Grid>
 </Window>

@@ -14,17 +14,13 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 
-
-//ZOrderテスト
-
-namespace _20211224_ZOrder
+namespace _2021122416
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-
         private ExThumb currentExThumb;
         //private ExThumb MyExThumb1;
         //private ExThumb MyExThumb2;
@@ -33,6 +29,7 @@ namespace _20211224_ZOrder
         private ObservableCollection<ExThumb> MyLayers = new();
         private ExThumb MyCurrentLayer;
         private ExThumb MyMainPanel;
+        public ObservableCollection<Store> Mall { get; set; } = new();
         public ExThumb CurrentExThumb
         {
             get => currentExThumb; set
@@ -45,27 +42,41 @@ namespace _20211224_ZOrder
         public MainWindow()
         {
             InitializeComponent();
-            MyInitialize();
+            //MyInitialize();
 
-            ExThumb layer = MakeLayer("Layer1");
-            MyMainPanel.AddChildrenExThumb(layer);
-            MyLayers.Add(layer);
-            MyCurrentLayer = layer;
+            //ExThumb layer = MakeLayer("Layer1");
+            //MyMainPanel.AddChildrenExThumb(layer);
+            //MyLayers.Add(layer);
+            //MyCurrentLayer = layer;
             //Test1();
             //GroupTest1();
 
+            for (int i = 0; i < 5; i++)
+            {
+                Mall.Add(new Store() { FavoriteCount = i, Name = $"name{i}", Prefecture = $"pre{i}" });
+            }
+            DataContext = this;
+
+            ControlTemplate template = MyListBox.Template;
+            TemplateContent itemPanelTemp = MyListBox.ItemsPanel.Template;
+            DataTemplate itemTemp = MyListBox.ItemTemplate;
+            ItemsPanelTemplate ip = MyListBox.ItemsPanel;
+            TemplateContent iptemp = ip.Template;
+            
+            //var panel = ip.FindName("PanelTemplate", MyListBox.Template);
+
         }
-        private void MyInitialize()
-        {
-            //最上位Thumb、ここに全てを追加していくことになる
-            ExThumb panel = new(this, "MainPanel");
-            panel.RemoveDragDeltaEvent();
-            panel.IsLayer = true;
-            panel.Focusable = false;
-            MyGrid.Children.Add(panel);
-            //Grid.SetColumn(panel, 0);
-            MyMainPanel = panel;
-        }
+        //private void MyInitialize()
+        //{
+        //    //最上位Thumb、ここに全てを追加していくことになる
+        //    ExThumb panel = new(this, "MainPanel");
+        //    panel.RemoveDragDeltaEvent();
+        //    panel.IsLayer = true;
+        //    panel.Focusable = false;
+        //    MyGrid.Children.Add(panel);
+        //    //Grid.SetColumn(panel, 0);
+        //    MyMainPanel = panel;
+        //}
         private ExThumb MakeLayer(string name)
         {
             //レイヤー、最上位の直下のChildren
@@ -172,6 +183,22 @@ namespace _20211224_ZOrder
             CountForName++;
             MyCurrentLayer.AddChildrenExThumb(ex);
         }
+
+        private void ButtonAdd_Click(object sender, RoutedEventArgs e)
+        {
+            Mall.Add(new() { Prefecture = "add", FavoriteCount = 00, Name = "ADD" });
+        }
+
+        private void ButtonRemove_Click(object sender, RoutedEventArgs e)
+        {
+            Mall.Remove(Mall[0]);
+        }
+    }
+
+    public class Store
+    {
+        public string Name { get; set; }
+        public string Prefecture { get; set; }
+        public int FavoriteCount { get; set; }
     }
 }
-

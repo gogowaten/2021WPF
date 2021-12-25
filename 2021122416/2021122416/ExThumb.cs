@@ -20,7 +20,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
 
-namespace _20211223
+namespace _2021122416
 {
     public class ExThumb : Thumb, INotifyPropertyChanged
     {
@@ -51,7 +51,6 @@ namespace _20211223
         public ExThumb(MainWindow mainWindow, string name, double left = 0, double top = 0)
         {
             MyMainWindow = mainWindow;
-            UIElementCollection child = RootCanvas.Children;
 
             ControlTemplate template = new(typeof(Thumb));
             template.VisualTree = new FrameworkElementFactory(typeof(Canvas), ROOT_PANEL_NAME);
@@ -70,6 +69,24 @@ namespace _20211223
             GotFocus += ExThumb_GotFocus;
             SetBinding(Canvas.LeftProperty, MakeBinding("Left"));
             SetBinding(Canvas.TopProperty, MakeBinding("Top"));
+
+            //ControlTemplate template = new(typeof(Thumb));
+            //template.VisualTree = new FrameworkElementFactory(typeof(Canvas), ROOT_PANEL_NAME);
+            //Template = template;
+            //ApplyTemplate();
+            //RootCanvas = Template.FindName(ROOT_PANEL_NAME, this) as Canvas;
+            //RootCanvas.Background = Brushes.Transparent;
+            //Focusable = true;
+
+            //RootExThumb = this;
+
+            //Left = left;
+            //Top = top;
+            //Name = name;
+            //DragDelta += ExThumb_DragDelta;
+            //GotFocus += ExThumb_GotFocus;
+            //SetBinding(Canvas.LeftProperty, MakeBinding("Left"));
+            //SetBinding(Canvas.TopProperty, MakeBinding("Top"));
 
 
         }
