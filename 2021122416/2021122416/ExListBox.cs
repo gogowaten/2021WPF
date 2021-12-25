@@ -48,6 +48,8 @@ namespace _2021122416
             factoryItemsPresenter.SetValue(MarginProperty, new Thickness(5));
             factoryBorder.AppendChild(factoryItemsPresenter);
 
+            this.Template = template;
+
 
             //ItemsPanal
             //要素が横に並ぶようにしたWrapPanelを指定してみた
@@ -59,6 +61,7 @@ namespace _2021122416
 
 
             //ItemTemplate = DataTemplate
+            //データ要素構築
             MultiBinding multiBinding = new();
             multiBinding.StringFormat = "{0} {1}";
             multiBinding.Bindings.Add(new Binding("Prefecture"));
@@ -75,14 +78,48 @@ namespace _2021122416
             stackPanelFactory.AppendChild(textBlock1Factory);
             stackPanelFactory.AppendChild(textBlock2Factory);
 
-
             DataTemplate dataTemplate = new();
             dataTemplate.VisualTree = stackPanelFactory;
             this.ItemTemplate = dataTemplate;
 
 
+            //ItemContainerStyle = Style
+            //データ要素の表示設定、マウスが乗っかった、選択されたとき
+            Style style = new(typeof(ListBoxItem));
 
-            this.Template = template;
+            Setter setter1 = new(OverridesDefaultStyleProperty, true);
+            style.Setters.Add(setter1);
+
+            //            c＃-コードでControlTemplateTemplateBindingを設定します - スタックオーバーフロー
+            //https://stackoverflow.com/questions/50934186/set-controltemplate-templatebinding-in-code
+            FrameworkElementFactory borderFactory = new(typeof(Border));
+            borderFactory.SetValue(BackgroundProperty, new TemplateBindingExtension(BackgroundProperty));
+            borderFactory.AppendChild(new FrameworkElementFactory(typeof(ContentPresenter)));
+
+            ControlTemplate controlTemplate = new(typeof(ContentControl));
+            controlTemplate.VisualTree = borderFactory;
+
+            Setter setter2 = new(TemplateProperty, controlTemplate);
+            style.Setters.Add(setter2);
+
+            //Trigger
+            Trigger trigger = new();
+            trigger.Property = IsMouseOverProperty;
+            trigger.Value = true;
+            trigger.Setters.Add(new Setter(BackgroundProperty, Brushes.LightBlue));
+            style.Triggers.Add(trigger);
+
+            Trigger trigger2 = new();
+            trigger2.Property = IsSelectedProperty;
+            trigger2.Value = true;
+            trigger2.Setters.Add(new Setter(BackgroundProperty, Brushes.LightGreen));
+            style.Triggers.Add(trigger2);
+
+            this.ItemContainerStyle = style;
+
+
+
+
         }
     }
 }

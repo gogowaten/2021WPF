@@ -51,7 +51,7 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
       
-      <!--<ListBox.ItemContainerStyle>
+      <ListBox.ItemContainerStyle>
         <Style TargetType="ListBoxItem">
           <Setter Property="OverridesDefaultStyle" Value="True" />
           <Setter Property="Template">
@@ -64,11 +64,11 @@
             </Setter.Value>
           </Setter>
           <Setter Property="Margin" Value="10" />
-          --><!-- 追加したStykle その1 --><!--
+           <!--追加したStykle その1--> 
           <Setter Property="Width" Value="100" />
-          --><!-- 追加したStykle その2 --><!--
+           <!--追加したStykle その2--> 
           <Setter Property="Height" Value="50" />
-          --><!-- 追加したStykle その3 --><!--
+           <!--追加したStykle その3--> 
           <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
               <Setter Property="Background" Value="LightBlue"/>
@@ -78,7 +78,7 @@
             </Trigger>
           </Style.Triggers>
         </Style>
-      </ListBox.ItemContainerStyle>-->
+      </ListBox.ItemContainerStyle>
       
     </ListBox>
   </Grid>
