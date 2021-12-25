@@ -13,9 +13,11 @@
       <ColumnDefinition Width="150"/>
     </Grid.ColumnDefinitions>
     <local:ExListBox Grid.Column="1" x:Name="MyExListBox"/>
-    <StackPanel Grid.Column="2">
+    <StackPanel Grid.Column="2" Name="MyStackPanel">
       <Button x:Name="ButtonAdd" Content="Add" Click="ButtonAdd_Click"/>
       <Button x:Name="ButtonRemove" Content="Remove" Click="ButtonRemove_Click"/>
+      <TextBlock Text="{Binding Path=Left}"/>
+      <TextBlock Text="{Binding Path=Top}"/>
     </StackPanel>
     
     

@@ -58,9 +58,13 @@ namespace _2021122416
             DataTemplate itemTemp = MyListBox.ItemTemplate;
             ItemsPanelTemplate ip = MyListBox.ItemsPanel;
             TemplateContent iptemp = ip.Template;
-            
-            //var panel = ip.FindName("PanelTemplate", MyListBox.Template);
 
+            TextBlock textBlock = new() { Text = "test", FontSize = 20 };
+            CustomControl1 customControl1= new CustomControl1(10, 10, textBlock);
+            MyStackPanel.Children.Add(customControl1);
+            MyStackPanel.DataContext = customControl1;
+
+          
         }
     
         private void ButtonAdd_Click(object sender, RoutedEventArgs e)
