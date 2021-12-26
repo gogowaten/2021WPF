@@ -32,12 +32,14 @@
           </StackPanel>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
+      
       <ItemsControl.ItemContainerStyle>
         <Style>
           <Setter Property="Canvas.Left" Value="{Binding Path=Left}"/>
           <Setter Property="Canvas.Top" Value="{Binding Path=Top}"/>
         </Style>
       </ItemsControl.ItemContainerStyle>
+      
     </ItemsControl>
   </Grid>
 </Window>

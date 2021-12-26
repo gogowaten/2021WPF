@@ -15,6 +15,9 @@ using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 //WPF ItemsControlをDataGridみたいに使う - No more Death March
 //https://nomoredeathmarch.hatenablog.com/entry/2019/01/21/003825
+//マツオソフトウェアブログ: Canvasにリストの中身をBindingする方法
+//http://my-clip-devdiary.blogspot.com/2011/01/canvasbinding.html
+
 
 namespace _20211226_ItemsControl
 {
@@ -30,7 +33,7 @@ namespace _20211226_ItemsControl
 
             for (int i = 0; i < 100; i++)
             {
-                Data d = new Data() { Left = i * 5, Top = i * 10, Name = $"test{i}" };                
+                Data d = new() { Left = i * 5, Top = i * 10, Name = $"test{i}" };
                 MyData.Add(d);
             }
             DataContext = MyData;
