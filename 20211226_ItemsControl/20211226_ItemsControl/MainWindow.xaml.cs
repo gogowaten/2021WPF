@@ -17,6 +17,8 @@ using System.Collections.ObjectModel;
 //https://nomoredeathmarch.hatenablog.com/entry/2019/01/21/003825
 //マツオソフトウェアブログ: Canvasにリストの中身をBindingする方法
 //http://my-clip-devdiary.blogspot.com/2011/01/canvasbinding.html
+//ItemsControl 攻略 ～ 外観のカスタマイズ | grabacr.nét
+//http://grabacr.net/archives/1240
 
 
 namespace _20211226_ItemsControl
