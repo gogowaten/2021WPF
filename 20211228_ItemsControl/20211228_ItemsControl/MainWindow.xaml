@@ -18,11 +18,11 @@
             <Canvas>
               <ItemsControl ItemsSource="{Binding }">
 
-                <ItemsControl.ItemsPanel>
+                <!--<ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <Canvas/>
                   </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+                </ItemsControl.ItemsPanel>-->
 
                 <!--<ItemsControl.ItemContainerStyle>
                   <Style>
