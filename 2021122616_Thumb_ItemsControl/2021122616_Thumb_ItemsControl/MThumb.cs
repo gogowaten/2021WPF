@@ -35,9 +35,9 @@ namespace _2021122616_Thumb_ItemsControl
             //Thumb
             //  ┗
             //ItemsPanel
-            FrameworkElementFactory canvas = new(typeof(Canvas), MY_CANVAS_NAME);
-            ItemsPanelTemplate itemsPanelTemplate = new();
-            itemsPanelTemplate.VisualTree = canvas;
+            //FrameworkElementFactory canvas = new(typeof(Canvas), MY_CANVAS_NAME);
+            //ItemsPanelTemplate itemsPanelTemplate = new();
+            //itemsPanelTemplate.VisualTree = canvas;
             //MyItemsControl.ItemsPanel = itemsPanelTemplate;
 
             //FrameworkElementFactory itemsControl = new(typeof(ItemsControl), MY_ITEMS_CONTROL_NAME);
@@ -71,7 +71,8 @@ namespace _2021122616_Thumb_ItemsControl
             //                  Setter Canvas.Left Binding Path = Left
 
             //BindingOperations.SetBinding(this, Canvas.LeftProperty, new Binding("Left"));
-            BindingOperations.SetBinding(this, Canvas.LeftProperty, new Binding("[1].Left"));
+            //BindingOperations.SetBinding(this, Canvas.LeftProperty, new Binding("[1].Left"));
+            BindingOperations.SetBinding(this, Canvas.LeftProperty, new Binding("[0].Left"));
             
             DragDelta += MThumb_DragDelta;
         }
@@ -85,18 +86,10 @@ namespace _2021122616_Thumb_ItemsControl
     public class AItemsControl : ItemsControl
     {
         private readonly string ROOT_PANEL_NAME = "rootPanel";
-        public Grid MyGrid;
+        
         public AItemsControl()
-        {
-            //FrameworkElementFactory fGrid = new(typeof(Grid), ROOT_PANEL_NAME);
-            //ControlTemplate gTemlate = new(typeof(ControlTemplate));
-            //gTemlate.VisualTree = fGrid;
-            //this.Template = gTemlate;
-            //ApplyTemplate();
-            //MyGrid = gTemlate.FindName(ROOT_PANEL_NAME, this) as Grid;
-
+        {   
             FrameworkElementFactory fCanvas = new(typeof(Canvas));
-            //FrameworkElementFactory fCanvas = new(typeof(Canvas));
             ItemsPanelTemplate itemsPanelTemplate = new();
             itemsPanelTemplate.VisualTree = fCanvas;
             this.ItemsPanel = itemsPanelTemplate;

@@ -6,14 +6,20 @@
         xmlns:local="clr-namespace:_20211226_ItemsControl"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-  <Grid>
+  <Grid x:Name="MyGrid">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
     <ItemsControl x:Name="MyItemsControl" ItemsSource="{Binding }">
       <!--<ItemsControl.Template>
         <ControlTemplate TargetType="ItemsControl">
           <ScrollViewer>
-            --><!--<StackPanel IsItemsHost="True"/>-->
-            <!--Canvasは入れ子になっていないから使えない？-->
-            <!--<Canvas IsItemsHost="True"/>--><!--
+            -->
+      <!--<StackPanel IsItemsHost="True"/>-->
+      <!--Canvasは入れ子になっていないから使えない？-->
+      <!--<Canvas IsItemsHost="True"/>-->
+      <!--
           </ScrollViewer>
         </ControlTemplate>
       </ItemsControl.Template>-->
@@ -32,14 +38,14 @@
           </StackPanel>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
-      
+
       <ItemsControl.ItemContainerStyle>
         <Style>
           <Setter Property="Canvas.Left" Value="{Binding Path=Left}"/>
           <Setter Property="Canvas.Top" Value="{Binding Path=Top}"/>
         </Style>
       </ItemsControl.ItemContainerStyle>
-      
+
     </ItemsControl>
   </Grid>
 </Window>

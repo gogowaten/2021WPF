@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Collections.ObjectModel;
 //WPF ItemsControlをDataGridみたいに使う - No more Death March
 //https://nomoredeathmarch.hatenablog.com/entry/2019/01/21/003825
 //マツオソフトウェアブログ: Canvasにリストの中身をBindingする方法
@@ -33,15 +22,51 @@ namespace _20211226_ItemsControl
         {
             InitializeComponent();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
-                Data d = new() { Left = i * 5, Top = i * 10, Name = $"test{i}" };
+                Data d = new() { Left = i * 10, Top = i * 20, Name = $"test{i}" };
                 MyData.Add(d);
             }
+
+            Xamlをコードで();
             DataContext = MyData;
 
         }
+        private void Xamlをコードで()
+        {
+            ItemsControl itemsControl = new();
+
+            //ItemsPanel
+            ItemsPanelTemplate itemsPanelTemplate = new();
+            itemsPanelTemplate.VisualTree = new FrameworkElementFactory(typeof(Canvas));
+            itemsControl.ItemsPanel = itemsPanelTemplate;
+
+            //ItemTemplate
+            FrameworkElementFactory stackPanel = new(typeof(StackPanel));
+            stackPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+            FrameworkElementFactory fTextBlock1 = new(typeof(TextBlock));
+            fTextBlock1.SetBinding(TextBlock.TextProperty, new Binding("Left"));
+            stackPanel.AppendChild(fTextBlock1);
+            FrameworkElementFactory fTextBlock2 = new(typeof(TextBlock));
+            fTextBlock2.SetBinding(TextBlock.TextProperty, new Binding("Name"));
+            stackPanel.AppendChild(fTextBlock2);
+            DataTemplate dataTemplate = new();
+            dataTemplate.VisualTree = stackPanel;
+            itemsControl.ItemTemplate = dataTemplate;
+
+            //ItemContainerStyle
+            Style style = new();
+            style.Setters.Add(new Setter(Canvas.LeftProperty, new Binding("Left")));
+            style.Setters.Add(new Setter(Canvas.TopProperty, new Binding("Top")));
+            itemsControl.ItemContainerStyle = style;
+
+            Grid.SetColumn(itemsControl, 1);
+            MyGrid.Children.Add(itemsControl);
+
+            itemsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding());
+        }
     }
+
     public class Data
     {
         public double Left { get; set; }
