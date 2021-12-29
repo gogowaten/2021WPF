@@ -12,7 +12,7 @@
       <ColumnDefinition Width="150"/>
     </Grid.ColumnDefinitions>
     <Canvas x:Name="MyCanvas"/>
-    <StackPanel Grid.Column="1">
+    <StackPanel Grid.Column="1" Name="MyStackPanel">
       <TextBlock Text="{Binding Path=Left}"/>
       <TextBlock Text="{Binding Path=Top}"/>
     </StackPanel>
