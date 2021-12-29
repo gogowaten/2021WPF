@@ -15,6 +15,12 @@ using System.Windows.Shapes;
 using System.Windows.Controls.Primitives;
 using System.Collections.ObjectModel;
 
+//無理
+//Thumbの管理にItemsControl系のListBox、TreeViewを利用するのは諦めた、無理、できない
+//Listの中の要素を管理するのがめんどくさくてここまで試したけど
+//ItemsControl系は単一の形式データをどう表現するかには使えるけど、
+//多様なデータの表現には向かない感じ
+
 
 namespace _20211228_ItemControlCode
 {
@@ -26,6 +32,8 @@ namespace _20211228_ItemControlCode
         public MainWindow()
         {
             InitializeComponent();
+
+            ThumbItemsControl thumbItemsControl = new();
         }
     }
 
@@ -37,6 +45,16 @@ namespace _20211228_ItemControlCode
             FrameworkElementFactory fCanvas = new(typeof(Canvas));
             template.VisualTree = fCanvas;
 
+            FrameworkElementFactory fItemsControl = new(typeof(ItemsControl));
+            fCanvas.AppendChild(fItemsControl);
+
+            DataTemplate dataTemplate = new();
+            FrameworkElementFactory dtCanvas = new(typeof(Canvas));
+            dataTemplate.VisualTree = dtCanvas;
+
+
+
+            this.Template = template;
         }
     }
 
