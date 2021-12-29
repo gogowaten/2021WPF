@@ -66,19 +66,21 @@ namespace _20211229_Thumb
         {
             AddElement(element);
         }
+
+        //グループ解除
+        public ICollection<ReThumb> UnGroup()
+        {
+            List<ReThumb> list = new();
+            foreach (ReThumb item in Children.ToList())
+            {
+                Children.Remove(item);
+                list.Add(item);
+            }
+            return list;
+        }
+        //グループ化
         public ReThumb(IEnumerable<ReThumb> reThumbs) : this()
         {
-            //double x = double.MaxValue;
-            //double y = double.MaxValue;
-            //foreach (var item in reThumbs)
-            //{
-            //    if (item.Left < x) { x = item.Left; }
-            //    if (item.Top < y) { y = item.Top; }
-            //    Children.Add(item);
-            //}
-            //this.Left = x;
-            //this.Top = y;
-
             double left = reThumbs.Min(a => a.Left);
             double top = reThumbs.Min(a => a.Top);
             foreach (ReThumb item in reThumbs)
@@ -120,7 +122,23 @@ namespace _20211229_Thumb
             }
             else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
             {
+                foreach (var item in e.OldItems)
+                {
+                    ReThumb re = item as ReThumb;
+                    RootCanvas.Children.Remove(re);
+                    if (this.ParentReThumb != null)
+                    {
+                        this.ParentReThumb.Children.Add(re);
+                        re.IsRoot = false;
+                        re.ParentReThumb = this.ParentReThumb;
+                    }
+                    else
+                    {
+                        re.IsRoot = true;
+                    }
+                    re.DragDelta += re.ReThumb_DragDelta;
 
+                }
             }
         }
         private Binding MakeBind(string path)

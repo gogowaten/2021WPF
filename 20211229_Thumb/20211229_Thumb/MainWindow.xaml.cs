@@ -31,10 +31,21 @@ namespace _20211229_Thumb
             //Test2();
             //Test3();
             //MyCanvas.Children.Add(Test4());
-            MyCanvas.Children.Add(Test5());
+            //MyCanvas.Children.Add(Test5());
+            Test6();
         }
 
-
+        //Group解除
+        private void Test6()
+        {
+            ReThumb group = Test4();//Group作成
+            var list = group.UnGroup();
+            foreach (object item in list)
+            {
+                ReThumb re = item as ReThumb;
+                MyCanvas.Children.Add(re);
+            }
+        }
         //既存グループに追加
         private ReThumb Test5()
         {
