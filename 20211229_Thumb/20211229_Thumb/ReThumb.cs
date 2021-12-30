@@ -24,6 +24,7 @@ namespace _20211229_Thumb
         public bool IsRoot;
         public bool IsGroup;
         public ReThumb ParentReThumb;
+        public ReThumb RootReThumb;//動かすThumb
         public ObservableCollection<ReThumb> Children { get; private set; } = new();
         private double left;
         private double top;
@@ -54,6 +55,7 @@ namespace _20211229_Thumb
 
             this.Focusable = true;
             IsRoot = true;
+            RootReThumb = this;
 
         }
         public ReThumb(double x = 0, double y = 0) : this()
@@ -78,7 +80,7 @@ namespace _20211229_Thumb
             }
             return list;
         }
-        //グループ化
+        //複数ThumbからグループThumb作成
         public ReThumb(IEnumerable<ReThumb> reThumbs) : this()
         {
             double left = reThumbs.Min(a => a.Left);
@@ -91,7 +93,9 @@ namespace _20211229_Thumb
             }
             Left = left;
             Top = top;
+            //this.RootReThumb = this;
         }
+
 
         private void ReThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
@@ -118,6 +122,7 @@ namespace _20211229_Thumb
                     //
                     re.IsRoot = false;
                     re.ParentReThumb = this;
+                    ReplaceRootReThumb(re, this.RootReThumb);
                 }
             }
             else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
@@ -126,6 +131,7 @@ namespace _20211229_Thumb
                 {
                     ReThumb re = item as ReThumb;
                     RootCanvas.Children.Remove(re);
+                    //
                     if (this.ParentReThumb != null)
                     {
                         this.ParentReThumb.Children.Add(re);
@@ -140,6 +146,17 @@ namespace _20211229_Thumb
 
                 }
             }
+        }
+        private void ReplaceRootReThumb(ReThumb current, ReThumb root)
+        {
+            current.RootReThumb = root;
+            if (current.Children.Count < 1) { return; }
+            foreach (var item in current.Children)
+            {
+                item.RootReThumb = root;
+                ReplaceRootReThumb(item, root);
+            }
+
         }
         private Binding MakeBind(string path)
         {

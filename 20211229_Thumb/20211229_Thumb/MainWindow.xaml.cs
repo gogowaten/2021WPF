@@ -30,12 +30,33 @@ namespace _20211229_Thumb
             //Test1();
             //Test2();
             //Test3();
-            //MyCanvas.Children.Add(Test4());
-            //MyCanvas.Children.Add(Test5());
-            Test6();
+            //MyCanvas.Children.Add(Test4());//グループ化
+            //MyCanvas.Children.Add(Test5());//グループに追加
+            //Test6();
+            Test7();
         }
 
-        //Group解除
+        //グループAにグループBを追加
+
+        //グループAとグループBからグループC作成
+        private void Test7()
+        {
+            var list1 = Enumerable.Range(0, 4).
+                Select(a => new ReThumb(MakeTextBlock($"GroupA-{a}"), a * 20 + 10, a * 30 + 10)).ToList();
+            list1.ForEach(a => a.GotFocus += MyReThumb_GotFocus);
+            ReThumb groupA = new(list1);
+
+            var list2 = Enumerable.Range(0, 4).
+                Select(a => new ReThumb(MakeTextBlock($"GroupB-{a}"), a * 20 + 200, a * 30 + 20)).ToList();
+            list2.ForEach(a => a.GotFocus += MyReThumb_GotFocus);
+            ReThumb groupB = new(list2);
+
+            List<ReThumb> listC = new() { groupA, groupB };
+            ReThumb groupC = new(listC);
+
+            MyCanvas.Children.Add(groupC);
+        }
+        //Group解除(未完成、Windowに置くパネル自体もThumbにしないと処理がめんどくさいので、解除は次回)
         private void Test6()
         {
             ReThumb group = Test4();//Group作成
@@ -103,7 +124,7 @@ namespace _20211229_Thumb
             else
             {
                 ReThumb origin = e.OriginalSource as ReThumb;
-                MyStackPanel.DataContext = origin?.ParentReThumb;
+                MyStackPanel.DataContext = origin?.RootReThumb;
             }
 
         }
