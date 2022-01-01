@@ -31,12 +31,18 @@ namespace _20211231_Thumb
             //Test2();
             //Test3();
             //Layer1.AddChildren(Test4());//グループ化
-            //Layer1.Children.Add(Test4());//グループ化
-            //Layer1.Children.Add(Test5());//グループに追加
             //Layer1.AddChildren(Test5());//グループに追加
             Test6();
-            Test7();
+            //Test7();
             //Test8();
+        }
+
+        private void Test8()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                
+            }
         }
 
         //グループAにグループBを追加、これはグループAとグループBからグループC作成と同じように見えるけど中身が違う
@@ -53,12 +59,11 @@ namespace _20211231_Thumb
 
             listB.ForEach(a => a.GotFocus += MyReThumb_GotFocus);
             ReThumb groupB = new(listB, "グループB");
-
             groupA.AddChildren(groupB);
-
 
             Layer1.AddChildren(groupA);
         }
+
         //グループAとグループBからグループC作成
         private void Test6()
         {
@@ -77,7 +82,6 @@ namespace _20211231_Thumb
             ReThumb groupC = new(listC, $"グループC");
 
             Layer1.AddChildren(groupC);
-            //Layer1.ChildrenOld.Add(groupC);
         }
       
 
@@ -86,11 +90,11 @@ namespace _20211231_Thumb
         {
             //Group作成
             ReThumb group = new(Enumerable.Range(0, 3).
-                Select(a => new ReThumb(MakeTextBlock($"Test5-{a}"), a * 20 + 20, a * 50 + 30, $"Test5-{a}")).
+                Select(a => new ReThumb(MakeTextBlock($"Test5-{a}"), $"Test5-{a}", a * 20 + 20, a * 50 + 30)).
                 ToList(),"テストグループ");
             group.GotFocus += MyReThumb_GotFocus;
 
-            ReThumb reThumb = new(MakeTextBlock("追加要素"), 150, 20, $"追加要素");
+            ReThumb reThumb = new(MakeTextBlock("追加要素"), $"追加要素", 150, 20);
             //reThumb.GotFocus += MyReThumb_GotFocus;
             //group.ChildrenOld.Add(reThumb);//追加
             group.AddChildren(reThumb);//追加
@@ -102,7 +106,7 @@ namespace _20211231_Thumb
             List<ReThumb> list = new();//要素作成
             for (int i = 0; i < 5; i++)
             {
-                ReThumb re = new(MakeTextBlock($"test4の{i}"), i * 20 + 20, i * 50 + 30, $"テスト4の{i}");
+                ReThumb re = new(MakeTextBlock($"test4の{i}"), $"テスト4の{i}", i * 20 + 20, i * 50 + 30);
                 re.GotFocus += MyReThumb_GotFocus;
                 list.Add(re);
             }
@@ -120,7 +124,7 @@ namespace _20211231_Thumb
         }
         private void Test2()
         {
-            MyReThumb2 = new ReThumb(MakeTextBlock("test2"), 100, 0, "Test2");
+            MyReThumb2 = new ReThumb(MakeTextBlock("test2"), "Test2", 100, 0);
             Layer1.AddChildren(MyReThumb2);
             //Layer1.ChildrenOld.Add(MyReThumb2);
             MyReThumb2.GotFocus += MyReThumb_GotFocus;
@@ -129,7 +133,7 @@ namespace _20211231_Thumb
         {
             for (int i = 0; i < 5; i++)
             {
-                ReThumb re = new(MakeTextBlock($"test3-{i}"), i * 20 + 20, i * 50 + 100, $"テスト3-{i}");
+                ReThumb re = new(MakeTextBlock($"test3-{i}"), $"テスト3-{i}", i * 20 + 20, i * 50 + 100);
                 re.GotFocus += MyReThumb_GotFocus;
                 //Layer1.ChildrenOld.Add(re);
                 Layer1.AddChildren(re);
@@ -143,24 +147,16 @@ namespace _20211231_Thumb
         private void MyReThumb_GotFocus(object sender, RoutedEventArgs e)
         {
             ReThumb item = sender as ReThumb;
+            MyStackPanel.DataContext = item.RootReThumb;
 
-            //if (item.IsRoot)
+            //if (item == item.RootReThumb)
             //{
             //    MyStackPanel.DataContext = item;
             //}
             //else
             //{
-            //    ReThumb origin = e.OriginalSource as ReThumb;
-            //    MyStackPanel.DataContext = origin?.RootReThumb;
+            //    MyStackPanel.DataContext = item.RootReThumb;
             //}
-            if (item == item.RootReThumb)
-            {
-                MyStackPanel.DataContext = item;
-            }
-            else
-            {
-                MyStackPanel.DataContext = item.RootReThumb;
-            }
         }
 
         private TextBlock MakeTextBlock(string text)

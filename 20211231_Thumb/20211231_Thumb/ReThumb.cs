@@ -26,9 +26,11 @@ namespace _20211231_Thumb
         public bool IsGroup;
         public ReThumb ParentReThumb;
         public ReThumb RootReThumb;//動かすThumb
-        //public ObservableCollection<ReThumb> ChildrenOld { get; set; } = new();
+                                   //public ObservableCollection<ReThumb> ChildrenOld { get; set; } = new();
+                                   //        読み取り専用に公開するパターン - Qiita
+                                   //https://qiita.com/Azleep/items/299fafdf51f260bbecb2
 
-        private ObservableCollection<ReThumb> children = new();
+        protected ObservableCollection<ReThumb> children = new();
         public ReadOnlyObservableCollection<ReThumb> Children { get; private set; }
         //public ReadOnlyObservableCollection<ReThumb> Children1 => new(Children);
 
@@ -47,7 +49,7 @@ namespace _20211231_Thumb
         public double Top { get => top; set { top = value; OnPropertyChanged(); } }
         public string IdName { get => idName; set { idName = value; OnPropertyChanged(); } }
 
-        public ReThumb()
+        protected ReThumb()
         {
             Children = new(children);
 
@@ -71,28 +73,33 @@ namespace _20211231_Thumb
             RootReThumb = this;
 
         }
-        public ReThumb(string name = null) : this()
+
+        public ReThumb(UIElement element, string name = "", double x = 0, double y = 0) : this()
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                IdName = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
-            }
-            else { IdName = name; }
-        }
-        public ReThumb(double x = 0, double y = 0, string name = "") : this(name)
-        {
+            AddElement(element);
+            IdName = string.IsNullOrEmpty(name) ? DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") : name;
             Left = x;
             Top = y;
         }
+        public ReThumb(UIElement element, double x = 0, double y = 0) : this(element, null, x, y) { }
 
-        public ReThumb(UIElement element, double x = 0, double y = 0, string name = "") : this(x, y, name)
-        {
-            AddElement(element);            
-        }
-        public ReThumb(UIElement element, string name = "") : this(element, 0, 0, name)
-        {
 
+        //複数ThumbからグループThumb作成
+        public ReThumb(List<ReThumb> reThumbs, string name = "") : this()
+        {
+            IdName = string.IsNullOrEmpty(name) ? DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") : name;
+            double left = reThumbs.Min(a => a.Left);
+            double top = reThumbs.Min(a => a.Top);
+            foreach (ReThumb item in reThumbs)
+            {
+                item.Left -= left;
+                item.Top -= top;
+                children.Add(item);
+            }
+            Left = left;
+            Top = top;
         }
+
 
         //グループ解除
         public ICollection<ReThumb> UnGroup()
@@ -107,23 +114,6 @@ namespace _20211231_Thumb
             }
             return list;
         }
-        //複数ThumbからグループThumb作成
-        public ReThumb(IEnumerable<ReThumb> reThumbs, string name = "") : this(name)
-        {
-            double left = reThumbs.Min(a => a.Left);
-            double top = reThumbs.Min(a => a.Top);
-            foreach (ReThumb item in reThumbs)
-            {
-                item.Left -= left;
-                item.Top -= top;
-                children.Add(item);
-                //ChildrenOld.Add(item);
-                //children.Add(item);
-            }
-            Left = left;
-            Top = top;
-            //this.RootReThumb = this;
-        }
 
 
         protected virtual void ReThumb_DragDelta(object sender, DragDeltaEventArgs e)
@@ -131,10 +121,7 @@ namespace _20211231_Thumb
             Left += e.HorizontalChange;
             Top += e.VerticalChange;
         }
-        public virtual void AA()
-        {
 
-        }
         protected virtual void Children_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var newItems = e.NewItems;
@@ -159,11 +146,6 @@ namespace _20211231_Thumb
                         ReplaceRootReThumb(re, this.RootReThumb);
                         //DragDeltaを外す
                         re.DragDelta -= re.ReThumb_DragDelta;
-                    }
-                    //Layerに追加された場合
-                    else
-                    {
-
                     }
 
                 }
@@ -196,9 +178,7 @@ namespace _20211231_Thumb
         {
             current.RootReThumb = root;
             if (current.children.Count < 1) { return; }
-            //if (current.ChildrenOld.Count < 1) { return; }
             foreach (var item in current.children)
-            //foreach (var item in current.ChildrenOld)
             {
                 item.RootReThumb = root;
                 ReplaceRootReThumb(item, root);
@@ -217,11 +197,23 @@ namespace _20211231_Thumb
         {
             RootCanvas.Children.Add(element);
         }
-        public void AddChildren(ReThumb thumb)
+
+        //グループに要素(Thumb)を追加
+        public virtual void AddChildren(ReThumb thumb)
         {
+            if (Left > thumb.left)
+            {
+                Left = thumb.left;
+                thumb.Left = 0;
+            }
+            if (Top > thumb.top)
+            {
+                Top = thumb.top;
+                thumb.Top = 0;
+            }
             children.Add(thumb);
         }
-        
+
 
         public override string ToString()
         {
@@ -237,11 +229,15 @@ namespace _20211231_Thumb
         {
             DragDelta -= ReThumb_DragDelta;
         }
-      
 
+        public override void AddChildren(ReThumb thumb)
+        {
+            //base.AddChildren(thumb);
+            children.Add(thumb);
+        }
         //protected override void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         //{
-            
+
         //}
 
         //private void Children_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
