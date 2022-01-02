@@ -11,11 +11,12 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="150"/>
     </Grid.ColumnDefinitions>
-    <local:Layer x:Name="Layer1" IdName="Layer1"/>
+    <local:Layer x:Name="MyLayer1" IdName="Layer1"/>
     <StackPanel Grid.Column="1" Name="MyStackPanel">
       <TextBlock Text="{Binding Path=IdName}"/>
       <TextBlock Text="{Binding Path=Left}"/>
       <TextBlock Text="{Binding Path=Top}"/>
+      <Button x:Name="ButtonUngroup" Content="グループ解除" Click="ButtonUngroup_Click"/>
     </StackPanel>
   </Grid>
 </Window>

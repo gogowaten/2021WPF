@@ -31,12 +31,18 @@ namespace _20211229_Thumb
             //Test2();
             //Test3();
             //MyCanvas.Children.Add(Test4());//グループ化
-            //MyCanvas.Children.Add(Test5());//グループに追加
+            //MyCanvas.Children.Add(Test5());//
             //Test6();
             Test7();
         }
 
-        //グループAにグループBを追加
+        //Layer1-GroupA-ThumbA
+        //private void Test8()
+        //{
+        //    var listA = new ReThumb(Enumerable.Range(0, 2).Select(a => new ReThumb(MakeTextBlock($"A要素{a}"), a * 20 + 10, a * 30 + 10)));
+        //    var listB = new ReThumb(Enumerable.Range(0, 2).Select(a => new ReThumb(MakeTextBlock($"B要素{a}"), a * 20 + 20, a * 30 + 210)));
+            
+        //}
 
         //グループAとグループBからグループC作成
         private void Test7()

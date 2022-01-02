@@ -26,9 +26,10 @@ namespace _20211231_Thumb
         public bool IsGroup;
         public ReThumb ParentReThumb;
         public ReThumb RootReThumb;//動かすThumb
-                                   //public ObservableCollection<ReThumb> ChildrenOld { get; set; } = new();
-                                   //        読み取り専用に公開するパターン - Qiita
-                                   //https://qiita.com/Azleep/items/299fafdf51f260bbecb2
+
+        //public ObservableCollection<ReThumb> ChildrenOld { get; set; } = new();
+        //        読み取り専用に公開するパターン - Qiita
+        //https://qiita.com/Azleep/items/299fafdf51f260bbecb2
 
         protected ObservableCollection<ReThumb> children = new();
         public ReadOnlyObservableCollection<ReThumb> Children { get; private set; }
@@ -85,7 +86,7 @@ namespace _20211231_Thumb
 
 
         //複数ThumbからグループThumb作成
-        public ReThumb(List<ReThumb> reThumbs, string name = "") : this()
+        public ReThumb(IEnumerable<ReThumb> reThumbs, string name = "") : this()
         {
             IdName = string.IsNullOrEmpty(name) ? DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") : name;
             double left = reThumbs.Min(a => a.Left);
@@ -102,17 +103,33 @@ namespace _20211231_Thumb
 
 
         //グループ解除
-        public ICollection<ReThumb> UnGroup()
+        //子要素を開放して親の要素にする
+        //親がLayerならDragDeltaイベント付着
+        public void UnGroup()
         {
-            List<ReThumb> list = new();
+            if (this.IsGroup == false) { return ; }
             foreach (ReThumb item in children.ToList())
-            //foreach (ReThumb item in ChildrenOld.ToList())
             {
                 children.Remove(item);
-                //ChildrenOld.Remove(item);
-                list.Add(item);
+                //Parentに移動、ParentがLayerだったばあいはドラッグ移動できるようにする
+                Layer layer = this.ParentReThumb as Layer;
+                if (layer != null)
+                {
+                    item.DragDelta += item.ReThumb_DragDelta;
+                    layer.AddChildren(item);
+                }
+                else
+                {
+                    this.ParentReThumb.AddElement(item);
+                }
+                //座標修正
+                item.Left += this.left;
+                item.Top += this.top;
+                //RootReThumbの更新
+                ReplaceRootReThumb(item, item);
             }
-            return list;
+            //グループ(自身)を削除
+            this.ParentReThumb.children.Remove(this);
         }
 
 
@@ -131,7 +148,7 @@ namespace _20211231_Thumb
             else { IsGroup = true; }
 
             //追加された場合
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
                 foreach (object item in e.NewItems)
                 {
@@ -150,27 +167,16 @@ namespace _20211231_Thumb
 
                 }
             }
-            else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+
+            //削除された場合、ParentのChildrenに移動する
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                foreach (var item in e.OldItems)
+                foreach (object item in e.OldItems)
                 {
                     ReThumb re = item as ReThumb;
-                    RootCanvas.Children.Remove(re);
-                    //
-                    if (this.ParentReThumb != null)
-                    {
-                        this.ParentReThumb.children.Add(re);
-                        //this.ParentReThumb.ChildrenOld.Add(re);
-                        //re.IsRoot = false;
-                        re.ParentReThumb = this.ParentReThumb;
-                    }
-                    else
-                    {
-                        //re.IsRoot = true;
-                    }
-                    re.DragDelta += re.ReThumb_DragDelta;
-
+                    RootCanvas.Children.Remove(re);//グループから切り離し
                 }
+
             }
         }
 
@@ -198,21 +204,6 @@ namespace _20211231_Thumb
             RootCanvas.Children.Add(element);
         }
 
-        //グループに要素(Thumb)を追加
-        public virtual void AddChildren(ReThumb thumb)
-        {
-            if (Left > thumb.left)
-            {
-                Left = thumb.left;
-                thumb.Left = 0;
-            }
-            if (Top > thumb.top)
-            {
-                Top = thumb.top;
-                thumb.Top = 0;
-            }
-            children.Add(thumb);
-        }
 
 
         public override string ToString()
@@ -230,9 +221,8 @@ namespace _20211231_Thumb
             DragDelta -= ReThumb_DragDelta;
         }
 
-        public override void AddChildren(ReThumb thumb)
+        public void AddChildren(ReThumb thumb)
         {
-            //base.AddChildren(thumb);
             children.Add(thumb);
         }
         //protected override void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
