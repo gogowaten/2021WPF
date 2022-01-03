@@ -26,6 +26,7 @@ namespace _20211231_Thumb
         public bool IsGroup;
         public ReThumb ParentReThumb;
         public ReThumb RootReThumb;//動かすThumb
+        //public int ZetIndex;//重なり順番、大きいほうが上、0から始まるけど実質のZIndexは+10して10から開始、これは下に装飾用のRectangleとか置く予定だから
 
         //public ObservableCollection<ReThumb> ChildrenOld { get; set; } = new();
         //        読み取り専用に公開するパターン - Qiita

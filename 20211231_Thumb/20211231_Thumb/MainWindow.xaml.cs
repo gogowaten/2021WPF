@@ -47,12 +47,16 @@ namespace _20211231_Thumb
             //Layer1.AddChildren(Test5());//グループに追加
             //Test6();
             //Test7();
-            Test8();
+            Test8();//
             //FocusThumbをこっちに用意しておいて、Newのときに渡すかPublicにしておいて、向こうでGotFocusイベントでdatacontextに指定するようにする？
             //Test9();//GotFocus、やっぱりやめた
 
         }
+        //Zオーダー
+        private void Test10()
+        {
 
+        }
         //FocusThumbを取得するためにMainWindowを渡すようにした、向こうのGotFocusイベント時にこっちのFocusThumbを入れ替えるようにしたけど
         //不自然かも
         private void Test9()
@@ -63,6 +67,7 @@ namespace _20211231_Thumb
             //    //MyLayer1.AddChildren(new ReThumb(MakeTextBlock($"bind{i}"), this,null, i * 10, i * 50));
             //}
         }
+        //グループ解除
         private void Test8()
         {
             ReThumb aa = new(Enumerable.Range(0, 2).
