@@ -38,7 +38,6 @@ namespace _20211231_Thumb
         private double left;
         private double top;
         private string idName;
-        private readonly ObservableCollection<ReThumb> readInt;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
@@ -63,7 +62,6 @@ namespace _20211231_Thumb
             RootCanvas = template.FindName("rootcanvas", this) as Canvas;
 
             children.CollectionChanged += Children_CollectionChanged;
-            //ChildrenOld.CollectionChanged += Children_CollectionChanged;
             DragDelta += ReThumb_DragDelta;
 
             this.SetBinding(Canvas.LeftProperty, MakeBind(nameof(Left)));
@@ -75,6 +73,17 @@ namespace _20211231_Thumb
 
         }
 
+
+        public void SetGotFocus(ReThumb focus)
+        {
+            this.GotFocus += (a, b) => ReThumb_GotFocus1(a, b, focus);
+        }
+
+        private void ReThumb_GotFocus1(object sender, RoutedEventArgs e, ReThumb focus)
+        {
+            focus = this;
+        }
+
         public ReThumb(UIElement element, string name = "", double x = 0, double y = 0) : this()
         {
             AddElement(element);
@@ -82,7 +91,18 @@ namespace _20211231_Thumb
             Left = x;
             Top = y;
         }
-        public ReThumb(UIElement element, double x = 0, double y = 0) : this(element, null, x, y) { }
+
+        public ReThumb(UIElement element, double x, double y) : this(element, "")
+        {
+            Left = x;
+            Top = y;
+        }
+
+
+        public ReThumb(UIElement element) : this(element, "", 0, 0)
+        {
+
+        }
 
 
         //複数ThumbからグループThumb作成
@@ -102,12 +122,31 @@ namespace _20211231_Thumb
         }
 
 
+        //こっちでのGotFocusはやめた
+        //private void ReThumb_GotFocus(MainWindow mainWindow)
+        //{
+        //    mainWindow.FocusThumb = this;
+        //}
+        //public ReThumb(UIElement element, MainWindow mainWindow) : this(element, null, 0, 0)
+        //{
+        //    this.GotFocus += (a, b) => ReThumb_GotFocus(mainWindow);
+        //}
+        //public ReThumb(UIElement element, MainWindow mainWindow, string name = null) : this(element, mainWindow)
+        //{
+        //    idName = name;
+        //}
+        //public ReThumb(UIElement element, MainWindow mainWindow, string name = null, double x = 0, double y = 0) : this(element, mainWindow, name)
+        //{
+        //    Left = x;
+        //    Top = y;
+        //}
+
         //グループ解除
         //子要素を開放して親の要素にする
         //親がLayerならDragDeltaイベント付着
         public void UnGroup()
         {
-            if (this.IsGroup == false) { return ; }
+            if (this.IsGroup == false) { return; }
             foreach (ReThumb item in children.ToList())
             {
                 children.Remove(item);

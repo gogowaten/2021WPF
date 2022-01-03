@@ -16,7 +16,14 @@
       <TextBlock Text="{Binding Path=IdName}"/>
       <TextBlock Text="{Binding Path=Left}"/>
       <TextBlock Text="{Binding Path=Top}"/>
+      <TextBlock Text="{Binding Path=Children[0].IdName}"/>
+      <TextBlock Text="{Binding Path=Children[1].IdName}"/>
+      <TextBlock Text="{Binding Path=Children[0]}"/>
+      <TextBlock Text="{Binding Path=Children}"/>
+      <TextBlock Text="{Binding Path=Children/IdName}"/>
+      <TextBlock Text="{Binding Path=Children/Children/IdName}"/>
       <Button x:Name="ButtonUngroup" Content="グループ解除" Click="ButtonUngroup_Click"/>
+      <Button x:Name="ButtonTest" Content="test" Click="ButtonTest_Click"/>
     </StackPanel>
   </Grid>
 </Window>

@@ -23,9 +23,22 @@ namespace _20211231_Thumb
         ReThumb MyReThumb1;
         ReThumb MyReThumb2;
         ReThumb MyGroupReThumb;
+        private ReThumb focusThumb;
+
+        public ReThumb FocusThumb
+        {
+            get => focusThumb; set
+            {
+                focusThumb = value;
+                //MyStackPanel.DataContext = value;
+                //FocusのRootをBinding
+                MyStackPanel.DataContext = value.RootReThumb;
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
+
 
             //Test1();
             //Test2();
@@ -36,8 +49,20 @@ namespace _20211231_Thumb
             //Test7();
             Test8();
             //FocusThumbをこっちに用意しておいて、Newのときに渡すかPublicにしておいて、向こうでGotFocusイベントでdatacontextに指定するようにする？
+            //Test9();//GotFocus、やっぱりやめた
+
         }
 
+        //FocusThumbを取得するためにMainWindowを渡すようにした、向こうのGotFocusイベント時にこっちのFocusThumbを入れ替えるようにしたけど
+        //不自然かも
+        private void Test9()
+        {
+            //for (int i = 0; i < 3; i++)
+            //{   
+            //    MyLayer1.AddChildren(new ReThumb(MakeTextBlock($"bind{i}"), this));
+            //    //MyLayer1.AddChildren(new ReThumb(MakeTextBlock($"bind{i}"), this,null, i * 10, i * 50));
+            //}
+        }
         private void Test8()
         {
             ReThumb aa = new(Enumerable.Range(0, 2).
@@ -159,16 +184,8 @@ namespace _20211231_Thumb
         private void MyReThumb_GotFocus(object sender, RoutedEventArgs e)
         {
             ReThumb item = sender as ReThumb;
-            MyStackPanel.DataContext = item.RootReThumb;
-
-            //if (item == item.RootReThumb)
-            //{
-            //    MyStackPanel.DataContext = item;
-            //}
-            //else
-            //{
-            //    MyStackPanel.DataContext = item.RootReThumb;
-            //}
+            //FocusThumb = item.RootReThumb;
+            FocusThumb = item;
         }
 
         private TextBlock MakeTextBlock(string text)
@@ -185,6 +202,12 @@ namespace _20211231_Thumb
         {
             ReThumb re = MyStackPanel.DataContext as ReThumb;
             re?.UnGroup();
+        }
+
+        private void ButtonTest_Click(object sender, RoutedEventArgs e)
+        {
+            var fthumb = focusThumb;
+            var data = MyStackPanel.DataContext;
         }
     }
 }
