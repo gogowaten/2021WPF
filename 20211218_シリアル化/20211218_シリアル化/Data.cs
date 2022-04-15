@@ -68,6 +68,20 @@ namespace _20211218_シリアル化
             }
         }
 
+        [DataMember]
+        public LineSegment LineSegment { get; set; }//問題ない
+        
+        //public PathSegment PathSegment { get; set; }//エラーになる
+
+
+        //public PathFigure PathFigure { get; set; }//PathFigureもシリアル化できない？
+
+
+
+
+        //public Geometry Geometry { get; set; }//Geometryはシリアル化できない
+
+
         //DependencyPropertyはシリアル化できない
         //[DataMember]
         //public int MyDependencyInt

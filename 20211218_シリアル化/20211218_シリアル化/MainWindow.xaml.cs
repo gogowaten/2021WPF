@@ -51,6 +51,9 @@ namespace _20211218_シリアル化
             MyDataWithChilden = new();
             MyDataWithChilden.Children.Add(MyData);
 
+            MyData.LineSegment = new LineSegment();
+            
+            
 
             Test3(MyData);
             //string neko2 = Test2(MyData);
