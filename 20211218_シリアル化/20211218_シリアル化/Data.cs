@@ -24,7 +24,16 @@ using System.Runtime.CompilerServices;
 namespace _20211218_シリアル化
 {
     [DataContract]
-    [KnownType(typeof(Data)), KnownType(typeof(Brush))]
+    [KnownType(typeof(Data)),
+        KnownType(typeof(Brush)),
+        KnownType(typeof(LineSegment)),
+        KnownType(typeof(RectangleGeometry)),
+        KnownType(typeof(MatrixTransform)),
+        KnownType(typeof(SolidColorBrush)),
+        KnownType(typeof(Polygon)),        
+        KnownType(typeof(BezierSegment)),
+        KnownType(typeof(PathFigure))
+        ]
     public class Data : INotifyPropertyChanged
     {
         private int myNotifyInt;
@@ -45,6 +54,8 @@ namespace _20211218_シリアル化
         //問題ない、ObservableCollection
         [DataMember]
         public ObservableCollection<int> Observable { get; set; } = new();
+        [DataMember]
+        public ObservableCollection<Data> ObservableData { get; set; } = new();
 
         //問題ない、Dictionary
         [DataMember]
@@ -70,16 +81,37 @@ namespace _20211218_シリアル化
 
         [DataMember]
         public LineSegment LineSegment { get; set; }//問題ない
+        [DataMember]
+        public BezierSegment BezierSegment { get; set; }//問題ない
+        [DataMember]
+        public ArcSegment ArcSegment { get; set; }//問題ない
+        [DataMember]
+        public PolyBezierSegment PolyBezierSegment { get; set; }//問題ない
+        [DataMember]
+        public PolyLineSegment PolyLineSegment { get; set; }
+        [DataMember]
+        public PolyQuadraticBezierSegment PolyQuadraticBezierSegment { get; set; }
+        [DataMember]
+        public QuadraticBezierSegment QuadraticBezierSegment { get; set; }
+        [DataMember]
+        public PathSegmentCollection pathSegments { get; set; } = new();
+        [DataMember]
+        public RectangleGeometry RectangleGeometry { get; set; }//Geometryはシリアル化できないと思ったけど、シリアル化するクラスの頭に属性を付けたらできた、属性は2つ必要でKnownType(typeof(RectangleGeometry))とKnownType(typeof(MatrixTransform))
+
+        //ブラシ系はそのままではシリアライズできないのでクラスの頭に属性をつける
+        //その場合はBrushじゃなくてSolidColorBrushと細かく指定する必要がある
+        //public SolidColorBrush SolidColorBrush { get; set; }
+        [DataMember]
+        public SolidColorBrush SolidColorBrush { get; set; }//シリアル化できない→属性付与でできるようになる
+
+        [DataMember]
+        public PathFigure PathFigure { get; set; }//PathFigureも属性付与でできるようになる
         
+
+        //public Polygon Polygon { get; set; }//エラーになる、含まれるCursorがシリアル化できない
         //public PathSegment PathSegment { get; set; }//エラーになる
 
 
-        //public PathFigure PathFigure { get; set; }//PathFigureもシリアル化できない？
-
-
-
-
-        //public Geometry Geometry { get; set; }//Geometryはシリアル化できない
 
 
         //DependencyPropertyはシリアル化できない
@@ -95,13 +127,13 @@ namespace _20211218_シリアル化
         //    DependencyProperty.Register("MyDependencyInt", typeof(int), typeof(Data), new PropertyMetadata(0));
 
 
-        //ブラシ系はそのままではシリアライズできないので要素を分解して保持することになる
-        //public SolidColorBrush SolidColorBrush { get; set; }//シリアル化できない
-        //public Brush Brush { get; set; }//シリアル化できない
-        //オブジェクト系もできない
+
+        //Buttonできない？KnownType(typeof(Button))とKnownType(typeof(Cursor))を
+        //付けてもCorsorがなにかしないとできないって表示される
+        //[DataMember]
         //public Button Button { get; set; }
     }
 
 
-    
+
 }

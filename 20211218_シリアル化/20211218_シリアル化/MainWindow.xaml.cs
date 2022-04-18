@@ -52,10 +52,24 @@ namespace _20211218_シリアル化
             MyDataWithChilden.Children.Add(MyData);
 
             MyData.LineSegment = new LineSegment();
-            
-            
+            MyData.BezierSegment = new BezierSegment();
+            MyData.ArcSegment = new ArcSegment();
+            MyData.PolyBezierSegment = new();
+            MyData.QuadraticBezierSegment = new();
+            MyData.PolyQuadraticBezierSegment = new(new List<Point>() { new Point(44, 44), new Point(55, 55) }, true);
+            MyData.PolyLineSegment = new();
+            MyData.pathSegments.Add(new LineSegment());
+            MyData.RectangleGeometry = new(new Rect(0, 0, 2, 2));
+            MyData.SolidColorBrush = Brushes.MediumAquamarine;
+            MyData.PathFigure = new();
+            MyData.ObservableData.Add(new Data() { Left = 111 });
 
+
+            //MyData.Button = new();
+
+            string filePath = @"E:\MyData.xml";
             Test3(MyData);
+            //Test4(MyData, filePath);
             //string neko2 = Test2(MyData);
 
             //Test3(MyDataWithChilden);
@@ -128,7 +142,6 @@ namespace _20211218_シリアル化
         {
 
             string fileName = @"E:\MyData.xml";
-            DataContractSerializer serializer = new(typeof(Data));
 
             XmlWriterSettings settings = new();
             settings.Encoding = new UTF8Encoding(false);
@@ -137,6 +150,7 @@ namespace _20211218_シリアル化
             settings.ConformanceLevel = ConformanceLevel.Fragment;//いらないかな
 
             XmlWriter writer;
+            DataContractSerializer serializer = new(typeof(Data));
             using (writer = XmlWriter.Create(fileName, settings))
             {
                 try
@@ -149,5 +163,27 @@ namespace _20211218_シリアル化
                 }
             }
         }
+
+        //XmlSerializerはDictionaryのシリアル化ができない
+        private void Test4(object obj, string filePath)
+        {
+            XmlWriterSettings settings = new();
+            settings.Encoding = new UTF8Encoding(false);
+            settings.Indent = true;//インデント、必須じゃないけどテキストエディタで開いたときに見やすくなる
+            settings.NewLineOnAttributes = false;//改行、必須じゃないけどテキストエディタで開いたときに見やすくなる
+            settings.ConformanceLevel = ConformanceLevel.Fragment;//いらないかな
+            try
+            {
+                XmlSerializer xmlSerializer = new(typeof(Data));//Dictionaryがシリアル化できない
+                using XmlWriter xmlWriter = XmlWriter.Create(filePath, settings);
+                xmlSerializer.Serialize(xmlWriter, obj);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
     }
 }
