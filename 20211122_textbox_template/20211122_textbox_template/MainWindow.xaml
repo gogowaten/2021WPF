@@ -5,16 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_20211122_textbox_template"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="600">
+        Title="MainWindow" Height="350" Width="600">
   <Grid UseLayoutRounding="True">
     <StackPanel x:Name="MyStackPanel">
-      <Slider x:Name="MySlider" Value="50" Minimum="10" Maximum="100"/>
+      <Slider x:Name="MySlider" Value="40" Minimum="10" Maximum="100"/>
       <local:MyTextBox FontSize="{Binding ElementName=MySlider, Path=Value}"
-                       Text="test"/>
+                       Text="test" Margin="10"/>
       <local:MyTextBoxTemplate FontSize="{Binding ElementName=MySlider, Path=Value}"
-                               Text="template"/>
-      <Button x:Name="MyButton" Content="button"/>
-      
+                               Text="template" Margin="10"/>
+      <local:MyTextBox x:Name="MyTextBox1" FontSize="{Binding ElementName=MySlider, Path=Value}" Margin="10"
+                       Text="test"/>
+      <Button x:Name="MyButton1" Content="changeColor" Click="MyButton1_Click"/>
     </StackPanel>
   </Grid>
 </Window>

@@ -26,8 +26,13 @@ namespace _20211122_textbox_template
         {
             InitializeComponent();
 
+            
 
         }
 
+        private void MyButton1_Click(object sender, RoutedEventArgs e)
+        {
+            MyTextBox1.ForegroundBrush = Brushes.Crimson;
+        }
     }
 }

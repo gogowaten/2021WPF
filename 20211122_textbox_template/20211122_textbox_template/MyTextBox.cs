@@ -16,15 +16,51 @@ using System.Windows.Shapes;
 using System.Globalization;
 
 
+using System.ComponentModel;
+
 namespace _20211122_textbox_template
 {
-    public class MyTextBox : TextBox
+    public class MyTextBox : TextBox, INotifyPropertyChanged
     {
+        private Brush _foregroundBrush;
+        public Brush ForegroundBrush
+        {
+            get => _foregroundBrush;
+            set
+            {
+                if (value == _foregroundBrush) { return; }
+                _foregroundBrush = value;
+                OnPropertyChanged();
+                InvalidateVisual();
+            }
+        }
+        private Brush _penBrush;
+        public Brush PenBrush
+        {
+            get => _penBrush;
+            set
+            {
+                if (value == _penBrush) { return; }
+                _penBrush = value;
+                OnPropertyChanged();
+                InvalidateVisual();
+            }
+        }
+
         public MyTextBox()
         {
             Foreground = Brushes.Transparent;
             Background = Brushes.Transparent;
+            ForegroundBrush = Brushes.White;
+            PenBrush = Brushes.Gray;
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
@@ -41,13 +77,14 @@ namespace _20211122_textbox_template
                 FontSize,
                 Brushes.Red,
                 96);
-
+            
             //縁取りが必要なければ
             //drawingContext.DrawText(formatted, new Point());
 
             //縁取りありはGeometry
             Geometry geo = formatted.BuildGeometry(new Point());
-            drawingContext.DrawGeometry(Brushes.Green, new Pen(Brushes.Cyan, 2), geo);
+            drawingContext.DrawGeometry(ForegroundBrush, new Pen(PenBrush, 1), geo);
+            //drawingContext.DrawGeometry(Brushes.Green, new Pen(Brushes.Cyan, 2), geo);
 
         }
 

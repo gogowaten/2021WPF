@@ -71,7 +71,7 @@ namespace _20211119_drawText
 
 
             var geo = formattedText.BuildGeometry(new Point());
-            Pen MyPen = new(Brushes.Magenta, 1);
+            Pen MyPen = new(Brushes.DarkMagenta, 1);
             MyPen.LineJoin = PenLineJoin.Round;
 
             GeometryDrawing geometryDrawing = new(Brushes.Aqua, MyPen, geo);
@@ -94,7 +94,7 @@ namespace _20211119_drawText
             MyStackPanel.Children.Add(MyPath);
             MyPath.Data = geo;            
             MyPath.Fill = Brushes.Aqua;
-            MyPath.Stroke = Brushes.Magenta;
+            MyPath.Stroke = Brushes.DarkMagenta;
             MyPath.StrokeThickness = 1;
 
             var renderGeo = MyPath.RenderedGeometry;
@@ -109,7 +109,7 @@ namespace _20211119_drawText
             //ドロップシャドウ
             DropShadowEffect dropShadowEffect = new();
             dropShadowEffect.BlurRadius = 10.0;//ぼかし半径
-            dropShadowEffect.Color = Colors.Magenta;//色
+            dropShadowEffect.Color = Colors.DarkMagenta;//色
             dropShadowEffect.Direction = 315;//方向
             dropShadowEffect.Opacity = 1.0;//不透明度
             dropShadowEffect.ShadowDepth = 10;//距離
