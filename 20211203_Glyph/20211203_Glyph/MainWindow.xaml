@@ -35,8 +35,8 @@ https://docs.microsoft.com/ja-jp/dotnet/desktop/wpf/advanced/introduction-to-the
    UnicodeString       = "Open file"
    Indices             = ";;;;;(2:1)191"
    Fill                = "SlateGray"
-   OriginX             = "200"
-   OriginY             = "150"
+   OriginX             = "50"
+   OriginY             = "180"
 />
   </Grid>
 </Window>

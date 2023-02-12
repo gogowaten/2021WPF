@@ -48,7 +48,6 @@ namespace _20211205_Glyph
             //Glyph系クラス
             GlyphRun glyphRun;
             GlyphRunDrawing glyphRunDrawing;
-            Glyphs glyphs;
             GlyphTypeface glyphTypeface;
 
             FontFamily fontFamily = new FontFamily("Meiryo UI");
@@ -60,8 +59,7 @@ namespace _20211205_Glyph
                 myFontUri = gType.FontUri;
                 break;
             }
-
-            glyphs = new();
+            Glyphs glyphs = new();
             glyphs.FontUri = myFontUri;
             glyphs.FontRenderingEmSize = 100;
             //glyphs.StyleSimulations = StyleSimulations.BoldItalicSimulation;
@@ -166,16 +164,22 @@ namespace _20211205_Glyph
             //メソッド
             //BuildGeometry
             //  GlyphRunのジオメトリを取得します。
+
             //ComputeAlignmentBox   Rect
             //  GlyphRunの配置ボックスを取得します。
+
             //ComputeInkBoundingBox Rect
             //  GlyphRunのインク境界ボックスを取得します。
+
             //GetCaretCharacterHitFromDistance(Double, Boolean) CharacterHitグリフラン内でヒットした文字に関する情報を表します。
             //  GlyphRunのキャレットの文字ヒットを表すCharacterHit値を取得します。
+
             //GetDistanceFromCaretCharacterHit(CharacterHit) double
             //  GlyphRunの前縁から、指定された文字ヒットを含むキャレットストップの前縁または後縁までのオフセットを取得します。
+
             //GetNextCaretCharacterHit(CharacterHit) CharacterHit
             //  GlyphRunで論理方向にヒットした次の有効なキャレット文字を取得します。
+
             //GetPreviousCaretCharacterHit(CharacterHit) CharacterHit
             //  GlyphRunで論理方向にヒットした前の有効なキャレット文字を取得します。
 
